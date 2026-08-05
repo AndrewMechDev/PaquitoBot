@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="12dp"
+    android:height="12dp"
+    android:viewportWidth="11"
+    android:viewportHeight="11">
+    <!--
+        Material Symbols "arrow_forward" rotado 45° en Figma.
+        En el SVG original es simplemente un path border-top + border-right
+        con stroke-width 3px que forma una flecha apuntando al NE.
+    -->
+    <path
+        android:pathData="M3.3,3.3 L8.8,3.3 L8.8,8.8"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"/>
+</vector>

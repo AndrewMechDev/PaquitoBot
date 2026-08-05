@@ -13,10 +13,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import pe.tecsup.paquitobot.ui.chat.ChatScreen
 import pe.tecsup.paquitobot.ui.components.NavTab
 import pe.tecsup.paquitobot.ui.home.HomeBScreen
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
+
+/**
+ * Demo de 4 tab del navbar: muestra la pantalla correspondiente segun el tab.
+ * Mientras no haya navegacion real, el tab "Paquito btn" se usa como toggle
+ * entre Home B (vista principal) y Chat (vista conversacional).
+ */
+private enum class RootScreen { Home, Chat }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,22 +44,26 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/**
- * Root temporal. Monta HomeBScreen (la version recomendada del Home del MVP)
- * con todos los componentes extraidos de Figma. Cuando llegue la navegacion
- * real (NavController de Compose), esta raiz se reemplaza por un NavHost.
- */
 @Composable
 private fun AppRoot() {
     var currentTab by remember { mutableStateOf(NavTab.Inicio) }
-    HomeBScreen(
-        onDayClick = { /* TODO: navegar a detalle de dia */ },
-        onPrimaryAction = { /* TODO: abrir entrega de la tarea */ },
-        onSecondaryAction = { /* TODO: programar recordatorio */ },
-        currentTab = currentTab,
-        onTabSelected = { currentTab = it },
-        onPaquitoClick = { /* TODO: navegar a Chat */ },
-    )
+    var rootScreen by remember { mutableStateOf(RootScreen.Home) }
+
+    when (rootScreen) {
+        RootScreen.Home -> HomeBScreen(
+            onDayClick = { /* TODO: navegar a detalle de dia */ },
+            onPrimaryAction = { /* TODO: abrir entrega */ },
+            onSecondaryAction = { /* TODO: programar recordatorio */ },
+            currentTab = currentTab,
+            onTabSelected = { currentTab = it },
+            onPaquitoClick = { rootScreen = RootScreen.Chat },
+        )
+        RootScreen.Chat -> ChatScreen(
+            currentTab = currentTab,
+            onTabSelected = { currentTab = it; rootScreen = RootScreen.Home },
+            onPaquitoClick = { rootScreen = RootScreen.Home },
+        )
+    }
 }
 
 @Preview(showBackground = true)

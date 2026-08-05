@@ -95,12 +95,34 @@ Estado vivo de la integración entre el archivo Figma "Paquito (copia)" y el có
 | `text/day-active` | `#0277A8` | `0xFF0277A8` | Compose: `PaquitoColors.TextDayActive` |
 | `text/day-inactive` | `#8D96A1` | `0xFF8D96A1` | Compose: `PaquitoColors.TextDayInactive` |
 
+#### Tokens adicionales observados en Chat (`285:324`) — extraídos 2026-08-05
+
+| Token | Valor Figma | Hex Compose | Plataforma |
+|---|---|---|---|
+| `state/success` | `#15A05A` (dot "sincronizado" del header del chat) | `0xFF15A05A` | Compose: `PaquitoColors.StateSuccess` ✅ nuevo |
+| `text/bubble` | `#16202C` (texto de burbuja del bot) | `0xFF16202C` | Compose: `PaquitoColors.TextBubble` |
+| `text/bubble-chip` | `#28323E` (chips "¿Qué vence esta semana?") | `0xFF28323E` | Compose: `PaquitoColors.TextBubbleChip` |
+| `text/input-placeholder` | `#757575` (placeholder "Preguntale a Paquito…") | `0xFF757575` | Compose: `PaquitoColors.TextInputPlaceholder` |
+| `background/lms-chip` | `#F2F4F6` (chip LMS del header) | `0xFFF2F4F6` | (no expuesto en PaquitoColors; usado directo en ChatHeader) |
+
+#### Tipografías descargadas (`res/font/`)
+
+| Familia | Pesos | Origen | Paquete Compose |
+|---|---|---|---|
+| DM Sans | Regular 400, Medium 500, SemiBold 600, Bold 700 | Google Fonts OFL | `PaquitoFont.DMSans` |
+| DM Mono | Regular 400, Medium 500 | Google Fonts OFL | `PaquitoFont.DMMono` |
+| Instrument Sans | Regular 400, Medium 500, SemiBold 600, Bold 700 | Google Fonts OFL | `PaquitoFont.InstrumentSans` |
+| Bricolage Grotesque | SemiBold 600, Bold 700 | Google Fonts OFL | `PaquitoFont.BricolageGrotesque` |
+
+> **Mapeo aplicado a `PaquitoTypography`**:
+> - DM Sans → titulos y cuerpo principal (Welcome, Navbar, Onboarding Notificaciones, NotificationCard).
+> - DM Mono → etiquetas de dia, badges de iniciales, "VENCE EN 6 H", timestamps.
+> - Instrument Sans → titulos de tarea, subtitulos, cuerpo del chip LMS, footer "Te aviso otra vez...".
+> - Bricolage Grotesque → saludo "Hola, Andrea", avatar "C24", titulo del Chat "Paquito", titulo de la AlertCard.
+>
 > **Tokens aún pendientes**:
-> - `state/success` (verde) → no aparece en Home B todavía; queda en placeholder.
 > - `brand/secondary`, `brand/accent` → no aparecen en Main.
-> - `surface/overlay` → no usado todavía.
 > - `text/disabled` → no usado todavía.
-> - DM Sans / DM Mono / Instrument Sans / Bricolage Grotesque → familias tipográficas detectadas en Figma. Por ahora se cae a FontFamily.Default (Roboto). Descarga futura cuando se requiera fidelidad tipográfica estricta.
 
 #### Extracción cruda (referencia)
 
