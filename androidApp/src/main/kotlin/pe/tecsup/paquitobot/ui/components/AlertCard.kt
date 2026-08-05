@@ -120,7 +120,7 @@ fun AlertCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp),
+                .padding(top = 8.dp, start = 0.dp, end = 0.dp, bottom = 0.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             AlertCardButton(

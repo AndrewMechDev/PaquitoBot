@@ -89,7 +89,7 @@ fun WelcomeScreen(
                     end = PaquitoSpacing.lg,
                     bottom = PaquitoSpacing.xxl,
                 )
-                .padding(top = PaquitoSpacing.lg),
+                .padding(top = PaquitoSpacing.lg, start = 0.dp, end = 0.dp, bottom = 0.dp),
             verticalArrangement = Arrangement.spacedBy(PaquitoSpacing.md),
         ) {
             // Ícono del bot (Figma nodeId 112:133): rounded-rect 100x100 con imagen adentro.

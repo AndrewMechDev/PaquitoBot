@@ -110,7 +110,7 @@ fun Navbar(
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(top = 0.dp, end = 0.dp)
+                        .padding(top = 0.dp, start = 0.dp, end = 0.dp, bottom = 0.dp)
                         .size(23.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(PaquitoColors.StateDanger)

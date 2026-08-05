@@ -170,7 +170,7 @@ private fun BubbleFootnote(text: String) {
                 color = androidx.compose.ui.graphics.Color(0x1A0D1520),
                 shape = RoundedCornerShape(0.dp),
             )
-            .padding(top = 10.dp),
+            .padding(top = 10.dp, start = 0.dp, end = 0.dp, bottom = 0.dp),
     ) {
         Text(
             text = text,
