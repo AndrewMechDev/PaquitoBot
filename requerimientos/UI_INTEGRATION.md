@@ -21,6 +21,15 @@ Estado vivo de la integración entre el archivo Figma "Paquito (copia)" y el có
 - Sin compartir composables entre plataformas (no existe `sharedUI` en este proyecto, solo `sharedLogic`).
 - Toda extracción valida contra `Main` (no `assets?`). Ver `references/ui-integration-map.md` en la skill para catálogo completo de frames.
 
+## Alcance del proyecto (actualizado 2026-08-05)
+
+- **Backend vive en un repositorio aparte (FastAPI)**, no en este repo KMP.
+- **En este repo solo se trabaja la parte UI/visual por ahora**. La capa de datos, red, ViewModels con lógica real y repositorios se introducen **cuando se conecte el backend al móvil**.
+- Mientras no haya backend:
+  - Las pantallas pueden usar **datos hardcodeados** como placeholders directos en Composable/View, sin repository ni ViewModel. Cuando llegue el back, se refactoriza esa pantalla para recibir datos del repository.
+  - No se construye capa de red, serialización, ni manejo de errores HTTP todavía.
+- **Cuándo se conecte el backend KMP**: el plan cambia. Decisiones a tomar en ese momento: cliente HTTP (Ktor / Retrofit / URLSession nativo), serialización (kotlinx.serialization / Jackson / Codable), forma de los contratos, manejo de loading y errores. Esa conversación es para cuando llegue el momento, no ahora.
+
 ## Estado de extracción
 
 ### Design system (tokens, colores, tipografía, spacing)
@@ -99,3 +108,4 @@ La versión B cubre más JTBD del MVP (Dolor 3: pendientes dispersos con countdo
 ## Registro de cambios
 
 - 2026-08-05 — Creación inicial. Skill `figma-extract-paquitobot` creada. Plantillas de theme Compose + SwiftUI con marcadores `0xFF______`. Sin tokens reales todavía.
+- 2026-08-05 — Actualización de alcance: backend FastAPI vive en repo aparte; este repo KMP trabaja solo UI por ahora. Capa de datos/red/ViewModels se introduce cuando se conecte el backend al móvil.

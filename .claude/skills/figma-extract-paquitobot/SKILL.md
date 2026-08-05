@@ -20,6 +20,7 @@ Estructura real del archivo (validada contra `get_metadata` 2026-08-05):
 ## Hard Rules
 
 - UI NO se comparte entre plataformas: Compose Multiplatform Android y SwiftUI iOS son **nativos e independientes**. Solo `commonMain` (lógica, modelos, casos de uso) es compartido. Cada plataforma tiene su propio theme que consume los mismos tokens.
+- **Alcance actual del repo**: solo UI/visual. El backend vive en un repositorio aparte (FastAPI). No construir capa de red, repositorios ni ViewModels con datos reales hasta que el usuario indique que se va a conectar el backend al móvil.
 - **Main canvas (`109:97`) es la fuente de verdad**, no `assets?` (`112:146`). Si hay conflicto entre ambos, gana Main.
 - Antes de `get_variable_defs` o `get_screenshot`, el usuario **debe tener el nodo seleccionado en la app de Figma**; estas herramientas devuelven error "nothing selected" si se llaman sin selección activa, aunque se les pase `nodeId`.
 - Las URLs de assets devueltas por `get_screenshot` expiran en segundos: no se pueden descargar después ni pasar a WebFetch. Si se necesita referencia visual, pedir inline con `enableBase64Response=true` o capturar en el mismo turno.
