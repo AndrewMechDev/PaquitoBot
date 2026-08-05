@@ -10,13 +10,14 @@ metadata:
 ## Activation Contract
 
 Activar cuando:
-- Se exporta un SVG desde Figma (canvas Main `109:97` del archivo "Paquito (copia)") y se necesita en `composeResources/drawable/`.
+- Se exporta un SVG desde Figma (canvas Main `109:97` del archivo "Paquito (copia)") y se necesita como asset en el módulo Android.
 - Android crashea con "Android platform doesn't support SVG format" en `painterResource()`.
-- Se pide convertir SVG a vector drawable XML para Compose Multiplatform.
+- Se pide convertir SVG a vector drawable XML para Compose.
 
-Contexto PaquitoBot:
-- UI Compose Multiplatform: `composeApp/src/commonMain/composeResources/drawable/`.
-- UI SwiftUI: imágenes vía PDF en `iosApp/iosApp/Assets.xcassets/` (esta skill NO cubre iOS — solo Android/Compose).
+Contexto PaquitoBot (2026-08-05):
+- Solo se trabaja Android en este repo. La UI es nativa con Jetpack Compose + Material 3.
+- UI NO se comparte entre plataformas (iOS lo hace otra persona en fork aparte).
+- Módulo Android: `androidApp/src/main/res/drawable/`.
 - Frontend separado del backend FastAPI; los íconos son assets visuales sin estado, son del frontend.
 - Fuente de los íconos: exportar en batch desde Figma, nodos del canvas Main (`109:97`).
 
@@ -57,7 +58,7 @@ Contexto PaquitoBot:
 4. Mapear cada elemento del SVG a su equivalente Android con la tabla Decision Gates.
 5. Guardar como `.xml` en `composeApp/src/commonMain/composeResources/drawable/` con nombre `ic_paquito_<nombre>.xml`.
 6. Borrar el `.svg` original (no se commitea).
-7. Verificar que compila: `./gradlew :composeApp:assembleDebug` (cuando el módulo `composeApp` exista; ahora mismo el proyecto no lo tiene).
+7. Verificar que compila: `./gradlew :androidApp:assembleDebug`.
 
 ## Output Contract
 

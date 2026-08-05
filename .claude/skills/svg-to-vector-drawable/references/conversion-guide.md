@@ -91,8 +91,8 @@ These require manual workarounds or simplification:
 
 ## File Location
 
-Place converted files in: `composeApp/src/commonMain/composeResources/drawable/`
+Place converted files in: `androidApp/src/main/res/drawable/`
 
 Naming convention PaquitoBot: `ic_paquito_{name}.xml` (lowercase, underscores).
 
-Note: the previous version of this skill referenced `sharedUI/src/commonMain/composeResources/drawable/`, which was the path layout of a different project (`AlphaKids-KMP`). PaquitoBot does NOT have a `sharedUI` module — UI is native per platform — so Android draws live under `composeApp/`.
+Note: this skill was originally written for `AlphaKids-KMP` and referenced `sharedUI/src/commonMain/composeResources/drawable/`. PaquitoBot has been refactored to **only work on Android** with UI native in `androidApp/`. The `sharedUI/` module has been removed from this repo. Resources for the Android app live in `androidApp/src/main/res/` (standard Android resources layout), not in any `composeResources/` directory.

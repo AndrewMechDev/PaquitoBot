@@ -16,24 +16,26 @@ Activar cuando:
 - Se agrega un servicio externo nuevo (OneSignal, Twilio, RAG, Supabase, etc.).
 - Se debate MVVM / MVI / Clean Architecture / otra opción.
 
-Contexto PaquitoBot:
-- Producto: asistente académico para TECSUP (ProjectContext: 3 dolores, 3 perfiles de estudiante).
-- Stack: Kotlin Multiplatform. UI NO compartida (Compose Android + SwiftUI iOS, cada una nativa).
+Contexto PaquitoBot (alcance actual, 2026-08-05):
+- Producto: asistente académico para TECSUP (3 dolores, 3 perfiles de estudiante).
+- Stack de este repo: **solo Android con Jetpack Compose + Material 3**.
+- **iOS queda fuera de scope**: otra persona lo implementa en su propio repositorio / fork. Este repo no contiene ni modifica código iOS.
+- UI **no se comparte** entre plataformas. `sharedUI/` fue eliminado del repo por contener Composables que iban contra esa regla.
 - Backend: FastAPI en repo aparte. Mientras el usuario no indique conexión, la capa de datos usa mocks locales.
 - Servicios externos planeados: OneSignal (push), Twilio (aún sin caso confirmado), RAG (no confirmado), Supabase (no confirmado).
-- Estado actual: rama `feature/design-figma-extract` con skill de Figma + svg-to-vector-drawable. Falta crear el módulo `composeApp/`.
+- Estado actual: rama `feature/design-figma-extract` con skills de Figma + svg-to-vector-drawable + architecture. El módulo `androidApp` ya existe; queda crear las carpetas `theme/`, `presentation/`, `domain/`, `data/` dentro de él.
 
 ## Hard Rules
 
-- UI nativa por plataforma. Compose Multiplatform Android y SwiftUI iOS son **independientes**. No compartir composables entre plataformas.
-- `commonMain` solo contiene: lógica de ViewModel, modelos de dominio, interfaces de repository. NUNCA composables, NUNCA código SwiftUI, NUNCA acceso a `android.*` o `ios.*`.
+- **Solo Android en este repo**. Toda referencia a iOS, SwiftUI o `sharedUI/` es histórica y debe ignorarse.
 - Patrón obligatorio por feature: **MVVM con separación de capas (Clean Architecture "light")**. Tres capas: `presentation/` → `domain/` → `data/`.
 - ViewModels exponen `StateFlow` o `LiveData` con un único modelo inmutable por pantalla (`HomeUiState`, etc.). Composable recibe estado + eventos y renderiza.
+- `data/` vive en `androidMain` (no en `commonMain`) porque por ahora solo hay Android. Si en el futuro se vuelve a sumar `commonMain`, las clases puras de Kotlin van ahí.
 - Repository devuelve `kotlinx.coroutines.flow.Flow` o `Result` con errores tipados. NUNCA expone `HttpException` ni tipos del backend.
 - Mientras no haya backend FastAPI conectado: las implementaciones de repository son `Mock*Repository` con datos hardcoded. Cuando se conecte el back, se agrega `Remote*Repository` y se elige factory (manual o DI).
 - Toda pantalla nueva arranca **sin ViewModel** mientras solo se hace UI: el Composable recibe datos hardcoded como parámetros. ViewModel y repository se introducen **cuando se conecte el backend**.
-- Servicios externos (OneSignal, Twilio, etc.) se abstraen detrás de interfaces (`NotificationService`, `SmsService`) en `commonMain` y se implementan en `androidMain` / `iosMain`. El ViewModel solo conoce la interfaz.
-- **No se introduce M** puro hasta tener 5+ pantallas con estado complejo (ej. /chat). Cuando llegue ese momento, evaluar caso por caso; no por defecto.
+- Servicios externos (OneSignal, Twilio, etc.) se abstraen detrás de interfaces (`NotificationService`) en `data/` o `domain/` y se implementan en `androidMain`. El ViewModel solo conoce la interfaz.
+- **No se introduce MVI** puro hasta tener 5+ pantallas con estado complejo (ej. /chat). Evaluar caso por caso.
 - **No se introduce Clean Architecture estricta** (agregado root, dispatcher dedicado, use cases para todo). Solo las tres carpetas + interfaces. Crecer el rigor solo cuando la lógica lo pida.
 
 ## Decision Gates
@@ -42,8 +44,8 @@ Contexto PaquitoBot:
 |---|---|
 | Crear una pantalla nueva | Definir UiState + (eventualmente) ViewModel con `StateFlow`. Mientras solo UI, los datos van hardcoded en el Composable. |
 | Consumir datos del LMS / API | Repository interface (`domain/repository/`) + impl mock (`data/repository/MockLmsRepository.kt`). Cuando llegue el back: agregar impl remota. |
-| Notificación push | `interface NotificationService` (commonMain) + impl en androidMain (Firebase/OneSignal) + impl en iosMain (APNs/OneSignal). ViewModel no conoce la impl. |
-| Cliente HTTP | Ktor Client con kotlinx.serialization. Configurar en `commonMain` con engines distintos por plataforma (OkHttp en Android, Darwin en iOS). |
+| Notificación push | `interface NotificationService` en `domain/` + impl Android en `data/` (Firebase/OneSignal). ViewModel solo conoce la interfaz. iOS no aplica a este repo. |
+| Cliente HTTP | Ktor Client con kotlinx.serialization. Configurar dentro de `data/remote/` con engine OkHttp para Android (o CIO multiplataforma si se vuelve a sumar iOS). |
 | Manejo de errores | `Result<T, AppError>` o jerarquía sellada `sealed class AppError { Network, Timeout, Unauthorized, Unknown }`. Mapear errores del backend en repository. |
 | Loading state | Parte del UiState (`Loading | Success(data) | Error(msg)`). NO manejar loading con flags sueltos en el ViewModel. |
 | Persistencia local | Para MVP: no. Si hace falta después: Room/SQLDelight en commonMain. No adelantarse. |
@@ -76,38 +78,34 @@ Cuando el usuario confirme cualquiera de estos servicios: actualizar esta tabla,
    d. ViewModel recibe el repository por constructor.
 4. Reutilizar componentes de `presentation/components/` y tokens de `theme/`.
 
-### Estructura de carpetas esperada
+### Estructura de carpetas esperada (en `androidApp/`)
 
 ```
-composeApp/
-├── src/
-│   ├── commonMain/kotlin/dev/paquitobot/
-│   │   ├── presentation/
-│   │   │   ├── screens/
-│   │   │   │   ├── onboarding/
-│   │   │   │   └── home/
-│   │   │   ├── components/      # Composables reutilizables (Navbar, Day, TaskList)
-│   │   │   └── theme/           # Theme.kt + PaquitoColors/Typography/Shapes
-│   │   ├── domain/
-│   │   │   ├── models/          # data classes puras (Task, Course, LabNote, StudentProfile)
-│   │   │   └── repository/      # interfaces (TaskRepository, NotificationService)
-│   │   └── data/
-│   │       └── repository/      # Mock*Repository hasta conectar backend
-│   ├── androidMain/kotlin/dev/paquitobot/
-│   │   ├── MainActivity.kt
-│   │   └── platform/            # solo si hace falta (NO UI aqui)
-│   └── iosMain/kotlin/dev/paquitobot/
-│       └── MainViewController.kt
+androidApp/
+└── src/main/kotlin/pe/tecsup/paquitobot/
+    ├── presentation/
+    │   ├── screens/
+    │   │   ├── onboarding/      # WelcomeScreen, NotificationsScreen
+    │   │   └── home/            # HomeScreen, TaskList, etc.
+    │   ├── components/          # Navbar, Day, TaskInfo (Composables reutilizables)
+    │   └── theme/               # Theme.kt + PaquitoColors/Typography/Shapes/Spacing
+    ├── domain/
+    │   ├── models/              # data classes puras (Task, Course, LabNote, StudentProfile)
+    │   └── repository/          # interfaces (TaskRepository, NotificationService)
+    ├── data/
+    │   ├── repository/          # Mock*Repository hasta conectar backend
+    │   └── remote/              # (futuro) Remote*Repository cuando se conecte FastAPI
+    └── MainActivity.kt          # entry point, llama a App()
 
-iosApp/iosApp/
-├── Screens/         # SwiftUI Views
-├── Components/      # SwiftUI views reutilizables
-├── Theme/           # Theme.swift + Colors/Typography
-├── ViewModels/      # mismos UiState que en Compose
-├── Models/          # structs espejo de domain/models/
-├── Repository/      # protocolos + impl mock
-└── Resources/       # Bundle iOS de assets propios
+sharedLogic/                     # se mantiene como módulo aparte para futura iOS
+└── src/commonMain/kotlin/...    # clases puras compartibles (Platform info, etc.)
 ```
+
+### Nota sobre rutas Compose
+
+- Resources (drawables, raw assets) van en `androidApp/src/main/res/` (no `commonMain/composeResources/` porque no hay `commonMain` — UI es Android nativo).
+- SVGs convertidos a Vector Drawable XML van en `androidApp/src/main/res/drawable/` (ver skill `svg-to-vector-drawable`).
+- Ícono de launcher va en `androidApp/src/main/res/mipmap-*` (ya existe `ic_launcher`).
 
 ### Conectar backend FastAPI (cuando se decida)
 

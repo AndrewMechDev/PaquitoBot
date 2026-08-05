@@ -16,19 +16,19 @@ Estado vivo de la integración entre el archivo Figma "Paquito (copia)" y el có
 
 ## Decisiones arquitectónicas
 
-- **UI no compartida**: Compose Multiplatform (Android) y SwiftUI (iOS) son **nativos e independientes**. Solo `commonMain` (lógica, modelos, repositorios) se comparte.
-- Cada plataforma consume los mismos tokens del design system pero **implementados con APIs nativas**: Compose Color/Font/Shape vs SwiftUI Color/Font/Frame.
-- Sin compartir composables entre plataformas (no existe `sharedUI` en este proyecto, solo `sharedLogic`).
+- **Solo se trabaja Android en este repo**. iOS lo implementa otra persona en su propio repositorio/fork. Este documento no cubre la implementación SwiftUI; los assets exportados de Figma para iOS (PDFs) deben coordinarse con quien haga ese trabajo.
+- **UI no se comparte** entre plataformas. Cada plataforma consume los mismos tokens del design system pero **implementados con APIs nativas**: Compose Color/Font/Shape para Android, SwiftUI/UIKit para iOS (cuando se integre).
+- El módulo `sharedUI/` fue eliminado del repo porque exportaba Composables que iban contra la regla de UI no compartida. Se mantiene solo `sharedLogic/` para clases puras Kotlin.
 - Toda extracción valida contra `Main` (no `assets?`). Ver `references/ui-integration-map.md` en la skill para catálogo completo de frames.
 
 ## Alcance del proyecto (actualizado 2026-08-05)
 
-- **Backend vive en un repositorio aparte (FastAPI)**, no en este repo KMP.
-- **En este repo solo se trabaja la parte UI/visual por ahora**. La capa de datos, red, ViewModels con lógica real y repositorios se introducen **cuando se conecte el backend al móvil**.
+- **Backend vive en un repositorio aparte (FastAPI)**, no en este repo.
+- **En este repo solo se trabaja Android y solo la parte UI/visual por ahora**. La capa de datos, red, ViewModels con lógica real y repositorios se introducen **cuando se conecte el backend al móvil**.
 - Mientras no haya backend:
-  - Las pantallas pueden usar **datos hardcodeados** como placeholders directos en Composable/View, sin repository ni ViewModel. Cuando llegue el back, se refactoriza esa pantalla para recibir datos del repository.
+  - Las pantallas pueden usar **datos hardcodeados** como placeholders directos en el Composable, sin repository ni ViewModel. Cuando llegue el back, se refactoriza esa pantalla para recibir datos del repository.
   - No se construye capa de red, serialización, ni manejo de errores HTTP todavía.
-- **Cuándo se conecte el backend KMP**: el plan cambia. Decisiones a tomar en ese momento: cliente HTTP (Ktor / Retrofit / URLSession nativo), serialización (kotlinx.serialization / Jackson / Codable), forma de los contratos, manejo de loading y errores. Esa conversación es para cuando llegue el momento, no ahora.
+- **Cuándo se conecte el backend Android**: el plan cambia. Decisiones a tomar en ese momento: cliente HTTP (Ktor), serialización (kotlinx.serialization), forma de los contratos, manejo de loading y errores. Esa conversación es para cuando llegue el momento, no ahora.
 
 ## Estado de extracción
 
@@ -59,43 +59,43 @@ Estado vivo de la integración entre el archivo Figma "Paquito (copia)" y el có
 
 ### Íconos (set completo)
 
-| Ícono | Frame en Figma | Estado Compose | Estado iOS |
-|---|---|---|---|
-| `home` | `242:51` (Default) + `242:52` (Fill) | _pendiente_ | _pendiente_ |
-| `book` | `242:70` + `242:71` | _pendiente_ | _pendiente_ |
-| `calendar_month` | `146:387` + `146:388` | _pendiente_ | _pendiente_ |
-| `lab_profile` | `146:343` + `146:344` | _pendiente_ | _pendiente_ |
-| `frame_person` | `146:391` + `146:392` | _pendiente_ | _pendiente_ |
-| `robot_2` (paquito mini) | `242:89` + `242:90` | _pendiente_ | _pendiente_ |
-| `forum` | `365:808` + `365:809` | _pendiente_ | _pendiente_ |
-| `docs` | `365:815` + `365:816` | _pendiente_ | _pendiente_ |
-| `stylus_note` | `365:822` + `365:823` | _pendiente_ | _pendiente_ |
+| Ícono | Frame en Figma | Estado Android |
+|---|---|---|
+| `home` | `242:51` (Default) + `242:52` (Fill) | _pendiente_ |
+| `book` | `242:70` + `242:71` | _pendiente_ |
+| `calendar_month` | `146:387` + `146:388` | _pendiente_ |
+| `lab_profile` | `146:343` + `146:344` | _pendiente_ |
+| `frame_person` | `146:391` + `146:392` | _pendiente_ |
+| `robot_2` (paquito mini) | `242:89` + `242:90` | _pendiente_ |
+| `forum` | `365:808` + `365:809` | _pendiente_ |
+| `docs` | `365:815` + `365:816` | _pendiente_ |
+| `stylus_note` | `365:822` + `365:823` | _pendiente_ |
 
-> **Acción pendiente**: exportar todos los íconos desde Figma en batch (una sola operación). No dibujarlos a mano desde `get_design_context`.
+> **Acción pendiente**: exportar todos los íconos desde Figma en batch (una sola operación). No dibujarlos a mano desde `get_design_context`. Para iOS (otro equipo) se exportan PDFs o PNGs desde la misma fuente.
 
 ### Componentes reutilizables
 
-| Componente | Símbolo Figma | Estado Compose | Estado SwiftUI |
-|---|---|---|---|
-| `Navbar` (bottom bar 5 ítems) | `333:224`, `242:198` Default, `242:200` Activate | _pendiente_ | _pendiente_ |
-| `PaquitoBot icon` (ícono del bot) | `351:433` | _pendiente_ | _pendiente_ |
-| `PaquitoBot` (mascota) | `333:210` | _pendiente_ | _pendiente_ |
-| `TaskInfo` (item de lista de tarea) | `365:894` | _pendiente_ | _pendiente_ |
-| `TaskList` (lista vertical) | `365:973` | _pendiente_ | _pendiente_ |
-| `Day` (día del calendario) | `365:1070` | _pendiente_ | _pendiente_ |
+| Componente | Símbolo Figma | Estado Android |
+|---|---|---|
+| `Navbar` (bottom bar 5 ítems) | `333:224`, `242:198` Default, `242:200` Activate | _pendiente_ |
+| `PaquitoBot icon` (ícono del bot) | `351:433` | _pendiente_ |
+| `PaquitoBot` (mascota) | `333:210` | _pendiente_ |
+| `TaskInfo` (item de lista de tarea) | `365:894` | _pendiente_ |
+| `TaskList` (lista vertical) | `365:973` | _pendiente_ |
+| `Day` (día del calendario) | `365:1070` | _pendiente_ |
 
 ### Pantallas
 
-| Pantalla | Frame Figma (nodeId) | Estado Compose | Estado SwiftUI |
-|---|---|---|---|
-| Onboarding: welcome | `112:3` | _pendiente_ | _pendiente_ |
-| Onboarding: notificaciones (3 cards vertical) | `112:135` | _pendiente_ | _pendiente_ |
-| Onboarding: notificaciones (cards horizontales) | `156:124` | _pendiente_ | _pendiente_ |
-| Home: versión A (saludo + semana + tareas) | `351:644` | _pendiente_ | _pendiente_ |
-| Home: versión B (extendido, header + calendario + alertas) | `364:219` | _pendiente_ | _pendiente_ |
-| Chat (placeholder) | `351:667` | _pendiente_ | _pendiente_ |
-| Cursos (placeholder) | `351:697` | _pendiente_ | _pendiente_ |
-| Horarios (placeholder) | `351:719` | _pendiente_ | _pendiente_ |
+| Pantalla | Frame Figma (nodeId) | Estado Android |
+|---|---|---|
+| Onboarding: welcome | `112:3` | _pendiente_ |
+| Onboarding: notificaciones (3 cards vertical) | `112:135` | _pendiente_ |
+| Onboarding: notificaciones (cards horizontales) | `156:124` | _pendiente_ |
+| Home: versión A (saludo + semana + tareas) | `351:644` | _pendiente_ |
+| Home: versión B (extendido, header + calendario + alertas) | `364:219` | _pendiente_ (recomendada primero) |
+| Chat (placeholder) | `351:667` | _pendiente_ |
+| Cursos (placeholder) | `351:697` | _pendiente_ |
+| Horarios (placeholder) | `351:719` | _pendiente_ |
 
 ## Decisión pendiente: home canónica
 
@@ -109,3 +109,4 @@ La versión B cubre más JTBD del MVP (Dolor 3: pendientes dispersos con countdo
 
 - 2026-08-05 — Creación inicial. Skill `figma-extract-paquitobot` creada. Plantillas de theme Compose + SwiftUI con marcadores `0xFF______`. Sin tokens reales todavía.
 - 2026-08-05 — Actualización de alcance: backend FastAPI vive en repo aparte; este repo KMP trabaja solo UI por ahora. Capa de datos/red/ViewModels se introduce cuando se conecte el backend al móvil.
+- 2026-08-05 — Refactor arquitectural: solo se trabaja Android en este repo. iOS queda fuera de scope (otra persona). `sharedUI/` eliminado del repo. Columna "Estado SwiftUI" removida de las tablas; la cobertura iOS se coordinará aparte.
