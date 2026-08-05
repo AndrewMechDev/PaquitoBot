@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import pe.tecsup.paquitobot.ui.chat.ChatScreen
 import pe.tecsup.paquitobot.ui.components.NavTab
-import pe.tecsup.paquitobot.ui.home.HomeBScreen
+import pe.tecsup.paquitobot.ui.home.HomeScreen
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
@@ -50,7 +50,7 @@ private fun AppRoot() {
     var rootScreen by remember { mutableStateOf(RootScreen.Home) }
 
     when (rootScreen) {
-        RootScreen.Home -> HomeBScreen(
+        RootScreen.Home -> HomeScreen(
             onDayClick = { /* TODO: navegar a detalle de dia */ },
             onPrimaryAction = { /* TODO: abrir entrega */ },
             onSecondaryAction = { /* TODO: programar recordatorio */ },

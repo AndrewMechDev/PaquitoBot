@@ -38,6 +38,20 @@ object PaquitoColors {
     val StateNeutral   = Color(0xFF4D5866) // token: state/neutral (badge "EX" tareas neutras)
     val StateSuccess   = Color(0xFF15A05A) // token: state/success (verde) - dot "sincronizado" del Chat
 
+    // Tokens únicos del Home A (`351:644`, fondo gris azulado distintivo).
+    val SurfaceHomeCanvas       = Color(0xFFA8B6BC) // fondo del frame Home A (gris azulado)
+    val SurfaceHomeWeekBg       = Color(0xFF10151A) // card oscura del calendario semanal
+    val SurfaceHomeTaskListBg   = Color(0x33F5F5F5) // rgba(245,245,245,0.2) (task_list wrapper)
+    val TextHomeStrong          = Color(0xFF000000) // saludo "Bienvenido"
+    val TextHomeMuted           = Color(0xFF4D4D4D) // fecha "Lunes, 5 de enero de 2026"
+    val TextHomeDayActiveLabel  = Color(0xE6FFFFFF) // rgba(255,255,255,0.9) dia actual
+    val TextHomeDayLabel        = Color(0xE61C1B1F) // rgba(28,27,31,0.9) dia inactivo
+    val TextHomeDayNumber       = Color(0xB300C9FB) // rgba(0,201,251,0.7) numero dia (BrandPrimary alpha)
+    val TextHomeDayNumberCritical = Color(0xB3FF0000) // rgba(255,0,0,0.7) numero critico
+    val TextTimestampLarge      = Color(0xFF29617B) // timestamp grande normal
+    val TextTimestampLargeAccent = Color(0xB322CCFF) // rgba(34,204,255,0.7)
+    val TextTimestampLargeMuted  = Color(0x8000C9FB) // rgba(0,201,251,0.5) futuro lejano
+
     // Superficies
     val Background     = Color(0xFFFFFFFF) // token: surface/background (fondo Welcome + Home)
     val SurfaceElevated = Color(0xFFEEEEEE) // token: surface/elevated (tab activo Navbar)
