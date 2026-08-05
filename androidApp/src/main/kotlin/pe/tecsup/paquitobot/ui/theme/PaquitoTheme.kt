@@ -43,7 +43,7 @@ object PaquitoColors {
     val SurfaceElevated = Color(0xFFEEEEEE) // token: surface/elevated (tab activo Navbar)
     val SurfaceGlassStrong = Color(0xD6FFFFFF) // rgba(255,255,255,0.82) (card "Paquito te avisó")
     val SurfaceGlassSoft   = Color(0xD9F6F7F9) // rgba(246,247,249,0.85) (días normales)
-    val SurfaceOverlay  = Color(0xFF______) // token: surface/overlay - aún no observado
+    val SurfaceOverlay  = Color(0x05000000) // rgba(0,0,0,0.02) (cards de selección Onboarding)
 
     // Texto
     val TextPrimary    = Color(0xD9000000) // rgba(0,0,0,0.85) (título "PaquitoBot" Welcome)
