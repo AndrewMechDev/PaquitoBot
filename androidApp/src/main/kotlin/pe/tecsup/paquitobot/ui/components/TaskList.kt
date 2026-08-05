@@ -134,7 +134,5 @@ private fun TaskListPreview() {
     }
 }
 
-// Wrapper para el Modifier.padding del Preview
-@Suppress("FunctionName")
-private fun Modifier.padding(spacing: androidx.compose.ui.unit.Dp): Modifier =
-    this.then(androidx.compose.foundation.layout.padding(spacing))
+// Wrapper de padding redundante eliminado: ya hay un Modifier.padding(Dp) en
+// androidx.compose.foundation.layout importado arriba.

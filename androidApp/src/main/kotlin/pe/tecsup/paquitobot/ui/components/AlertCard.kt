@@ -1,5 +1,6 @@
 package pe.tecsup.paquitobot.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -145,13 +146,17 @@ private fun AlertCardButton(
 ) {
     val bg = if (primary) PaquitoColors.BrandPrimary else Color(0x1FFFFFFF)
     val fg = if (primary) PaquitoColors.TextOnPrimaryDim else PaquitoColors.TextOnWhite
-    val border = if (primary) null else BorderStroke(Color(0x29FFFFFF), 1.dp)
+    val border = if (primary) null else BorderStroke(width = 1.dp, color = Color(0x29FFFFFF))
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(14.dp))
             .background(bg)
             .let { mod ->
-                if (border != null) mod.border(border.color, border.width, RoundedCornerShape(14.dp)) else mod
+                if (border != null) {
+                    mod.border(border.width, border.color, RoundedCornerShape(14.dp))
+                } else {
+                    mod
+                }
             }
             .clickable(onClick = onClick)
             .padding(horizontal = 15.dp, vertical = 11.dp),
@@ -162,9 +167,6 @@ private fun AlertCardButton(
         )
     }
 }
-
-/** Helper local para el border del botón secundario. */
-private data class BorderStroke(val color: Color, val width: androidx.compose.ui.unit.Dp)
 
 @Preview(showBackground = true)
 @Composable
