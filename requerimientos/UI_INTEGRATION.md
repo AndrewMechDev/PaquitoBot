@@ -34,28 +34,86 @@ Estado vivo de la integración entre el archivo Figma "Paquito (copia)" y el có
 
 ### Design system (tokens, colores, tipografía, spacing)
 
-| Token | Valor Figma | Estado | Plataforma |
-|---|---|---|---|
-| `brand/primary` | _pendiente_ | Vacío (marcador `0xFF______`) | Compose: `PaquitoColors.BrandPrimary` / SwiftUI: `PaquitoColor.brandPrimary` |
-| `brand/secondary` | _pendiente_ | Vacío | ambas |
-| `brand/accent` | _pendiente_ | Vacío | ambas |
-| `state/success` | _pendiente_ | Vacío | ambas (verde del semáforo) |
-| `state/warning` | _pendiente_ | Vacío | ambas (amarillo) |
-| `state/danger` | _pendiente_ | Vacío | ambas (rojo) |
-| `surface/background` | _pendiente_ | Vacío | ambas |
-| `surface/elevated` | _pendiente_ | Vacío | ambas |
-| `surface/overlay` | _pendiente_ | Vacío | ambas |
-| `text/primary` | _pendiente_ | Vacío | ambas |
-| `text/secondary` | _pendiente_ | Vacío | ambas |
-| `text/disabled` | _pendiente_ | Vacío | ambas |
-| `text/on-primary` | _pendiente_ | Vacío | ambas |
-| `border/default` | _pendiente_ | Vacío | ambas |
-| `border/subtle` | _pendiente_ | Vacío | ambas |
-| Tipografía | _pendiente_ | Material 3 default como placeholder | ambas |
-| Espaciado | 4 / 8 / 16 / 24 / 32 / 48 | Provisional sin extracción | ambas |
-| Radios | 8 / 12 / 20 / pill | Provisional sin extracción | ambas |
+> **Estado del descubrimiento (2026-08-05)**: el archivo "Paquito (copia)" **NO tiene variables de Figma configuradas**. `get_variable_defs` devolvió `{}` sobre Main (`109:97`), sobre Onboarding (`351:538`) y sobre Welcome (`112:3`). Los colores están aplicados como hex literal en cada elemento.
+>
+> **Estrategia**: extraer colores reales con `get_design_context` (que sí expone los hex aplicados por elemento), observar la repetición de hex para identificar los "tokens de facto" del design system.
 
-> **Acción pendiente**: pedir al usuario que tenga abierto el archivo Figma "Paquito (copia)" y el canvas Main seleccionado, luego invocar `get_variable_defs` con `nodeId=109:97` y `fileKey=Piy1K37xHS9jB1qXaaVtuQ`. La respuesta cruda se pega en la tabla superior reemplazando `_pendiente_` y luego se propaga a las plantillas de theme.
+#### Tokens observados en Welcome screen (`112:3`) — extraídos 2026-08-05
+
+| Token | Valor Figma observado | Hex Compose | Plataforma |
+|---|---|---|---|
+| `brand/primary` | `#00C9FB` (fondo del botón "Continuar") | `0xFF00C9FB` | Compose: `PaquitoColors.BrandPrimary` |
+| `text/on-primary` | `#FFFFFF` (texto del botón) | `0xFFFFFFFF` | Compose: `PaquitoColors.TextOnPrimary` |
+| `surface/background` | `#FFFFFF` (fondo del screen) | `0xFFFFFFFF` | Compose: `PaquitoColors.Background` |
+| `text/primary` | `rgba(0,0,0,0.85)` (título "PaquitoBot") | `0xD9000000` | Compose: `PaquitoColors.TextPrimary` |
+| `text/secondary` | `rgba(0,0,0,0.7)` (subtítulo "Configuremos tu asistente") | `0xB3000000` | Compose: `PaquitoColors.TextSecondary` |
+| Tipografía primaria | `DM Sans` (SemiBold títulos, Regular cuerpo) | `FontFamily(Font(R.font.dm_sans))` o `FontFamily.SansSerif` fallback | Compose: `PaquitoFontFamily` |
+| Tamaño display (título) | `48px` en Figma → `34sp` Android (factor 0.71) | `PaquitoTypography.HeadlineLarge` |
+| Tamaño headline (subtítulo) | `32px` → `~23sp` | `PaquitoTypography.HeadlineSmall` |
+| Tamaño botón | `24px` → `~17sp` | `PaquitoTypography.BodyLarge` |
+| Tamaño dot del badge | `5×5` | Vector/Box de 5.dp |
+| Radios | `20px` (botón "Continuar", ícono del bot 100×100) | `20.dp` (Shapes.Large) |
+| Padding botón | `15px` | `15.dp` |
+| Alto botón | `51px` | `51.dp` |
+
+> **Tokens restantes pendientes** (cubrir con extracciones de Home B y Notificaciones):
+> - `brand/secondary`, `brand/accent` → no aparecen en Welcome, buscar en Home.
+> - `state/success`, `state/warning`, `state/danger` → aparecen en "Background" + "Overlay" del semáforo de los días en Home B (364:286, 364:292, etc.).
+> - `surface/elevated`, `surface/overlay` → aparecen en Home B.
+> - `text/disabled`, `border/default`, `border/subtle` → buscar en otras pantallas.
+
+#### Extracción cruda (referencia)
+
+Respuesta textual de `get_design_context` sobre `112:3` el 2026-08-05 (con la selección activa del frame Welcome en Figma):
+
+```tsx
+const imgPaquitoBotIcono = "https://www.figma.com/api/mcp/asset/8e63a4ab-ff2c-4d28-ad26-bf38d33ee16a.png";
+const imgGeminiGeneratedImageDacs5Qdacs5QdacsRemovebgPreview1 = "https://www.figma.com/api/mcp/asset/983fe375-8e7b-4d2e-bcfd-d76003db2f7f.png";
+
+export default function Component() {
+  return (
+    <div className="bg-white relative size-full" data-node-id="112:3" data-name="/">
+      <div className="absolute content-stretch flex flex-col gap-[25px] h-[330px] items-start left-[25px] top-[555px] w-[380px]" data-node-id="112:134" data-name="body">
+        <div className="relative rounded-[20px] shrink-0 size-[100px]" data-node-id="112:133" data-name="paquito-bot icono">
+          <div aria-hidden className="absolute inset-0 pointer-events-none rounded-[20px]">
+            <div className="absolute bg-white inset-0 rounded-[20px]" />
+            <div className="absolute inset-0 overflow-hidden rounded-[20px]">
+              <img alt="" className="absolute left-[-261.53%] max-w-none size-full top-[-95.78%]" src={imgPaquitoBotIcono} />
+            </div>
+          </div>
+        </div>
+        <div className="[word-break:break-word] content-stretch flex flex-col gap-[10px] items-start relative shrink-0 w-full" data-node-id="112:132" data-name="content">
+          <p className="font-['DM_Sans:SemiBold'] font-semibold leading-[normal] min-w-full relative shrink-0 text-[48px] text-[rgba(0,0,0,0.85)] w-[min-content]" data-node-id="112:34" style={{ fontVariationSettings: '"opsz" 14' }}>
+            PaquitoBot
+          </p>
+          <p className="[text-box-edge:cap_alphabetic] [text-box-trim:trim-both] font-['DM_Sans:Regular'] font-normal leading-[35px] relative shrink-0 text-[32px] text-[rgba(0,0,0,0.7)] w-[209px]" data-node-id="112:57" style={{ fontVariationSettings: '"opsz" 14' }}>
+            Configuremos tu asistente
+          </p>
+        </div>
+        <a className="bg-[#00c9fb] content-stretch cursor-pointer flex h-[51px] items-center justify-center p-[15px] relative rounded-[20px] shrink-0 w-full" data-node-id="112:44" data-name="Botón?">
+          <p className="[word-break:break-word] font-['DM_Sans:Regular'] font-normal leading-[normal] overflow-hidden relative shrink-0 text-[24px] text-ellipsis text-left text-white whitespace-nowrap" data-node-id="112:36" style={{ fontVariationSettings: '"opsz" 14' }}>
+            Continuar
+          </p>
+        </a>
+      </div>
+      <div className="absolute aspect-[428/583] left-[2.56%] right-[42.56%] top-[359px]" data-node-id="2005:360" data-name="Gemini_Generated_Image_dacs5qdacs5qdacs-removebg-preview 1">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgGeminiGeneratedImageDacs5Qdacs5qdacsRemovebgPreview1} />
+      </div>
+    </div>
+  );
+}
+```
+
+> **Notas de la skill `figma-design-to-code`**: el output es React+Tailwind (referencia). Para Android hay que **adaptar, NO copiar**. Los `data-node-id` se conservan como comentario para auditoría cruzada. Las URLs de assets expiran en ~7 días, por eso ya se descargaron a `androidApp/src/main/res/drawable/`.
+
+#### Assets descargados de Welcome
+
+| Asset original en Figma | nodeId Figma | Nombre en `androidApp/src/main/res/drawable/` | Tamaño |
+|---|---|---|---|
+| paquito-bot icono | `112:133` | `paquito_bot_icon.png` | 1.36 MB |
+| Personaje Paquito | `2005:360` | `paquito_personaje.png` | 261 KB |
+
+> Pendiente optimizarlos con `cwebp` o similar antes de subir a producción. Los mantengo como PNG original de Figma para la primera iteración.
 
 ### Íconos (set completo)
 
@@ -88,7 +146,7 @@ Estado vivo de la integración entre el archivo Figma "Paquito (copia)" y el có
 
 | Pantalla | Frame Figma (nodeId) | Estado Android |
 |---|---|---|
-| Onboarding: welcome | `112:3` | _pendiente_ |
+| Onboarding: welcome | `112:3` | _en progreso (extracción hecha, falta Composable)_ |
 | Onboarding: notificaciones (3 cards vertical) | `112:135` | _pendiente_ |
 | Onboarding: notificaciones (cards horizontales) | `156:124` | _pendiente_ |
 | Home: versión A (saludo + semana + tareas) | `351:644` | _pendiente_ |
