@@ -17,48 +17,72 @@ import androidx.compose.ui.unit.sp
  * Paleta de PaquitoBot.
  *
  * Hex extraídos del archivo Figma "Paquito (copia)" canvas Main (109:97)
- * sobre el frame Welcome (112:3) el 2026-08-05 con get_design_context.
- * El archivo NO tiene variables de Figma configuradas; los valores aquí son
- * los que aparecieron aplicados en Welcome como hex literal.
+ * con get_design_context sobre Welcome (112:3) y Home B (364:219) en
+ * 2026-08-05. El archivo NO tiene variables de Figma configuradas; los
+ * valores aquí son los que aparecieron aplicados como hex literal en los
+ * frames seleccionados.
  *
  * Auditoría: ver requerimientos/UI_INTEGRATION.md -> "Tokens observados".
  */
 object PaquitoColors {
-    // Marca principal (botón "Continuar" de Welcome)
-    val BrandPrimary   = Color(0xFF00C9FB) // token: brand/primary
+    // Marca principal
+    val BrandPrimary   = Color(0xFF00C9FB) // token: brand/primary (Welcome + Navbar + Home B CTA)
     val TextOnPrimary  = Color(0xFFFFFFFF) // token: text/on-primary
+    val TextOnPrimaryDim = Color(0xFF04202E) // token: text/on-primary-dim (chips "VENCE EN 6 H" / "Entregar")
 
-    // Estado (placeholders hasta extraer Home B con semáforo)
-    val StateSuccess   = Color(0xFF______) // token: state/success (verde) - pendiente
-    val StateWarning   = Color(0xFF______) // token: state/warning (amarillo) - pendiente
-    val StateDanger    = Color(0xFF______) // token: state/danger (rojo) - pendiente
+    // Estado (semáforo de días y badges)
+    val StateInfo      = Color(0xFF0393C9) // token: state/info (azul, día seleccionado / dot de día con tarea)
+    val StateInfoStrong = Color(0xFF0277A8) // token: state/info-strong (texto del día seleccionado y badges)
+    val StateDanger    = Color(0xFFFF445A) // token: state/danger (badge navbar + dot de día crítico)
+    val StateWarning   = Color(0xFFC88C14) // token: state/warning (fondo badge "FO" en Home B; amarillo)
+    val StateNeutral   = Color(0xFF4D5866) // token: state/neutral (badge "EX" tareas neutras)
+    val StateSuccess   = Color(0xFF______) // token: state/success - aún no observado en Main
 
     // Superficies
-    val Background     = Color(0xFFFFFFFF) // token: surface/background (fondo Welcome)
-    val SurfaceElevated = Color(0xFFEEEEEE) // token: surface/elevated (sección activa Navbar)
-    val SurfaceOverlay  = Color(0xFF______) // token: surface/overlay - pendiente Home B
+    val Background     = Color(0xFFFFFFFF) // token: surface/background (fondo Welcome + Home)
+    val SurfaceElevated = Color(0xFFEEEEEE) // token: surface/elevated (tab activo Navbar)
+    val SurfaceGlassStrong = Color(0xD6FFFFFF) // rgba(255,255,255,0.82) (card "Paquito te avisó")
+    val SurfaceGlassSoft   = Color(0xD9F6F7F9) // rgba(246,247,249,0.85) (días normales)
+    val SurfaceOverlay  = Color(0xFF______) // token: surface/overlay - aún no observado
 
-    // Texto (Welcome + Navbar)
+    // Texto
     val TextPrimary    = Color(0xD9000000) // rgba(0,0,0,0.85) (título "PaquitoBot" Welcome)
     val TextSecondary  = Color(0xB3000000) // rgba(0,0,0,0.7) (subtítulo Welcome)
     val TextOnSurface  = Color(0xFF1C1B1F) // token: text/on-surface (etiquetas Navbar)
-    val TextDisabled   = Color(0xFF______) // token: text/disabled - pendiente
+    val TextOnCardStrong = Color(0xFF0D1520) // títulos de tareas / saludo "Hola, Andrea"
+    val TextOnCardMuted  = Color(0xFF6E7885) // subtítulos de tareas ("Curso", "Martes 20:00")
+    val TextOnCardMutedAlt = Color(0xFF7B8694) // "Paquito te avisó"
+    val TextOnDarkMuted   = Color(0xFF93A3B4) // "Cálculo II" sobre card oscura
+    val TextOnDarkStronger = Color(0xFFA3B1C0) // "Hoy 23:59" sobre card oscura
+    val TextOnWhite       = Color(0xFFFFFFFF) // texto blanco (sobre fondo de card oscura)
+    val TextDayActive    = Color(0xFF0277A8) // día seleccionado (label "L")
+    val TextDayInactive  = Color(0xFF8D96A1) // días inactivos (label "M", "J", etc.)
+    val TextDayNumber    = Color(0xFF0D1520) // número del día seleccionado
+    val TextDayNumberInactive = Color(0xFF4D5866) // número del día inactivo
+    val TextTimestamp    = Color(0xFF98A1AC) // "2 d", "hace cuanto"
+    val TextLink         = Color(0xFF0393C9) // "Ver todo" (link secundario Home B)
+    val TextDisabled     = Color(0xFF______) // token: text/disabled - aún no observado
 
     // Bordes
-    val BorderDefault  = Color(0xFF______) // token: border/default - pendiente
-    val BorderSubtle   = Color(0xFF______) // token: border/subtle - pendiente
+    val BorderDefault  = Color(0x120D1520) // rgba(13,21,32,0.07) (divisores cards)
+    val BorderSubtle   = Color(0x0F0D1520) // rgba(13,21,32,0.06) (días)
+    val BorderInfo     = Color(0x730393C9) // rgba(3,147,201,0.45) (día seleccionado)
+    val BorderOnDarkSubtle = Color(0x29FFFFFF) // rgba(255,255,255,0.16) (botón "Recordar 2 h" sobre card oscura)
+
+    // Overlays translúcidos (badges de tarea)
+    val OverlayInfoSubtle    = Color(0x240393C9) // rgba(3,147,201,0.14) (fondo badge "NT")
+    val OverlayWarningSubtle = Color(0x29C88C14) // rgba(200,140,20,0.16) (fondo badge "FO")
+    val OverlayNeutralSubtle = Color(0x140D1520) // rgba(13,21,32,0.08) (fondo badge "EX")
+    val OverlayOnDarkSubtle  = Color(0x1FFFFFFF) // rgba(255,255,255,0.12) (botón secundario sobre card oscura)
 }
 
 /**
  * Escala tipográfica de PaquitoBot.
  *
- * Tamaños ajustados a partir de Figma Welcome aplicando factor de conversión
- * px->sp (Android ≈ 0.71 sobre la medida visual de Figma).
- *
- * Familia tipográfica: Figma usa "DM Sans" (SemiBold en títulos, Regular en
- * cuerpo). Aún no se ha descargado la fuente DM Sans; mientras tanto usamos
- * FontFamily.Default (Roboto en Android), que es lo más cercano disponible sin
- * agregar assets.
+ * El archivo Figma usa DM Sans, DM Mono, Instrument Sans y Bricolage Grotesque
+ * mezcladas. Mientras no descarguemos las fuentes reales, todo cae a
+ * FontFamily.Default (Roboto en Android). Mantenemos nombres y pesos para
+ * cuando se haga la migración real.
  */
 object PaquitoTypography {
     val DisplayLarge   = TextStyle(fontSize = 34.sp, fontWeight = FontWeight.SemiBold, fontFamily = FontFamily.Default)
@@ -67,6 +91,19 @@ object PaquitoTypography {
     val BodyMedium     = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal,   fontFamily = FontFamily.Default)
     val Caption        = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Normal,   fontFamily = FontFamily.Default)
     val LabelSmall     = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium,   fontFamily = FontFamily.Default)
+
+    // Nuevos (Home B)
+    val Greeting       = TextStyle(fontSize = 30.sp, fontWeight = FontWeight.Bold,     fontFamily = FontFamily.Default)
+    val TaskTitle      = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = FontFamily.Default)
+    val TaskSubtitle   = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal,   fontFamily = FontFamily.Default)
+    val DayOfWeek      = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Normal,   fontFamily = FontFamily.Default)
+    val DayNumber      = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = FontFamily.Default)
+    val BadgeInitials  = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold,     fontFamily = FontFamily.Default)
+    val ChipLabel      = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium,   fontFamily = FontFamily.Default)
+    val Timestamp      = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Normal,   fontFamily = FontFamily.Default)
+    val AlertCardTitle = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = FontFamily.Default)
+    val AlertCardSubtitle = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Normal, fontFamily = FontFamily.Default)
+    val ButtonLabel    = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = FontFamily.Default)
 }
 
 /**
@@ -89,6 +126,8 @@ object PaquitoShapes {
     val medium = RoundedCornerShape(12.dp)
     val large  = RoundedCornerShape(20.dp)
     val pill   = RoundedCornerShape(50)
+    val card   = RoundedCornerShape(24.dp)
+    val alertCard = RoundedCornerShape(26.dp)
 }
 
 /**
@@ -104,6 +143,7 @@ fun PaquitoTheme(content: @Composable () -> Unit) {
         onBackground  = PaquitoColors.TextPrimary,
         surface       = PaquitoColors.Background,
         onSurface     = PaquitoColors.TextPrimary,
+        error         = PaquitoColors.StateDanger,
     )
 
     val typography = Typography(

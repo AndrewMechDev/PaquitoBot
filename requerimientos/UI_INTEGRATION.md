@@ -70,11 +70,37 @@ Estado vivo de la integración entre el archivo Figma "Paquito (copia)" y el có
 > - `rgba(0,0,0,0.85)` → Welcome → `PaquitoColors.TextPrimary`
 > - `#1C1B1F` → Navbar → `PaquitoColors.TextOnSurface` (mantengo nombres separados hasta confirmar canónico)
 >
-> **Tokens restantes pendientes** (cubrir con extracciones de Home B y Notificaciones):
-> - `brand/secondary`, `brand/accent` → no aparecen todavía.
-> - `state/success`, `state/warning`, `state/danger` → aparecen en el semáforo de días de Home B (364:286, 364:292, etc.).
-> - `surface/overlay` → aparece en cards de Home B.
-> - `text/disabled`, `border/default`, `border/subtle` → buscar en Home B.
+#### Tokens adicionales observados en Home B (`364:219`) — extraídos 2026-08-05
+
+| Token | Valor Figma | Hex Compose | Plataforma |
+|---|---|---|---|
+| `state/info` | `#0393C9` (dot de día con tarea + link "Ver todo") | `0xFF0393C9` | Compose: `PaquitoColors.StateInfo` |
+| `state/info-strong` | `#0277A8` (texto día seleccionado + badges NT) | `0xFF0277A8` | Compose: `PaquitoColors.StateInfoStrong` |
+| `state/warning` | `#C88C14` (badge "FO" foro por vencer) | `0xFFC88C14` | Compose: `PaquitoColors.StateWarning` |
+| `state/danger` | `#FF445A` (badge navbar "3" + dot día crítico) | `0xFFFF445A` | Compose: `PaquitoColors.StateDanger` |
+| `state/neutral` | `#4D5866` (badge "EX" parcial) | `0xFF4D5866` | Compose: `PaquitoColors.StateNeutral` |
+| `surface/glass-strong` | `rgba(255,255,255,0.82)` + backdrop-blur 12dp (cards superiores) | `0xD6FFFFFF` | Compose: `PaquitoColors.SurfaceGlassStrong` |
+| `surface/glass-soft` | `rgba(246,247,249,0.85)` (días normales, base de cards) | `0xD9F6F7F9` | Compose: `PaquitoColors.SurfaceGlassSoft` |
+| `border/info` | `rgba(3,147,201,0.45)` (borde del día seleccionado) | `0x730393C9` | Compose: `PaquitoColors.BorderInfo` |
+| `border/subtle` | `rgba(13,21,32,0.06)` (días) | `0x0F0D1520` | Compose: `PaquitoColors.BorderSubtle` |
+| `border/default` | `rgba(13,21,32,0.07)` (divisores cards) | `0x120D1520` | Compose: `PaquitoColors.BorderDefault` |
+| `text/on-card-strong` | `#0D1520` (títulos de tareas, saludo) | `0xFF0D1520` | Compose: `PaquitoColors.TextOnCardStrong` |
+| `text/on-card-muted` | `#6E7885` (subtítulos de tareas) | `0xFF6E7885` | Compose: `PaquitoColors.TextOnCardMuted` |
+| `text/on-card-muted-alt` | `#7B8694` ("Paquito te avisó") | `0xFF7B8694` | Compose: `PaquitoColors.TextOnCardMutedAlt` |
+| `text/on-dark-muted` | `#93A3B4` ("Cálculo II" sobre card oscura) | `0xFF93A3B4` | Compose: `PaquitoColors.TextOnDarkMuted` |
+| `text/on-dark-stronger` | `#A3B1C0` ("Hoy 23:59") | `0xFFA3B1C0` | Compose: `PaquitoColors.TextOnDarkStronger` |
+| `text/on-primary-dim` | `#04202E` (texto chips y "Entregar" sobre BrandPrimary) | `0xFF04202E` | Compose: `PaquitoColors.TextOnPrimaryDim` |
+| `text/link` | `#0393C9` ("Ver todo") | `0xFF0393C9` | Compose: `PaquitoColors.TextLink` |
+| `text/timestamp` | `#98A1AC` ("2 d", "hace cuanto") | `0xFF98A1AC` | Compose: `PaquitoColors.TextTimestamp` |
+| `text/day-active` | `#0277A8` | `0xFF0277A8` | Compose: `PaquitoColors.TextDayActive` |
+| `text/day-inactive` | `#8D96A1` | `0xFF8D96A1` | Compose: `PaquitoColors.TextDayInactive` |
+
+> **Tokens aún pendientes**:
+> - `state/success` (verde) → no aparece en Home B todavía; queda en placeholder.
+> - `brand/secondary`, `brand/accent` → no aparecen en Main.
+> - `surface/overlay` → no usado todavía.
+> - `text/disabled` → no usado todavía.
+> - DM Sans / DM Mono / Instrument Sans / Bricolage Grotesque → familias tipográficas detectadas en Figma. Por ahora se cae a FontFamily.Default (Roboto). Descarga futura cuando se requiera fidelidad tipográfica estricta.
 
 #### Extracción cruda (referencia)
 
