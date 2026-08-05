@@ -35,12 +35,13 @@ object PaquitoColors {
 
     // Superficies
     val Background     = Color(0xFFFFFFFF) // token: surface/background (fondo Welcome)
-    val SurfaceElevated = Color(0xFF______) // token: surface/elevated - pendiente Home B
+    val SurfaceElevated = Color(0xFFEEEEEE) // token: surface/elevated (sección activa Navbar)
     val SurfaceOverlay  = Color(0xFF______) // token: surface/overlay - pendiente Home B
 
-    // Texto (Welcome)
-    val TextPrimary    = Color(0xD9000000) // rgba(0,0,0,0.85) (título "PaquitoBot")
-    val TextSecondary  = Color(0xB3000000) // rgba(0,0,0,0.7) (subtítulo)
+    // Texto (Welcome + Navbar)
+    val TextPrimary    = Color(0xD9000000) // rgba(0,0,0,0.85) (título "PaquitoBot" Welcome)
+    val TextSecondary  = Color(0xB3000000) // rgba(0,0,0,0.7) (subtítulo Welcome)
+    val TextOnSurface  = Color(0xFF1C1B1F) // token: text/on-surface (etiquetas Navbar)
     val TextDisabled   = Color(0xFF______) // token: text/disabled - pendiente
 
     // Bordes

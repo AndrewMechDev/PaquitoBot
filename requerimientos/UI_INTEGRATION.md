@@ -56,11 +56,25 @@ Estado vivo de la integración entre el archivo Figma "Paquito (copia)" y el có
 | Padding botón | `15px` | `15.dp` |
 | Alto botón | `51px` | `51.dp` |
 
+#### Tokens adicionales observados en Navbar (`351:645`) — extraídos 2026-08-05
+
+| Token | Valor Figma | Hex Compose | Plataforma |
+|---|---|---|---|
+| `surface/elevated` | `#EEEEEE` (fondo del tab activo) | `0xFFEEEEEE` | Compose: `PaquitoColors.SurfaceElevated` |
+| `text/on-surface` | `#1C1B1F` (etiquetas de tabs) | `0xFF1C1B1F` | Compose: `PaquitoColors.TextOnSurface` |
+| Fondo wrapper Navbar | `rgba(255,255,255,0.1)` (translúcido sobre fondo de pantalla) | `Color.White.copy(alpha = 0.1f)` | en Navbar.kt directamente |
+| Texto tabs | DM Sans SemiBold `14px` | `fontSize = 14.sp, FontWeight.SemiBold` | en Navbar.kt directamente |
+| Tamaño íconos tab | `36px` (estado fill) / `24px` (default) | `Modifier.size(24.dp)` (default Compose) | en Navbar.kt |
+
+> **Nota de discrepancia**: el archivo Figma usa dos tonos de texto distintos sin razón clara:
+> - `rgba(0,0,0,0.85)` → Welcome → `PaquitoColors.TextPrimary`
+> - `#1C1B1F` → Navbar → `PaquitoColors.TextOnSurface` (mantengo nombres separados hasta confirmar canónico)
+>
 > **Tokens restantes pendientes** (cubrir con extracciones de Home B y Notificaciones):
-> - `brand/secondary`, `brand/accent` → no aparecen en Welcome, buscar en Home.
-> - `state/success`, `state/warning`, `state/danger` → aparecen en "Background" + "Overlay" del semáforo de los días en Home B (364:286, 364:292, etc.).
-> - `surface/elevated`, `surface/overlay` → aparecen en Home B.
-> - `text/disabled`, `border/default`, `border/subtle` → buscar en otras pantallas.
+> - `brand/secondary`, `brand/accent` → no aparecen todavía.
+> - `state/success`, `state/warning`, `state/danger` → aparecen en el semáforo de días de Home B (364:286, 364:292, etc.).
+> - `surface/overlay` → aparece en cards de Home B.
+> - `text/disabled`, `border/default`, `border/subtle` → buscar en Home B.
 
 #### Extracción cruda (referencia)
 
