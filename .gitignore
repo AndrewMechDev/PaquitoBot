@@ -26,3 +26,11 @@ node_modules/
 **/res/drawable/*.svg
 **/res/drawable/**/*.svg
 **/res/raw/*.svg
+
+# Carpeta de SVGs fuente (referencia local, se convierten a vector drawable
+# con la skill svg-to-vector-drawable; no son el asset final del proyecto).
+/svg/
+
+# Cache local del skill-registry (regenerable, no es el registry en si -
+# ese es .atl/skill-registry.md, que SI se versiona).
+.atl/.skill-registry.cache.json
