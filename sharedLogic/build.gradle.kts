@@ -6,21 +6,18 @@ plugins {
 }
 
 kotlin {
-    // --- Targets iOS deshabilitados (alcance actual: Android-only) ---
-    // Auditoría 2026-08-06: el repositorio es actualmente solo Android.
-    // Estos targets se conservan comentados porque (a) la skill/convención del
-    // repo es multiplatform-ready y (b) si el alcance vuelve a incluir iOS en
-    // el futuro, basta descomentar este bloque y re-correr gradle sync.
-    //
-    // listOf(
-    //     iosArm64(),
-    //     iosSimulatorArm64()
-    // ).forEach { iosTarget ->
-    //     iosTarget.binaries.framework {
-    //         baseName = "SharedLogic"
-    //         isStatic = true
-    //     }
-    // }
+    // --- Targets iOS reactivados (2026-08-06): se suma un colaborador dedicado
+    // a iOS al equipo. Genera un framework estatico "SharedLogic.framework"
+    // que el proyecto Xcode en iosApp/ consume directo (sin CocoaPods).
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "SharedLogic"
+            isStatic = true
+        }
+    }
 
     android {
        namespace = "pe.tecsup.paquitobot.sharedLogic"
