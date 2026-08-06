@@ -2,6 +2,7 @@ package pe.tecsup.paquitobot.ui.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -317,17 +318,32 @@ private fun HomeTasksSection(title: String, items: List<TaskEntry>) {
             )
         }
 
-        // Lista de tareas directamente sobre el fondo del screen, SIN el
-        // card wrapper translucido (rgba(245,245,245,0.2)) que generaba un
-        // rectangulo blanco tenue #FDFDFD alrededor de la lista. Se
-        // mantienen los divisores internos y el scroll vertical.
+        // Card wrapper translucida con la lista adentro.
+        // Iteracion 2026-08-06 01:51: se RESTAURA el wrapper del card que
+        // habia sido eliminado por error en la iteracion anterior. El card
+        // debe existir (es parte del diseno Figma) y debe tener un BORDE
+        // sutil blanco + fondo blanco translucido. El feedback del usuario
+        // decia "agregar el contorno del card de tareas", NO eliminarlo.
+        //
+        //   fondo: rgba(245,245,245,0.2)  = #33F5F5F5
+        //   borde: rgba(255,255,255,0.4)  = #66FFFFFF (sutil, fino, 1dp)
+        //   radio: 28dp (mismo que el card de la semana)
+        //   padding interno: 6dp
         val taskScroll = rememberScrollState()
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .defaultMinSize(minHeight = 80.dp)
                 .heightIn(max = 280.dp)
-                .verticalScroll(taskScroll),
+                .clip(RoundedCornerShape(28.dp))
+                .background(PaquitoColors.SurfaceHomeTaskListBg)
+                .border(
+                    width = 1.dp,
+                    color = androidx.compose.ui.graphics.Color(0x66FFFFFF),
+                    shape = RoundedCornerShape(28.dp),
+                )
+                .verticalScroll(taskScroll)
+                .padding(6.dp),
         ) {
             items.forEachIndexed { index, item ->
                 if (index > 0) {
