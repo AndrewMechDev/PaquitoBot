@@ -10,11 +10,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -44,7 +42,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  *
  * Estructura (de arriba hacia abajo):
  *   1. Header / saludo     ("¡Bienvenido, {nombre}!" + fecha completa) — alineado a izquierda
- *   2. Calendario semanal  ("Semana 10" + card oscura con 7 dias en grid 3x3)
+ *   2. Calendario semanal  ("Semana 10" + card oscura con 7 dias en 1 sola fila)
  *   3. Tareas pendientes   ("Tareas Pendientes" + icono foro + lista con timestamps)
  *   4. Navbar inferior     (3 tabs + boton Paquito + badge "3")
  *
@@ -53,13 +51,14 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  *     gado al borde"; ahora se alinea a Start dentro del padding lateral).
  *   - Padding lateral del body: 20dp -> 24dp para que el contenido respire
  *     igual a izquierda y derecha en cualquier pantalla 360-411dp.
- *   - Card de la semana ampliada de 2x3 (6 dias) a 3x3 (7 dias, agregando
- *     Domingo como ultima fila). Cells compactados (altura 64dp, fuentes 11/24sp)
- *     para que las 3 filas + padding + titulo quepan en la card de 220dp.
+ *   - Card de la semana: 7 dias (incluyendo Domingo) en UNA sola fila, no un
+ *     grid 3x3 (el grid dejaba el Domingo huerfano en una tercera fila
+ *     descentrada). Dias abreviados a 2 letras (Lu, Ma, Mi...) para que
+ *     entren las 7 celdas sin desbordar.
  *   - Item de tarea compactado (padding 10/6dp, icono 18dp, label 11sp,
  *     titulo 14sp, timestamp 24sp) para que el item no se sienta "ancho".
- *   - Icono foro (ic_paquito_foro.xml) agregado al costado del titulo
- *     "Tareas Pendientes" (icono de dos burbujas de chat, Figma 365:1039).
+ *   - Icono foro eliminado del costado de "Tareas Pendientes": el frame
+ *     Figma actual (re-extraido de "Paquito-v2") ya no lo tiene.
  *   - Navbar centrada horizontalmente con padding lateral 16dp en vez de 12dp
  *     para que no se vea pegada a la izquierda.
  *
@@ -84,7 +83,7 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 24.dp, top = 50.dp, end = 24.dp, bottom = 110.dp),
+                .padding(start = 24.dp, top = 64.dp, end = 24.dp, bottom = 110.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             // 1. Saludo + fecha.
@@ -165,7 +164,7 @@ private fun HomeMessage(greeting: String, dateLabel: String) {
 }
 
 /* -----------------------------------------------------------
- * 2. Semana: titulo + card oscura con grid 3x3 (7 dias: L M M | J V S | D)
+ * 2. Semana: titulo + card oscura con 7 dias en 1 sola fila (Lu..Do)
  * ----------------------------------------------------------- */
 
 @Composable
@@ -180,44 +179,31 @@ private fun HomeWeekSection(title: String, days: List<WeekDayData>) {
             color = PaquitoColors.TextHomeStrong,
         )
 
-        // Card oscura `SurfaceHomeWeekBg` con los 7 dias en grid 3x3.
-        // Altura calculada para 3 filas: 3 cells * 64dp + 2 gaps * 8dp + padding
-        // 8dp * 2 = 224dp aprox. Usamos defaultMinSize + heightIn para que crezca
-        // si el contenido lo necesita, pero que tenga un tamano consistente.
-        Column(
+        // Card oscura `SurfaceHomeWeekBg` con los 7 dias en UNA sola fila
+        // (tira de calendario semanal). Evita el dia "huerfano" que quedaba
+        // solo en una tercera fila con el grid 3x3 anterior.
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .defaultMinSize(minHeight = 220.dp)
-                .heightIn(min = 220.dp, max = 240.dp)
-                .clip(RoundedCornerShape(28.dp))
+                .clip(RoundedCornerShape(35.dp))
                 .background(PaquitoColors.SurfaceHomeWeekBg)
-                .padding(horizontal = 10.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .padding(horizontal = 8.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Distribuimos los dias en filas de 3. Con 7 dias obtenemos
-            // [L M M] [J V S] [D]. La tercera fila tiene solo 1 dia, alineado
-            // a la izquierda para que respire el lado derecho del card.
-            days.chunked(3).forEachIndexed { rowIndex, rowDays ->
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    // Si la ultima fila tiene <3 items, los alineamos a la izq.
-                    if (rowDays.size < 3 && rowIndex == days.chunked(3).lastIndex) {
-                        rowDays.forEach { day ->
-                            WeekDayCell(day = day, modifier = Modifier.width(94.dp))
-                        }
-                    } else {
-                        rowDays.forEach { day ->
-                            WeekDayCell(day = day, modifier = Modifier.weight(1f))
-                        }
-                    }
-                }
+            days.forEach { day ->
+                WeekDayCell(day = day, modifier = Modifier.weight(1f))
             }
         }
     }
 }
+
+/**
+ * Abrevia el nombre del dia a 2 letras para que quepan las 7 celdas en una
+ * sola fila sin ambiguedad (Martes/Miercoles ambos empiezan con "M", por
+ * eso 1 sola letra no alcanza): Lu, Ma, Mi, Ju, Vi, Sa, Do.
+ */
+private fun shortDayLabel(dayOfWeek: String): String = dayOfWeek.take(2)
 
 /**
  * Celda de un dia en el calendario semanal del Home A.
@@ -228,10 +214,10 @@ private fun HomeWeekSection(title: String, days: List<WeekDayData>) {
  *   - numero: 24sp (compactado para caber en el cell); color rojo translucido
  *     si es critico, cyan translucido en otro caso.
  *
- * El dia se trunca a 7 caracteres con ellipsis para que "Miercoles" quepa en
- * el cell chico sin desbordar. El cell usa `defaultMinSize(minHeight=64dp)` +
- * padding horizontal=10dp + vertical=8dp para que las 3 filas quepan en la
- * card de 220dp.
+ * Iteracion 2026-08-06: los 7 dias (incluyendo Domingo) van en UNA sola fila
+ * en vez de un grid 3x3 (el grid dejaba el Domingo huerfano, solo, en una
+ * tercera fila descentrada). Con 7 celdas en fila no entra el nombre
+ * completo del dia, por eso se abrevia a 2 letras via [shortDayLabel].
  */
 @Composable
 private fun WeekDayCell(day: WeekDayData, modifier: Modifier = Modifier) {
@@ -250,7 +236,8 @@ private fun WeekDayCell(day: WeekDayData, modifier: Modifier = Modifier) {
     } else {
         PaquitoColors.TextHomeDayNumber
     }
-    // Cell compacto: 64dp de altura minima permite 3 filas en una card de 220dp.
+    // Cell compacto: 64dp de altura minima, ancho flexible (weight 1f) para
+    // que las 7 celdas de la fila unica se repartan el ancho disponible.
     // El contenido del cell esta centrado horizontalmente para evitar que
     // los labels cortos ("Lunes", "Jueves") queden pegados a la izquierda
     // con un hueco blanco visible a la derecha cuando el cell se estira
@@ -259,14 +246,14 @@ private fun WeekDayCell(day: WeekDayData, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .defaultMinSize(minHeight = 64.dp)
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(18.dp))
             .background(cellBg)
-            .padding(horizontal = 6.dp, vertical = 8.dp),
+            .padding(horizontal = 4.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = day.dayOfWeek,
+            text = shortDayLabel(day.dayOfWeek),
             fontSize = 11.sp,
             lineHeight = 13.sp,
             fontWeight = FontWeight.SemiBold,
@@ -277,8 +264,8 @@ private fun WeekDayCell(day: WeekDayData, modifier: Modifier = Modifier) {
         )
         Text(
             text = day.dayNumber,
-            fontSize = 24.sp,
-            lineHeight = 28.sp,
+            fontSize = 20.sp,
+            lineHeight = 24.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
             color = numberColor,
@@ -294,29 +281,20 @@ private fun WeekDayCell(day: WeekDayData, modifier: Modifier = Modifier) {
 @Composable
 private fun HomeTasksSection(title: String, items: List<TaskEntry>) {
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        // Header de la seccion: titulo a la izquierda + icono foro a la derecha.
-        // El icono es el de dos burbujas de chat (ic_paquito_foro.xml, Figma
-        // 365:1039) que aparece en el frame original al costado del titulo.
-        Row(
+        // Header de la seccion: solo el titulo.
+        // Iteracion 2026-08-06: el icono de foro (2 burbujas de chat) que
+        // habia al costado del titulo se elimina - el frame Figma actual
+        // (re-extraido de "Paquito-v2") ya NO lo tiene, era de una
+        // iteracion vieja del diseno.
+        Text(
+            text = title,
+            fontSize = 20.sp,
+            lineHeight = 24.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = PaquitoFont.DMSans,
+            color = PaquitoColors.TextHomeStrong,
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = title,
-                fontSize = 20.sp,
-                lineHeight = 24.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = PaquitoFont.DMSans,
-                color = PaquitoColors.TextHomeStrong,
-            )
-            Image(
-                painter = painterResource(id = R.drawable.ic_paquito_foro),
-                contentDescription = "Foro de notificaciones",
-                modifier = Modifier.size(22.dp),
-                contentScale = ContentScale.Fit,
-            )
-        }
+        )
 
         // Card wrapper translucida con la lista adentro.
         // Iteracion 2026-08-06 01:51: se RESTAURA el wrapper del card que
@@ -335,12 +313,12 @@ private fun HomeTasksSection(title: String, items: List<TaskEntry>) {
                 .fillMaxWidth()
                 .defaultMinSize(minHeight = 80.dp)
                 .heightIn(max = 280.dp)
-                .clip(RoundedCornerShape(28.dp))
+                .clip(RoundedCornerShape(35.dp))
                 .background(PaquitoColors.SurfaceHomeTaskListBg)
                 .border(
                     width = 1.dp,
                     color = androidx.compose.ui.graphics.Color(0x66FFFFFF),
-                    shape = RoundedCornerShape(28.dp),
+                    shape = RoundedCornerShape(35.dp),
                 )
                 .verticalScroll(taskScroll)
                 .padding(6.dp),

@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -88,22 +89,54 @@ fun Navbar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        // Grupo de tabs con wrapper translucido + BORDE sutil blanco.
-        // Iteracion 2026-08-06 01:51: RESTAURADO el wrapper + borde blanco
-        // que el usuario pidio mantener ("agregar el contorno del navbar").
-        // El fondo ahora es MAS sutil (alpha 0.08 vs 0.10 anterior) y se
-        // acompana de un borde 1dp rgba(255,255,255,0.4) que define
-        // claramente el contorno de la pill de tabs.
-        //   fondo: Color.White.copy(alpha = 0.08f)
-        //   borde: 1dp @ rgba(255,255,255,0.4) = #66FFFFFF
+        // Grupo de tabs con estilo GLASS (referencia Samsung Health, pedido
+        // explicito del usuario 2026-08-06 - no viene de Figma, es una
+        // mejora de estilo nueva).
+        //
+        // Iteracion 2026-08-06 (fix): la primera version usaba fondo y
+        // borde BLANCOS translucidos, pensada para un fondo con color
+        // detras (como la referencia Samsung Health, fondo rosa/violeta).
+        // Pero el fondo del Home ahora es BLANCO (ver SurfaceHomeCanvas),
+        // asi que blanco-sobre-blanco practicamente desaparecia sin dejar
+        // ver el "vidrio". Fix: en vez de depender del contraste de color
+        // de fondo, el glass se define con sombra + fondo translucido con
+        // cuerpo + borde con tinte OSCURO sutil en degrade (patron "frosted
+        // glass" de iOS en modo claro).
+        //
+        // Iteracion 2026-08-06 (suavizado): el usuario pidio "bajarle un
+        // poco" a este glass sin perder que se note. Reducidos: sombra
+        // 6dp->4dp, opacidad de fondo 0.55/0.35->0.42/0.24, alpha del
+        // borde 0.14/0.04->0.10/0.03. El MISMO patron (sombra + fondo
+        // translucido + borde oscuro en degrade) se reutiliza en el FAB de
+        // Paquito, mas abajo, para mantener consistencia visual.
+        // NOTA tecnica: sigue sin haber blur real (Modifier.blur no
+        // difumina lo que esta DETRAS de esta capa; un backdrop blur real
+        // requeriria la libreria Haze, no agregada a este proyecto).
         // Width fijo: 3 tabs * 72dp + 2 gaps * 6dp + padding 4dp * 2 = 232dp.
         Row(
             modifier = Modifier
+                .shadow(
+                    elevation = 4.dp,
+                    shape = RoundedCornerShape(50),
+                    clip = false,
+                )
                 .clip(RoundedCornerShape(50))
-                .background(Color.White.copy(alpha = 0.08f))
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.42f),
+                            Color.White.copy(alpha = 0.24f),
+                        ),
+                    ),
+                )
                 .border(
                     width = 1.dp,
-                    color = Color(0x66FFFFFF),
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.10f),
+                            Color.Black.copy(alpha = 0.03f),
+                        ),
+                    ),
                     shape = RoundedCornerShape(50),
                 )
                 .padding(4.dp),
@@ -115,69 +148,108 @@ fun Navbar(
             NavTab.Horarios.let { NavTabItem(it, currentTab == it) { onTabSelected(it) } }
         }
 
-        // Boton Paquito con badge opcional encima. Circular, fondo oscuro
-        // (no blanco) para que los "ojos" y "orejas" del icono Paquito
-        // (que el SVG dibuja como huecos via fill-rule=evenodd) se vean
-        // BLANCOS contrastando contra el FAB oscuro. Iteracion 2026-08-06
-        // 01:51: fondo cambiado de PaquitoColors.Background (blanco) a
-        // Color(0xFF1C1B1F) (grafito, mismo color que el texto fuerte).
+        // Boton Paquito con badge opcional encima. Circular, GLASS OSCURO:
+        // mismo patron que la pill de tabs (sombra + fondo translucido +
+        // borde sutil en degrade) pero en tonos oscuros en vez de claros.
         //
-        // El Box contenedor mide 72dp (no 56dp) para dejar espacio al
-        // badge arriba-derecha sin que se "fusione" con el FAB circular.
-        //   Box contenedor 72x72dp
-        //   FAB centrado 56x56dp (offset 8dp en cada lado)
-        //   Badge 20x20dp en top-end (offset -2dp para asomar)
-        Box(modifier = Modifier.size(width = 72.dp, height = 72.dp)) {
+        // Iteracion 2026-08-06 (fix mancha blanca, decision final): se
+        // probo el FAB en glass CLARO (mismo tono que la pill) pero el
+        // icono de Paquito (el SVG real de Figma) tiene espacio negativo
+        // propio alrededor del cuerpo -confirmado con un screenshot del
+        // nodo 351:441 aislado en Figma- que se disimula sobre fondo de
+        // color/oscuro pero se ve como mancha blanca sobre fondo claro.
+        // Para mantener la mejor consistencia visual SIN mostrar la mancha,
+        // el FAB usa la variante OSCURA del mismo patron glass (sombra +
+        // degrade translucido oscuro + borde claro sutil) en vez de negro
+        // solido plano o glass claro. El icono vuelve a fill BLANCO (ver
+        // ic_paquito_bot.xml) porque el fondo del FAB es oscuro de nuevo.
+        //
+        // Iteracion 2026-08-06 (re-extraccion "Paquito-v2", frame 351:644):
+        // recalculado el tamano del FAB y la posicion del badge a partir de
+        // la geometria real de Figma. El badge (23x23px, borde 3px) en
+        // Figma sobresale del FAB apenas ~4px arriba y ~2px a la derecha -
+        // practicamente pegado, NO flotando separado como en la iteracion
+        // anterior (offset -8,-6 sobre un contenedor de 72dp/FAB 56dp
+        // quedaba desproporcionado). Ahora:
+        //   - FAB 64dp (antes 56dp) - proporcion correcta contra el resto
+        //     del Navbar (pill de tabs) segun el ancho real del navbar en
+        //     Figma (384.86px).
+        //   - Contenedor externo 80dp (64 + 8dp de margen a cada lado,
+        //     igual que antes) para dar lugar a la sombra del FAB.
+        //   - El badge se ancla DIRECTO al Box del FAB (64dp), no al
+        //     contenedor externo de 80dp, con un offset pequeno hacia
+        //     afuera (no negativo/hacia adentro) que replica el "apenas
+        //     asoma" real de Figma.
+        Box(modifier = Modifier.size(width = 80.dp, height = 80.dp)) {
             Box(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(width = 56.dp, height = 56.dp)
-                    .shadow(
-                        elevation = 8.dp,
-                        shape = CircleShape,
-                        clip = false,
-                    )
-                    .clip(CircleShape)
-                    .background(Color(0xFF1C1B1F))
-                    .clickable(onClick = onPaquitoClick)
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center,
+                modifier = Modifier.align(Alignment.Center).size(width = 64.dp, height = 64.dp),
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_paquito_bot),
-                    contentDescription = "Abrir chat con Paquito",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit,
-                )
-            }
-
-            // Badge de notificaciones (Figma 364:222): rounded 12dp, bg #FF445A,
-            // border 1.5px #FAFBFC, texto blanco Bold 10sp.
-            // Iteracion 2026-08-06 01:51: el badge debe ASOMAR por encima
-            // del FAB sin tocarse. Calculamos posicion dentro del Box de
-            // 72dp: el FAB (56dp) centrado deja 8dp de margen a la derecha
-            // del circulo. El badge (20dp) en top-end ocupa x=52..72
-            // y=0..20. Para que la mitad del badge entre al FAB y la otra
-            // mitad asome por fuera (efecto clasico de "notification dot"
-            // sobre un icono), usamos offset(x = -6.dp, y = (-4).dp) que
-            // centra el badge sobre la esquina top-end del FAB.
-            if (notificationCount != null && notificationCount > 0) {
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .offset(x = (-6).dp, y = (-4).dp)
-                        .size(width = 20.dp, height = 20.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(PaquitoColors.StateDanger)
-                        .border(1.5.dp, Color(0xFFFAFBFC), RoundedCornerShape(12.dp)),
+                        .fillMaxSize()
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = CircleShape,
+                            clip = false,
+                        )
+                        .clip(CircleShape)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color(0xFF2A2930).copy(alpha = 0.92f),
+                                    Color(0xFF1C1B1F).copy(alpha = 0.88f),
+                                ),
+                            ),
+                        )
+                        .border(
+                            width = 1.dp,
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.28f),
+                                    Color.White.copy(alpha = 0.08f),
+                                ),
+                            ),
+                            shape = CircleShape,
+                        )
+                        .clickable(onClick = onPaquitoClick),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        text = notificationCount.toString(),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = PaquitoColors.TextOnWhite,
+                    // El agrandado ~20% (55x44dp) ya no es indispensable
+                    // para tapar espacio negativo (el fondo oscuro lo
+                    // disimula igual que en la referencia de Figma), pero
+                    // se mantiene porque da un mejor encuadre visual del
+                    // icono dentro del circulo (menos margen muerto).
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_paquito_bot),
+                        contentDescription = "Abrir chat con Paquito",
+                        modifier = Modifier.size(width = 55.dp, height = 44.dp),
+                        contentScale = ContentScale.Fit,
                     )
+                }
+
+                // Badge de notificaciones (Figma 285:665, frame 351:644):
+                // 23x23px, rounded, bg #FF445A, border 3px #FAFBFC, texto
+                // blanco Bold 11sp. Anclado al borde top-end del FAB mismo
+                // (no del contenedor externo), con offset pequeno hacia
+                // afuera para el "apenas asoma" fiel a Figma.
+                if (notificationCount != null && notificationCount > 0) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .offset(x = 3.dp, y = (-3).dp)
+                            .size(width = 22.dp, height = 22.dp)
+                            .clip(RoundedCornerShape(11.dp))
+                            .background(PaquitoColors.StateDanger)
+                            .border(2.5.dp, Color(0xFFFAFBFC), RoundedCornerShape(11.dp)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = notificationCount.toString(),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PaquitoColors.TextOnWhite,
+                        )
+                    }
                 }
             }
         }
@@ -200,7 +272,7 @@ private fun NavTabItem(tab: NavTab, selected: Boolean, onClick: () -> Unit) {
             painter = painterResource(
                 id = when (tab) {
                     NavTab.Inicio -> R.drawable.ic_paquito_home_outline
-                    NavTab.Cursos -> R.drawable.ic_paquito_book_outline
+                    NavTab.Cursos -> R.drawable.ic_paquito_book_fill
                     NavTab.Horarios -> R.drawable.ic_paquito_calendar_fill
                 }
             ),

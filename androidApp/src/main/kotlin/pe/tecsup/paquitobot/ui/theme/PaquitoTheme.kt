@@ -38,8 +38,10 @@ object PaquitoColors {
     val StateNeutral   = Color(0xFF4D5866) // token: state/neutral (badge "EX" tareas neutras)
     val StateSuccess   = Color(0xFF15A05A) // token: state/success (verde) - dot "sincronizado" del Chat
 
-    // Tokens únicos del Home A (`351:644`, fondo gris azulado distintivo).
-    val SurfaceHomeCanvas       = Color(0xFFA8B6BC) // fondo del frame Home A (gris azulado)
+    // Tokens únicos del Home A (`351:644`).
+    // 2026-08-06: Figma actualizo el fondo del frame de gris azulado (#A8B6BC)
+    // a blanco puro (bg-white en el design context re-extraido de "Paquito-v2").
+    val SurfaceHomeCanvas       = Color(0xFFFFFFFF) // fondo del frame Home A (blanco, fiel a Figma actual)
     val SurfaceHomeWeekBg       = Color(0xFF10151A) // card oscura del calendario semanal
     val SurfaceHomeTaskListBg   = Color(0x33F5F5F5) // rgba(245,245,245,0.2) (task_list wrapper)
     val TextHomeStrong          = Color(0xFF000000) // saludo "Bienvenido"
