@@ -1,5 +1,6 @@
 package pe.tecsup.paquitobot.ui.home
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,50 +12,47 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import pe.tecsup.paquitobot.ui.components.AlertCard
-import pe.tecsup.paquitobot.ui.components.DayState
+import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.ui.components.NavTab
 import pe.tecsup.paquitobot.ui.components.Navbar
-import pe.tecsup.paquitobot.ui.components.TaskBadge
-import pe.tecsup.paquitobot.ui.components.TaskList
-import pe.tecsup.paquitobot.ui.components.TaskListHeader
-import pe.tecsup.paquitobot.ui.components.TaskListItem
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoFont
-import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
 /**
- * Pantalla Home definitiva de PaquitoBot (2026-08-05).
+ * Pantalla Home de PaquitoBot, fiel al frame Figma `351:644` del archivo
+ * "Paquito (copia)" (canvas Main `109:97`), re-extraído el 2026-08-05.
  *
- * Fusiona:
- *   - Visual / layout del Home A (Figma 351:644): fondo #A8B6BC, card oscura
- *     del calendario, dias en espanol, timestamp grande "12 h" con color
- *     por urgencia.
- *   - Datos / estructura del Home B (Figma 364:219): TaskList con badges NT/FO/EX
- *     y subtitulos, AlertCard de la entrega inminente.
+ * Estructura (de arriba hacia abajo):
+ *   1. Header / saludo     ("¡Bienvenido, {user}!" + fecha completa)
+ *   2. Calendario semanal  ("Semana 10" + card oscura con 6 dias en grid 3x2)
+ *   3. Tareas pendientes   ("Tareas Pendientes" + lista con timestamps grandes)
+ *   4. Navbar inferior     (3 tabs + boton Paquito + badge "3")
+ *
+ * El dia actual se distingue por tener fondo gris translucido (en vez de
+ * blanco), igual que en Figma. No usa semaforo de colores; la urgencia se
+ * codifica en el color del numero (rojo translucido para critico) y en el
+ * timestamp grande ("12 h" en colores cyan para urgente, mas claro para futuro).
  *
  * Mientras no llega el backend, los datos se inyectan via [HomeScreenData].
- * Cuando se conecte el Repository, [HomeScreenData] se reemplaza por un
- * ViewModel que consume la API.
  */
 @Composable
 fun HomeScreen(
     data: HomeScreenData = HomeScreenData.default(),
-    onDayClick: (Int) -> Unit = {},
-    onPrimaryAction: () -> Unit = {},
-    onSecondaryAction: () -> Unit = {},
     currentTab: NavTab = NavTab.Inicio,
     onTabSelected: (NavTab) -> Unit = {},
     onPaquitoClick: () -> Unit = {},
@@ -65,56 +63,37 @@ fun HomeScreen(
             .fillMaxSize()
             .background(PaquitoColors.SurfaceHomeCanvas),
     ) {
+        // Cuerpo principal: padding-left 25dp, top 60dp, width 380dp (Figma).
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 110.dp), // espacio para navbar
+                .padding(start = 25.dp, top = 60.dp, end = 25.dp, bottom = 110.dp),
             verticalArrangement = Arrangement.spacedBy(30.dp),
         ) {
-            // Header (Home A): "Bienvenido, {user}" + fecha completa.
-            HomeHeader(
+            // 1. Saludo + fecha.
+            HomeMessage(
                 greeting = data.greeting,
                 dateLabel = data.dateLabel,
-                modifier = Modifier.padding(horizontal = PaquitoSpacing.lg, vertical = 14.dp),
             )
 
-            // Calendario semanal (Home A) + Lista de tareas (Home B).
+            // 2 + 3. Calendario semanal + tareas pendientes.
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = PaquitoSpacing.lg),
                 verticalArrangement = Arrangement.spacedBy(25.dp),
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                WeekCalendar(
+                HomeWeekSection(
                     title = data.weekTitle,
                     days = data.days,
-                    onDayClick = onDayClick,
                 )
 
-                TaskList(
-                    header = TaskListHeader(
-                        title = data.tasksHeader,
-                        actionLabel = data.tasksActionLabel,
-                    ),
+                HomeTasksSection(
+                    title = data.tasksHeader,
                     items = data.tasks,
                 )
-
-                if (data.alert != null) {
-                    AlertCard(
-                        chip = data.alert.chip,
-                        category = data.alert.category,
-                        title = data.alert.title,
-                        subtitle = data.alert.subtitle,
-                        primaryActionLabel = data.alert.primaryAction,
-                        secondaryActionLabel = data.alert.secondaryAction,
-                        onPrimaryAction = onPrimaryAction,
-                        onSecondaryAction = onSecondaryAction,
-                    )
-                }
             }
         }
 
-        // Navbar inferior (misma que Home B).
+        // 4. Navbar inferior (centrada horizontal, pegada abajo).
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -131,15 +110,16 @@ fun HomeScreen(
     }
 }
 
-/**
- * Header de Home A: saludo + fecha completa en espanol.
- */
+/* -----------------------------------------------------------
+ * 1. Header: saludo + fecha completa
+ * ----------------------------------------------------------- */
+
 @Composable
-private fun HomeHeader(greeting: String, dateLabel: String, modifier: Modifier = Modifier) {
+private fun HomeMessage(greeting: String, dateLabel: String) {
     Column(
-        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Text(
             text = greeting,
@@ -158,24 +138,12 @@ private fun HomeHeader(greeting: String, dateLabel: String, modifier: Modifier =
     }
 }
 
-/**
- * Calendario semanal en card oscura (de Home A).
- *
- * Cada dia es una columna vertical: label espanol completo arriba, numero
- * gigante 48sp abajo, color del numero segun urgencia:
- *   - dia seleccionado/destacado: blanco
- *   - normal: cyan translucido (BrandPrimary @ 70%)
- *   - critico: rojo translucido
- *
- * El dia actual (selected) usa bg gris claro translucido sobre la card
- * oscura para destacarse.
- */
+/* -----------------------------------------------------------
+ * 2. Semana: titulo + card oscura con grid 3x2 de dias
+ * ----------------------------------------------------------- */
+
 @Composable
-private fun WeekCalendar(
-    title: String,
-    days: List<WeekDayData>,
-    onDayClick: (Int) -> Unit,
-) {
+private fun HomeWeekSection(title: String, days: List<WeekDayData>) {
     Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
         Text(
             text = title,
@@ -183,51 +151,70 @@ private fun WeekCalendar(
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
             color = PaquitoColors.TextHomeStrong,
-            modifier = Modifier.padding(start = 0.dp),
         )
-        Row(
+
+        // Card oscura `SurfaceHomeWeekBg` con los 6 dias en 2 filas de 3.
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(233.dp)
                 .clip(RoundedCornerShape(35.dp))
                 .background(PaquitoColors.SurfaceHomeWeekBg)
                 .padding(10.dp),
-            horizontalArrangement = Arrangement.spacedBy(0.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            days.forEachIndexed { index, day ->
-                WeekDayCell(
-                    day = day,
-                    onClick = { onDayClick(index) },
-                    modifier = Modifier.weight(1f),
-                )
+            // Distribuimos los dias en 2 filas de 3.
+            days.chunked(3).forEach { rowDays ->
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(15.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    rowDays.forEach { day ->
+                        WeekDayCell(day = day, modifier = Modifier.weight(1f))
+                    }
+                }
             }
         }
     }
 }
 
+/**
+ * Celda de un dia en el calendario semanal del Home A.
+ *
+ * Variantes visuales (sacadas de Figma 351:644):
+ *   - dia actual (selected=true):  bg rgba(211,211,211,0.28), label blanco translucido.
+ *   - dia normal (selected=false): bg rgba(255,255,255,0.9), label gris translucido.
+ *   - numero: 48sp; color rojo translucido si es critico, cyan translucido en otro caso.
+ *
+ * El dia se trunca a 7 caracteres con ellipsis para que "Miercoles" quepa en
+ * el card chico sin desbordar.
+ */
 @Composable
-private fun WeekDayCell(
-    day: WeekDayData,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+private fun WeekDayCell(day: WeekDayData, modifier: Modifier = Modifier) {
     val cellBg = if (day.selected) {
         androidx.compose.ui.graphics.Color(0x47D3D3D3) // rgba(211,211,211,0.28)
     } else {
         androidx.compose.ui.graphics.Color(0xE6FFFFFF) // rgba(255,255,255,0.9)
     }
-    val labelColor = if (day.selected) PaquitoColors.TextHomeDayActiveLabel else PaquitoColors.TextHomeDayLabel
-    val numberColor = when (day.state) {
-        DayState.Critical -> PaquitoColors.TextHomeDayNumberCritical
-        else -> PaquitoColors.TextHomeDayNumber
+    val labelColor = if (day.selected) {
+        PaquitoColors.TextHomeDayActiveLabel
+    } else {
+        PaquitoColors.TextHomeDayLabel
+    }
+    val numberColor = if (day.isCritical) {
+        PaquitoColors.TextHomeDayNumberCritical
+    } else {
+        PaquitoColors.TextHomeDayNumber
     }
     Column(
         modifier = modifier
+            .height(83.dp)
             .clip(RoundedCornerShape(25.dp))
             .background(cellBg)
-            .padding(vertical = 15.dp),
+            .padding(15.dp),
         verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.Start,
     ) {
         Text(
             text = day.dayOfWeek,
@@ -236,14 +223,126 @@ private fun WeekDayCell(
             fontFamily = PaquitoFont.DMSans,
             color = labelColor,
             maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         Text(
             text = day.dayNumber,
-            fontSize = 32.sp, // Figma usa 48sp pero 32 esta mejor legible a la par del nav
+            fontSize = 48.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
             color = numberColor,
             maxLines = 1,
+        )
+    }
+}
+
+/* -----------------------------------------------------------
+ * 3. Tareas pendientes: titulo + card translucida con lista
+ * ----------------------------------------------------------- */
+
+@Composable
+private fun HomeTasksSection(title: String, items: List<TaskEntry>) {
+    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+        Text(
+            text = title,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = PaquitoFont.DMSans,
+            color = PaquitoColors.TextHomeStrong,
+        )
+
+        // Card wrapper translucida con la lista adentro.
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(35.dp))
+                .background(PaquitoColors.SurfaceHomeTaskListBg)
+                .padding(10.dp),
+        ) {
+            items.forEachIndexed { index, item ->
+                if (index > 0) {
+                    TaskDivider()
+                }
+                TaskInfoRow(item = item)
+            }
+        }
+    }
+}
+
+/**
+ * Divider horizontal de 1dp con opacidad 50% sobre #1C1B1F, fiel al asset
+ * SVG `535d4587-4140-4f80-8565-f69031d6d538.svg` del frame original.
+ */
+@Composable
+private fun TaskDivider() {
+    HorizontalDivider(
+        thickness = 1.dp,
+        color = androidx.compose.ui.graphics.Color(0x801C1B1F), // rgba(28,27,31,0.5)
+    )
+}
+
+/**
+ * Fila de tarea del Home A.
+ *
+ * Layout horizontal (Figma 365:896):
+ *   [icono 24x24] [col (label "Curso" + titulo "Nombre Tarea")] [timestamp grande 40sp]
+ *
+ * El timestamp cambia de color segun la urgencia:
+ *   - normal:  TextTimestampLarge      #29617B
+ *   - urgente: TextTimestampLargeAccent  rgba(34,204,255,0.7)
+ *   - futuro:  TextTimestampLargeMuted   rgba(0,201,251,0.5)
+ */
+@Composable
+private fun TaskInfoRow(item: TaskEntry) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(
+            modifier = Modifier.width(236.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Image(
+                painter = painterResource(id = item.iconRes),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                contentScale = ContentScale.Fit,
+            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = item.label,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = PaquitoFont.DMSans,
+                    color = PaquitoColors.TextHomeTaskLabel,
+                )
+                Text(
+                    text = item.title,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = PaquitoFont.DMSans,
+                    color = PaquitoColors.TextOnSurface,
+                )
+            }
+        }
+        Text(
+            text = item.timestamp,
+            fontSize = 40.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = PaquitoFont.DMSans,
+            color = when (item.urgency) {
+                TaskUrgency.Normal  -> PaquitoColors.TextTimestampLarge
+                TaskUrgency.Urgent  -> PaquitoColors.TextTimestampLargeAccent
+                TaskUrgency.Future  -> PaquitoColors.TextTimestampLargeMuted
+            },
         )
     }
 }
@@ -254,20 +353,22 @@ private fun WeekDayCell(
 
 /** Datos de un dia del calendario semanal. */
 data class WeekDayData(
-    val dayOfWeek: String, // "Lunes", "Martes", ...
+    val dayOfWeek: String, // "Lunes", "Martes", "Miercoles", ...
     val dayNumber: String, // "03", "04", ...
-    val state: DayState,
     val selected: Boolean,
+    val isCritical: Boolean,
 )
 
-/** Datos de la entrega critica (de Home B). */
-data class AlertEntry(
-    val chip: String,
-    val category: String,
-    val title: String,
-    val subtitle: String,
-    val primaryAction: String,
-    val secondaryAction: String,
+/** Urgencia de una tarea, determina el color del timestamp grande. */
+enum class TaskUrgency { Normal, Urgent, Future }
+
+/** Item individual de la lista de tareas. */
+data class TaskEntry(
+    val label: String,    // "Curso"
+    val title: String,    // "Nombre Tarea"
+    val timestamp: String, // "12 h"
+    val urgency: TaskUrgency,
+    @androidx.annotation.DrawableRes val iconRes: Int,
 )
 
 /** Snapshot de la pantalla Home. Vendra del Repository cuando este listo. */
@@ -277,38 +378,52 @@ data class HomeScreenData(
     val weekTitle: String,
     val days: List<WeekDayData>,
     val tasksHeader: String,
-    val tasksActionLabel: String?,
-    val tasks: List<TaskListItem>,
-    val alert: AlertEntry?,
+    val tasks: List<TaskEntry>,
     val pendingCount: Int,
 ) {
     companion object {
         fun default(): HomeScreenData = HomeScreenData(
-            greeting = "Bienvenido, Andrea!",
+            greeting = "¡Bienvenido, {user}!",
             dateLabel = "Lunes, 5 de enero de 2026",
             weekTitle = "Semana 10",
             days = listOf(
-                WeekDayData("Lunes",    "03", DayState.WithTask, selected = true),
-                WeekDayData("Martes",   "04", DayState.WithTask, selected = false),
-                WeekDayData("Miercoles","05", DayState.Neutral,  selected = false),
-                WeekDayData("Jueves",   "06", DayState.Critical, selected = false),
-                WeekDayData("Viernes",  "07", DayState.WithTask, selected = false),
-                WeekDayData("Sabado",   "08", DayState.Critical, selected = false),
+                WeekDayData("Lunes",     "03", selected = true,  isCritical = false),
+                WeekDayData("Martes",    "04", selected = false, isCritical = false),
+                WeekDayData("Miercoles", "05", selected = false, isCritical = false),
+                WeekDayData("Jueves",    "06", selected = false, isCritical = false),
+                WeekDayData("Viernes",   "07", selected = false, isCritical = false),
+                WeekDayData("Sabado",    "08", selected = false, isCritical = true),
             ),
             tasksHeader = "Tareas Pendientes",
-            tasksActionLabel = null,
             tasks = listOf(
-                TaskListItem("NT", TaskBadge.Info,    "Foro de novedades",         "Curso de Narrativa",                "hace 1 h"),
-                TaskListItem("FO", TaskBadge.Warning, "Foro de Etica por vencer",  "Martes 20:00 - falta tu respuesta", "2 d"),
-                TaskListItem("EX", TaskBadge.Neutral, "Parcial de Algebra Lineal", "Jueves 08:00 - aula B-204",         "4 d"),
-            ),
-            alert = AlertEntry(
-                chip = "VENCE EN 6 H",
-                category = "Calculo II",
-                title = "Laboratorio 4 - Integrales",
-                subtitle = "Hoy 23:59 - vale 15% de la nota final",
-                primaryAction = "Entregar",
-                secondaryAction = "Recordar 2 h",
+                TaskEntry(
+                    label = "Curso",
+                    title = "Nombre Tarea",
+                    timestamp = "12 h",
+                    urgency = TaskUrgency.Normal,
+                    iconRes = R.drawable.ic_paquito_docs_default,
+                ),
+                TaskEntry(
+                    label = "Curso",
+                    title = "Nombre Tarea",
+                    timestamp = "12 h",
+                    urgency = TaskUrgency.Urgent,
+                    iconRes = R.drawable.ic_paquito_docs_default,
+                ),
+                TaskEntry(
+                    label = "Curso",
+                    title = "Nombre Tarea",
+                    timestamp = "12 h",
+                    urgency = TaskUrgency.Urgent,
+                    iconRes = R.drawable.ic_paquito_docs_default,
+                ),
+                TaskEntry(
+                    label = "Curso",
+                    title = "Nombre Tarea",
+                    timestamp = "12 h",
+                    urgency = TaskUrgency.Future,
+                    iconRes = R.drawable.ic_paquito_docs_default,
+                ),
             ),
             pendingCount = 3,
         )

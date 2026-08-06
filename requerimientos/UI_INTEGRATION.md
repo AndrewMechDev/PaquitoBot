@@ -225,8 +225,80 @@ Hay 2 versiones de `/home` en Figma:
 
 La versión B cubre más JTBD del MVP (Dolor 3: pendientes dispersos con countdown real). **Recomendación**: implementar B primero, A queda como referencia / fallback.
 
+### Tokens observados en Home A (`351:644`) — re-extraído 2026-08-05 (Figma fileKey `EPz2duUog3AaMXRvPX9JNi`)
+
+Este frame es el que se terminó usando como canónico para el Home definitivo (después de descartar la fusión A+B). El layout es: saludo + fecha → card oscura con grid 3x2 de 6 días → card translúcida con 4 tareas + timestamps grandes.
+
+| Token | Valor Figma | Hex Compose | Plataforma |
+|---|---|---|---|
+| `surface/home-canvas` | `#A8B6BC` (fondo del frame) | `0xFFA8B6BC` | Compose: `PaquitoColors.SurfaceHomeCanvas` |
+| `surface/home-week-bg` | `#10151A` (card oscura calendario) | `0xFF10151A` | Compose: `PaquitoColors.SurfaceHomeWeekBg` |
+| `surface/home-task-list-bg` | `rgba(245,245,245,0.2)` (wrapper task_list) | `0x33F5F5F5` | Compose: `PaquitoColors.SurfaceHomeTaskListBg` |
+| `text/home-strong` | `#000000` (saludo "¡Bienvenido, {user}!") | `0xFF000000` | Compose: `PaquitoColors.TextHomeStrong` |
+| `text/home-muted` | `#4D4D4D` (fecha "Lunes, 5 de enero de 2026") | `0xFF4D4D4D` | Compose: `PaquitoColors.TextHomeMuted` |
+| `text/home-day-active-label` | `rgba(255,255,255,0.9)` (label día actual) | `0xE6FFFFFF` | Compose: `PaquitoColors.TextHomeDayActiveLabel` |
+| `text/home-day-label` | `rgba(28,27,31,0.9)` (label día normal) | `0xE61C1B1F` | Compose: `PaquitoColors.TextHomeDayLabel` |
+| `text/home-day-number` | `rgba(0,201,251,0.7)` (número día normal) | `0xB300C9FB` | Compose: `PaquitoColors.TextHomeDayNumber` |
+| `text/home-day-number-critical` | `rgba(255,0,0,0.7)` (número día crítico) | `0xB3FF0000` | Compose: `PaquitoColors.TextHomeDayNumberCritical` |
+| `text/timestamp-large` | `#29617B` (timestamp normal) | `0xFF29617B` | Compose: `PaquitoColors.TextTimestampLarge` |
+| `text/timestamp-large-accent` | `rgba(34,204,255,0.7)` (timestamp urgente) | `0xB322CCFF` | Compose: `PaquitoColors.TextTimestampLargeAccent` |
+| `text/timestamp-large-muted` | `rgba(0,201,251,0.5)` (timestamp futuro lejano) | `0x8000C9FB` | Compose: `PaquitoColors.TextTimestampLargeMuted` |
+| `text/home-task-label` | `rgba(28,27,31,0.5)` (label "Curso" sobre task info) | `0x801C1B1F` | Compose: `PaquitoColors.TextHomeTaskLabel` ✅ nuevo |
+
+**Nota sobre el "¡Bienvenido, {user}!"**: el placeholder literal del frame Figma. Cuando se conecte el backend, se reemplaza por el nombre real del estudiante.
+
+### Estructura del calendario semanal
+
+A diferencia del Home B (que tenía 7 días en fila horizontal con semáforo de colores), el Home A tiene **6 días en grid 3x2** dentro de una card oscura:
+
+```
+[ Lunes  ] [ Martes    ] [ Mierco.. ]
+[ 03     ] [ 04        ] [ 05       ]
+[ Jueves ] [ Viernes   ] [ Sabado   ]
+[ 06     ] [ 07        ] [ 08       ]   <- 08 rojo translúcido (crítico)
+```
+
+- El día actual (Lunes) tiene fondo `rgba(211,211,211,0.28)` y label blanco translúcido.
+- Los demás días tienen fondo `rgba(255,255,255,0.9)` y label gris translúcido.
+- El número del día siempre es 48sp; cambia el color del número según urgencia:
+  - Normal: cyan translúcido `rgba(0,201,251,0.7)`.
+  - Crítico: rojo translúcido `rgba(255,0,0,0.7)`.
+
+### Estructura del `task info` (lista de tareas)
+
+Layout horizontal (de Figma 365:896):
+
+```
+[ icono 24x24 ] [ col (label "Curso"      ] [ timestamp grande 40sp ]
+                [       titulo "Nombre Tarea") ]
+```
+
+- Icono: vector `ic_paquito_docs_default` (ícono "Docs" del navbar de Figma 365:814).
+- Label "Curso": DM Sans Medium 16sp, `rgba(28,27,31,0.5)`.
+- Título "Nombre Tarea": DM Sans SemiBold 20sp, `#1C1B1F`.
+- Timestamp grande 40sp DM Sans SemiBold: cambia color según urgencia:
+  - Normal: `#29617B`.
+  - Urgente: `rgba(34,204,255,0.7)`.
+  - Futuro: `rgba(0,201,251,0.5)`.
+
+### Assets nuevos / actualizados en `androidApp/src/main/res/drawable/`
+
+| Asset original en Figma | nodeId Figma | Nombre en `drawable/` |
+|---|---|---|
+| Paquito Bot icon | `I351:645;351:441` | `ic_paquito_bot.xml` (sin cambios, ya existía) |
+| Home fill | `I351:645;333:183;242:55` | `ic_paquito_home_fill.xml` (regenerado, 16x18) |
+| Book outline | `242:69` | `ic_paquito_book_outline.xml` (regenerado, 16x20) |
+| Book fill | `242:71` | `ic_paquito_book_fill.xml` (nuevo, 16x20) |
+| Calendar default | `127:177` | `ic_paquito_calendar_default.xml` (nuevo, 18x20) |
+| Calendar fill | `146:388` | `ic_paquito_calendar_fill.xml` (regenerado, 18x20) |
+| Docs default | `365:814` | `ic_paquito_docs_default.xml` (nuevo, 14x20) |
+| Divider horizontal | `535d4587-...` | `ic_paquito_divider.xml` (nuevo, 320x1) |
+
+> **Nota**: el frame nuevo trae SVGs más completos que los que tenía la versión anterior (los originales eran bounding-boxes vacíos `#D9D9D9`). Esta extracción reemplaza los placeholders por paths reales.
+
 ## Registro de cambios
 
 - 2026-08-05 — Creación inicial. Skill `figma-extract-paquitobot` creada. Plantillas de theme Compose + SwiftUI con marcadores `0xFF______`. Sin tokens reales todavía.
 - 2026-08-05 — Actualización de alcance: backend FastAPI vive en repo aparte; este repo KMP trabaja solo UI por ahora. Capa de datos/red/ViewModels se introduce cuando se conecte el backend al móvil.
 - 2026-08-05 — Refactor arquitectural: solo se trabaja Android en este repo. iOS queda fuera de scope (otra persona). `sharedUI/` eliminado del repo. Columna "Estado SwiftUI" removida de las tablas; la cobertura iOS se coordinará aparte.
+- 2026-08-05 — Re-extracción del frame `351:644` (Home A) desde el nuevo archivo Figma (`fileKey EPz2duUog3AaMXRvPX9JNi`, mismo canvas `109:97 - Main`). `HomeScreen.kt` sobrescrito con el layout fiel al frame: saludo + fecha → card oscura con grid 3x2 de 6 días → card translúcida con 4 tareas + timestamps grandes 40sp. Fusión A+B descartada (no satisfacía al usuario). 9 íconos nuevos/regenerados: `ic_paquito_home_fill.xml`, `ic_paquito_book_outline.xml`, `ic_paquito_book_fill.xml`, `ic_paquito_calendar_default.xml`, `ic_paquito_calendar_fill.xml`, `ic_paquito_docs_default.xml`, `ic_paquito_divider.xml`. Nuevo token: `TextHomeTaskLabel = Color(0x801C1B1F)`.

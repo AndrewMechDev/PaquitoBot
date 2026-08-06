@@ -51,9 +51,6 @@ private fun AppRoot() {
 
     when (rootScreen) {
         RootScreen.Home -> HomeScreen(
-            onDayClick = { /* TODO: navegar a detalle de dia */ },
-            onPrimaryAction = { /* TODO: abrir entrega */ },
-            onSecondaryAction = { /* TODO: programar recordatorio */ },
             currentTab = currentTab,
             onTabSelected = { currentTab = it },
             onPaquitoClick = { rootScreen = RootScreen.Chat },

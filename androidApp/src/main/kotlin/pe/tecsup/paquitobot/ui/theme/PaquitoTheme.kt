@@ -51,6 +51,7 @@ object PaquitoColors {
     val TextTimestampLarge      = Color(0xFF29617B) // timestamp grande normal
     val TextTimestampLargeAccent = Color(0xB322CCFF) // rgba(34,204,255,0.7)
     val TextTimestampLargeMuted  = Color(0x8000C9FB) // rgba(0,201,251,0.5) futuro lejano
+    val TextHomeTaskLabel       = Color(0x801C1B1F) // rgba(28,27,31,0.5) label "Curso" sobre task info
 
     // Superficies
     val Background     = Color(0xFFFFFFFF) // token: surface/background (fondo Welcome + Home)
@@ -78,7 +79,7 @@ object PaquitoColors {
     val TextDayNumberInactive = Color(0xFF4D5866) // número del día inactivo
     val TextTimestamp    = Color(0xFF98A1AC) // "2 d", "hace cuanto"
     val TextLink         = Color(0xFF0393C9) // "Ver todo" (link secundario Home B)
-    val TextDisabled     = Color(0xFF______) // token: text/disabled - aún no observado
+    val TextDisabled     = Color(0xFFB0B7BF) // token: text/disabled - aún no observado, placeholder gris claro
 
     // Bordes
     val BorderDefault  = Color(0x120D1520) // rgba(13,21,32,0.07) (divisores cards)
