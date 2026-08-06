@@ -144,11 +144,13 @@ fun ChatScreen(
         // de HomeScreen.kt para que la Navbar se vea en la misma posicion en
         // todas las pantallas. El Box usa contentAlignment=Center para
         // centrar el Row de la Navbar (que ya no usa fillMaxWidth internamente).
+        // Iteracion 2026-08-06 01:37: padding(bottom) unificado a 24.dp para
+        // que la Navbar respire del borde inferior tanto en Home como en Chat.
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(bottom = 18.dp),
+                .padding(bottom = 24.dp),
             contentAlignment = Alignment.Center,
         ) {
             Navbar(

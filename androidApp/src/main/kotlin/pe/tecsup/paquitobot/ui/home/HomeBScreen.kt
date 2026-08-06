@@ -164,11 +164,15 @@ fun HomeBScreen(
         }
 
         // NAVBAR anclada abajo.
+        // Iteracion 2026-08-06 01:37: padding lateral removido (lo maneja
+        // internamente el Navbar via `horizontalPadding`) para evitar
+        // doble padding y que se desfase con las demas pantallas.
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(bottom = 24.dp, start = 16.dp, end = 16.dp),
+                .padding(bottom = 24.dp),
+            contentAlignment = Alignment.Center,
         ) {
             Navbar(
                 currentTab = currentTab,

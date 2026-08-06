@@ -86,13 +86,14 @@ fun Navbar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        // Grupo de tabs (fondo pill translucido).
+        // Grupo de tabs SIN fondo wrapper.
+        // Iteracion 2026-08-06 01:37: el fondo blanco translucido
+        // (Color.White.copy(alpha = 0.1f) = #FFFFFF) se veia como un
+        // "borde/contorno" rectangular blanco alrededor de los tabs en
+        // pantallas claras como el Home (fondo #E5F5FB). Se elimina.
         // Width fijo: 3 tabs * 72dp + 2 gaps * 6dp + padding 4dp * 2 = 232dp.
         Row(
-            modifier = Modifier
-                .clip(RoundedCornerShape(50))
-                .background(Color.White.copy(alpha = 0.1f))
-                .padding(4.dp),
+            modifier = Modifier.padding(4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {

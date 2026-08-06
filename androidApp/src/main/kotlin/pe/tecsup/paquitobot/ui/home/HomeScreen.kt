@@ -109,11 +109,16 @@ fun HomeScreen(
             }
         }
 
-        // 4. Navbar inferior (centrada horizontal, pegada abajo).
+        // 4. Navbar inferior (centrada horizontal, separada del borde).
+        // Iteracion 2026-08-06 01:37: la Navbar quedaba pegada al borde
+        // inferior de la pantalla. Se agrega padding(bottom = 24dp) al Box
+        // contenedor para que respire del borde inferior. El padding lateral
+        // lo maneja el propio Navbar mediante `horizontalPadding`.
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(bottom = 24.dp),
             contentAlignment = Alignment.Center,
         ) {
             Navbar(
@@ -245,14 +250,19 @@ private fun WeekDayCell(day: WeekDayData, modifier: Modifier = Modifier) {
         PaquitoColors.TextHomeDayNumber
     }
     // Cell compacto: 64dp de altura minima permite 3 filas en una card de 220dp.
+    // El contenido del cell esta centrado horizontalmente para evitar que
+    // los labels cortos ("Lunes", "Jueves") queden pegados a la izquierda
+    // con un hueco blanco visible a la derecha cuando el cell se estira
+    // con weight(1f). El Figma real muestra el "03" centrado dentro del
+    // cell, no alineado a Start.
     Column(
         modifier = modifier
             .defaultMinSize(minHeight = 64.dp)
             .clip(RoundedCornerShape(20.dp))
             .background(cellBg)
-            .padding(horizontal = 10.dp, vertical = 8.dp),
+            .padding(horizontal = 6.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.Start,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = day.dayOfWeek,
@@ -307,19 +317,17 @@ private fun HomeTasksSection(title: String, items: List<TaskEntry>) {
             )
         }
 
-        // Card wrapper translucida con la lista adentro.
-        // La lista interna usa scroll vertical sin barra visible: cuando hay mas
-        // items de los que caben en pantalla, el usuario puede deslizar.
+        // Lista de tareas directamente sobre el fondo del screen, SIN el
+        // card wrapper translucido (rgba(245,245,245,0.2)) que generaba un
+        // rectangulo blanco tenue #FDFDFD alrededor de la lista. Se
+        // mantienen los divisores internos y el scroll vertical.
         val taskScroll = rememberScrollState()
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .defaultMinSize(minHeight = 80.dp)
                 .heightIn(max = 280.dp)
-                .clip(RoundedCornerShape(28.dp))
-                .background(PaquitoColors.SurfaceHomeTaskListBg)
-                .verticalScroll(taskScroll)
-                .padding(6.dp),
+                .verticalScroll(taskScroll),
         ) {
             items.forEachIndexed { index, item ->
                 if (index > 0) {
