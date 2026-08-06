@@ -30,7 +30,18 @@ Snapshot vivo del archivo Figma actual para guiar extracciones. nodeIds verifica
 | Frame | nodeId | Estado implementación |
 |---|---|---|
 | `/home` saludo + semana + tareas (versión A, navbar fija, "¡Bienvenido, {user}!") | `351:644` | **Implementado** (`HomeScreen.kt`) — ver notas abajo, tiene desviaciones deliberadas del Figma actual |
-| `/home` extendido (header "Hola, Andrea", calendario semanal L-D, "Paquito te avisó" lista, alerta "VENCE EN 6 H" para Cálculo II Lab 4) | `364:219` | Pendiente (descartada como candidata; se optó por seguir iterando sobre `351:644`) |
+| `/home` extendido (header "Hola, Andrea", calendario semanal L-D, "Paquito te avisó" lista, alerta "VENCE EN 6 H" para Cálculo II Lab 4) | `364:219` | Descartada (ver `HomeBScreen.kt`, borrado — pantalla huérfana nunca cableada a la navegación) |
+
+### Chat (`/chat`)
+
+| Frame | nodeId | Estado implementación |
+|---|---|---|
+| `/chat` welcome + burbujas + input (flecha atrás, "Hola, {nombre}", sin header glassmorphism) | `438:662` | **Implementado** (`ChatScreen.kt`) — reemplaza el diseño anterior (`285:324`, header glassmorphism con avatar+chip LMS). Ver desviaciones abajo. |
+
+#### Desviaciones deliberadas de `438:662` vs código
+
+- **Chip de sincronización**: no está en este frame tal cual, pero se mantiene (fusionado con la zona del saludo) porque reemplaza al divisor "HOY" y al indicador "sincronizado hace 2 min" del header viejo — decisión explícita del usuario, no sacar en una futura re-extracción.
+- **Chips de sugerencia** (`SuggestionChip`, fila scrolleable arriba del input): no están en este frame, pero se mantienen restyleados a plano — el usuario los encontró útiles y pidió conservarlos.
 
 #### Desviaciones deliberadas de `351:644` vs código (registrar aquí, no perderlas en la próxima re-extracción)
 
@@ -68,9 +79,9 @@ Snapshot vivo del archivo Figma actual para guiar extracciones. nodeIds verifica
 | `navbar` | `333:224` | Bottom navbar, íconos: home, book, calendar, lab_profile, frame_person |
 | `navbar` estados | `242:198` Default, `242:200` Activate | Reutilizar con parámetro `isActive` |
 | `paquito_bot` | `333:210` | Mascota grande 70x64 |
-| `task info` | `365:894` | Item de lista de tarea con badge izquierda, título, curso, hora |
-| `task_list` | `365:973` | Lista vertical de `task info` |
-| `day` | `365:1070` | Día del calendario 73x63 (variantes para día seleccionado) |
+| `task info` | `365:894` | Item de lista de tarea (Home B, `364:219`). **Componente `TaskInfo.kt` borrado 2026-08-06** (huérfano tras descartar Home B) — si se re-extrae Home B en el futuro, recrear desde cero con datos frescos, no asumir que sigue existiendo. |
+| `task_list` | `365:973` | Lista vertical de `task info` (Home B). **`TaskList.kt` borrado 2026-08-06**, mismo motivo. |
+| `day` | `365:1070` | Día del calendario (Home B). **`Day.kt` borrado 2026-08-06**, mismo motivo. Home A (`351:644`) usa su propio `WeekDayCell` privado dentro de `HomeScreen.kt`, no este componente. |
 
 ## Íconos del set (en `112:150 - icons`)
 
