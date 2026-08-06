@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -16,18 +17,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import pe.tecsup.paquitobot.ui.chat.components.ChatHeader
-import pe.tecsup.paquitobot.ui.chat.components.SyncStatus
 import pe.tecsup.paquitobot.ui.components.ChatInput
 import pe.tecsup.paquitobot.ui.components.ChatMessage
 import pe.tecsup.paquitobot.ui.components.Message
 import pe.tecsup.paquitobot.ui.components.MessageRole
-import pe.tecsup.paquitobot.ui.components.NavTab
-import pe.tecsup.paquitobot.ui.components.Navbar
 import pe.tecsup.paquitobot.ui.components.SuggestionChip
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
@@ -36,26 +33,34 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  * Pantalla completa del chat con Paquito, fiel al frame Figma `438:662`.
  *
  * Estructura:
- *   [Header: flecha atras + "Hola, {nombre}" + subtitulo + chip de sync]
- *   [Lista de mensajes (burbujas bot + usuario, planas)]
+ *   [Header: flecha atras + "Hola, {nombre}" + subtitulo]
+ *   [Lista de mensajes (burbujas bot + usuario + avisos de sistema, planas)]
  *   [Row scrolleable de chips de sugerencia] (se mantiene, no viene del
  *     frame actual pero el usuario pidio conservarlo)
  *   [Input inferior + boton enviar]
- *   [Navbar inferior con badge]
  *
- * Mientras no hay backend, los mensajes, sugerencias y [syncStatus] son
- * mock/hardcoded. Cuando exista logica real, [syncStatus] se conecta al
- * estado real de sincronizacion con el LMS.
+ * Iteracion 2026-08-06: se saca la Navbar flotante de esta pantalla — el
+ * chat ya tiene su propia flecha de "volver" en el header, mostrar ademas
+ * el navbar completo (Home/Cursos/Horarios/FAB) es navegacion duplicada y
+ * rompe la composicion visual de una pantalla de chat a pantalla completa.
+ *
+ * Iteracion 2026-08-06 (teclado): `Modifier.imePadding()` en el Column
+ * raiz para que, al abrir el teclado, el contenido se desplace limpio
+ * hacia arriba (estilo WhatsApp) en vez de que el teclado tape el input.
+ * Complementa `android:windowSoftInputMode="adjustResize"` en el Manifest.
+ *
+ * Iteracion 2026-08-06 (estado de conexion): ya no hay un chip fijo de
+ * "conectado/desconectado" en el header (se sacó, rompía el diseño). El
+ * estado de conexion se comunica como un mensaje mas en el flujo via
+ * `MessageRole.System` (ver `Message.kt`) - se dispara desde donde se
+ * detecte la falla real cuando exista logica de red.
+ *
+ * Mientras no hay backend, los mensajes y sugerencias son mock/hardcoded.
  */
 @Composable
 fun ChatScreen(
     userName: String = "{nombre}",
-    syncStatus: SyncStatus = SyncStatus.Synced,
-    currentTab: NavTab = NavTab.Inicio,
-    onTabSelected: (NavTab) -> Unit = {},
-    notificationCount: Int? = 3,
-    onPaquitoClick: () -> Unit = {},
-    onBackClick: () -> Unit = onPaquitoClick,
+    onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var messages by remember {
@@ -67,13 +72,13 @@ fun ChatScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .imePadding()
                 .padding(horizontal = 24.dp)
-                .padding(bottom = 110.dp), // espacio para la navbar
+                .padding(bottom = 24.dp),
         ) {
-            // Header: flecha atras + saludo + chip de sincronizacion.
+            // Header: flecha atras + saludo.
             ChatHeader(
                 userName = userName,
-                syncStatus = syncStatus,
                 onBackClick = onBackClick,
             )
 
@@ -134,28 +139,6 @@ fun ChatScreen(
                         body = "Buena pregunta. Estoy conectandome al LMS...",
                     )
                 },
-            )
-        }
-
-        // Navbar anclada abajo (la "X" central abre el chat, ya estamos aca).
-        // Importante: padding inferior y horizontal DEBEN ser identicos a los
-        // de HomeScreen.kt para que la Navbar se vea en la misma posicion en
-        // todas las pantallas. El Box usa contentAlignment=Center para
-        // centrar el Row de la Navbar (que ya no usa fillMaxWidth internamente).
-        // Iteracion 2026-08-06 01:37: padding(bottom) unificado a 24.dp para
-        // que la Navbar respire del borde inferior tanto en Home como en Chat.
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(bottom = 24.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Navbar(
-                currentTab = currentTab,
-                onTabSelected = onTabSelected,
-                onPaquitoClick = onPaquitoClick,
-                notificationCount = notificationCount,
             )
         }
     }

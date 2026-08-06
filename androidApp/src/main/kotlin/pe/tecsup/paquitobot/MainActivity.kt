@@ -20,9 +20,9 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
 /**
- * Demo de 4 tab del navbar: muestra la pantalla correspondiente segun el tab.
- * Mientras no haya navegacion real, el tab "Paquito btn" se usa como toggle
- * entre Home B (vista principal) y Chat (vista conversacional).
+ * Mientras no haya navegacion real (Compose Navigation), el boton Paquito
+ * del Navbar se usa como toggle entre Home (vista principal) y Chat (vista
+ * conversacional, con su propia flecha de "volver" para regresar a Home).
  */
 private enum class RootScreen { Home, Chat }
 
@@ -56,9 +56,7 @@ private fun AppRoot() {
             onPaquitoClick = { rootScreen = RootScreen.Chat },
         )
         RootScreen.Chat -> ChatScreen(
-            currentTab = currentTab,
-            onTabSelected = { currentTab = it; rootScreen = RootScreen.Home },
-            onPaquitoClick = { rootScreen = RootScreen.Home },
+            onBackClick = { rootScreen = RootScreen.Home },
         )
     }
 }

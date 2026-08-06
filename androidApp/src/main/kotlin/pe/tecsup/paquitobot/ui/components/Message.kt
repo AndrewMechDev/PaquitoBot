@@ -24,8 +24,15 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
 /**
  * Roles de un mensaje en el chat de Paquito.
+ *
+ * [System] es un aviso de estado (ej. "sin conexión", "no se pudo enviar
+ * tu mensaje") que aparece COMO UN ITEM MAS del flujo de mensajes, no como
+ * chrome fijo en el header. Iteracion 2026-08-06: reemplaza al chip de
+ * estado de conexion que existia antes en `ChatHeader.kt` — el usuario lo
+ * encontro visualmente ruidoso ("rompe el diseño"). Mismo patron que usan
+ * apps de chat consolidadas (WhatsApp, etc.) para estos avisos.
  */
-enum class MessageRole { Bot, User }
+enum class MessageRole { Bot, User, System }
 
 /**
  * Mensaje individual del chat.
@@ -55,8 +62,9 @@ fun Message(
     modifier: Modifier = Modifier,
 ) {
     when (message.role) {
-        MessageRole.Bot  -> BotBubble(message, modifier)
-        MessageRole.User -> UserBubble(message, modifier)
+        MessageRole.Bot    -> BotBubble(message, modifier)
+        MessageRole.User   -> UserBubble(message, modifier)
+        MessageRole.System -> SystemNotice(message, modifier)
     }
 }
 
@@ -88,9 +96,9 @@ private fun BotBubble(message: ChatMessage, modifier: Modifier) {
         ) {
             Text(
                 text = message.body,
-                fontSize = 20.sp,
+                fontSize = 15.sp,
                 color = Color.Black,
-                lineHeight = 24.sp,
+                lineHeight = 20.sp,
             )
             if (message.footnote != null) {
                 BubbleFootnote(text = message.footnote)
@@ -115,11 +123,33 @@ private fun UserBubble(message: ChatMessage, modifier: Modifier) {
         ) {
             Text(
                 text = message.body,
-                fontSize = 20.sp,
+                fontSize = 15.sp,
                 color = PaquitoColors.TextOnWhite,
-                lineHeight = 24.sp,
+                lineHeight = 20.sp,
             )
         }
+    }
+}
+
+/**
+ * Aviso de sistema (sin conexión, mensaje no entregado, etc.), centrado y
+ * discreto - un chip chico, no una burbuja como los mensajes de Bot/User.
+ */
+@Composable
+private fun SystemNotice(message: ChatMessage, modifier: Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            text = message.body,
+            fontSize = 12.sp,
+            color = PaquitoColors.TextOnCardMuted,
+            modifier = Modifier
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color(0x0D0D1520))
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+        )
     }
 }
 

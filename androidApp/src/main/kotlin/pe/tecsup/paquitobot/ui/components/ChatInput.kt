@@ -19,7 +19,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -97,11 +96,9 @@ private fun SendButton(onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Image(
-            painter = painterResource(id = R.drawable.ic_paquito_send_arrow),
+            painter = painterResource(id = R.drawable.ic_paquito_send),
             contentDescription = "Enviar mensaje",
-            modifier = Modifier
-                .size(14.dp)
-                .rotate(-45f),
+            modifier = Modifier.size(width = 17.dp, height = 14.dp),
             contentScale = ContentScale.Fit,
         )
     }

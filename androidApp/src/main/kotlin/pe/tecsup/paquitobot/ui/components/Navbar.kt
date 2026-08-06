@@ -164,25 +164,17 @@ fun Navbar(
         // solido plano o glass claro. El icono vuelve a fill BLANCO (ver
         // ic_paquito_bot.xml) porque el fondo del FAB es oscuro de nuevo.
         //
-        // Iteracion 2026-08-06 (re-extraccion "Paquito-v2", frame 351:644):
-        // recalculado el tamano del FAB y la posicion del badge a partir de
-        // la geometria real de Figma. El badge (23x23px, borde 3px) en
-        // Figma sobresale del FAB apenas ~4px arriba y ~2px a la derecha -
-        // practicamente pegado, NO flotando separado como en la iteracion
-        // anterior (offset -8,-6 sobre un contenedor de 72dp/FAB 56dp
-        // quedaba desproporcionado). Ahora:
-        //   - FAB 64dp (antes 56dp) - proporcion correcta contra el resto
-        //     del Navbar (pill de tabs) segun el ancho real del navbar en
-        //     Figma (384.86px).
-        //   - Contenedor externo 80dp (64 + 8dp de margen a cada lado,
-        //     igual que antes) para dar lugar a la sombra del FAB.
-        //   - El badge se ancla DIRECTO al Box del FAB (64dp), no al
-        //     contenedor externo de 80dp, con un offset pequeno hacia
-        //     afuera (no negativo/hacia adentro) que replica el "apenas
-        //     asoma" real de Figma.
-        Box(modifier = Modifier.size(width = 80.dp, height = 80.dp)) {
+        // Iteracion 2026-08-06 (feedback "el FAB se sale de la navbar"): el
+        // FAB (64dp) quedaba mas alto que la pill de tabs, sobresaliendo
+        // por arriba/abajo. La pill mide ~60dp de alto real (NavTabItem:
+        // padding vertical 6dp*2 + icono 22dp + spacedBy 2dp + texto 12sp
+        // ~16dp = 52dp, mas el padding(4dp)*2 del Row contenedor = 60dp).
+        // FAB bajado de 64dp a 60dp para calzar EXACTO con esa altura -
+        // contenedor externo 76dp (60 + 8dp de margen a cada lado, igual
+        // que antes) para dar lugar a la sombra.
+        Box(modifier = Modifier.size(width = 76.dp, height = 76.dp)) {
             Box(
-                modifier = Modifier.align(Alignment.Center).size(width = 64.dp, height = 64.dp),
+                modifier = Modifier.align(Alignment.Center).size(width = 60.dp, height = 60.dp),
             ) {
                 Box(
                     modifier = Modifier
@@ -214,29 +206,30 @@ fun Navbar(
                         .clickable(onClick = onPaquitoClick),
                     contentAlignment = Alignment.Center,
                 ) {
-                    // El agrandado ~20% (55x44dp) ya no es indispensable
-                    // para tapar espacio negativo (el fondo oscuro lo
-                    // disimula igual que en la referencia de Figma), pero
-                    // se mantiene porque da un mejor encuadre visual del
-                    // icono dentro del circulo (menos margen muerto).
+                    // Icono agrandado (proporcional al FAB de 60dp, misma
+                    // relacion ~0.86 que antes) para buen encuadre dentro
+                    // del circulo, manteniendo el aspect ratio 50:40 real.
                     Image(
                         painter = painterResource(id = R.drawable.ic_paquito_bot),
                         contentDescription = "Abrir chat con Paquito",
-                        modifier = Modifier.size(width = 55.dp, height = 44.dp),
+                        modifier = Modifier.size(width = 52.dp, height = 42.dp),
                         contentScale = ContentScale.Fit,
                     )
                 }
 
                 // Badge de notificaciones (Figma 285:665, frame 351:644):
-                // 23x23px, rounded, bg #FF445A, border 3px #FAFBFC, texto
-                // blanco Bold 11sp. Anclado al borde top-end del FAB mismo
-                // (no del contenedor externo), con offset pequeno hacia
-                // afuera para el "apenas asoma" fiel a Figma.
+                // rounded, bg #FF445A, border 2.5dp #FAFBFC, texto blanco
+                // Bold 11sp. Anclado al borde top-end del FAB mismo (no del
+                // contenedor externo).
+                // Iteracion 2026-08-06 (feedback "se mezcla con el casco"):
+                // offset (3,-3) dejaba el badge pegado/superpuesto al borde
+                // del casco negro. Aumentado a (6,-6) para que quede
+                // claramente separado, flotando afuera del circulo.
                 if (notificationCount != null && notificationCount > 0) {
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .offset(x = 3.dp, y = (-3).dp)
+                            .offset(x = 6.dp, y = (-6).dp)
                             .size(width = 22.dp, height = 22.dp)
                             .clip(RoundedCornerShape(11.dp))
                             .background(PaquitoColors.StateDanger)
