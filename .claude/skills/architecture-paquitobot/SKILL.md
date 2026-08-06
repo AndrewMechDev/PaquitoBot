@@ -16,18 +16,18 @@ Activar cuando:
 - Se agrega un servicio externo nuevo (OneSignal, Twilio, RAG, Supabase, etc.).
 - Se debate MVVM / MVI / Clean Architecture / otra opción.
 
-Contexto PaquitoBot (alcance actual, 2026-08-05):
+Contexto PaquitoBot (alcance actual, 2026-08-06):
 - Producto: asistente académico para TECSUP (3 dolores, 3 perfiles de estudiante).
-- Stack de este repo: **solo Android con Jetpack Compose + Material 3**.
-- **iOS queda fuera de scope**: otra persona lo implementa en su propio repositorio / fork. Este repo no contiene ni modifica código iOS.
-- UI **no se comparte** entre plataformas. `sharedUI/` fue eliminado del repo por contener Composables que iban contra esa regla.
+- Stack de este repo: Android con Jetpack Compose + Material 3, **y ahora también iOS con SwiftUI** (un colaborador se suma a partir de 2026-08-06 — ver decisión abajo).
+- **Android e iOS conviven en este mono-repo**. Un colaborador dedicado a iOS trabaja en su propia rama (`feature/ios-<algo>` desde `develop`, vía `gitflow-merge-directo`), consumiendo `sharedLogic` como framework — NO en un fork aparte. Antes de que empiece, hay que descomentar los targets `iosArm64`/`iosSimulatorArm64` en `sharedLogic/build.gradle.kts` (ver Hard Rules).
+- UI **no se comparte** entre plataformas: Android usa Compose nativo, iOS usa SwiftUI nativo. `sharedUI/` fue eliminado del repo por contener Composables que iban contra esa regla — no reintroducir un módulo de UI compartida.
 - Backend: FastAPI en repo aparte. Mientras el usuario no indique conexión, la capa de datos usa mocks locales.
 - Servicios externos planeados: OneSignal (push), Twilio (aún sin caso confirmado), RAG (no confirmado), Supabase (no confirmado).
-- Estado actual: rama `feature/design-figma-extract` con skills de Figma + svg-to-vector-drawable + architecture. El módulo `androidApp` ya existe; queda crear las carpetas `theme/`, `presentation/`, `domain/`, `data/` dentro de él.
+- Estado actual: rama `feature/design-figma-extract` con skills de Figma + svg-to-vector-drawable + architecture, ya mergeada a `develop`. El módulo `androidApp` ya existe; **la estructura MVVM `presentation/domain/data` documentada en este skill es aspiracional** — el código real de Home/Navbar vive hoy en `androidApp/src/main/kotlin/pe/tecsup/paquitobot/ui/{home,components,theme}/` sin ViewModel (fase "solo UI", datos hardcoded), no en `presentation/screens/`. Al introducir ViewModel + backend real, ahí sí migrar a la estructura de carpetas de abajo.
 
 ## Hard Rules
 
-- **Solo Android en este repo**. Toda referencia a iOS, SwiftUI o `sharedUI/` es histórica y debe ignorarse.
+- **Android e iOS conviven en este repo** (mono-repo KMP). Cualquier trabajo de arquitectura debe considerar que `sharedLogic` se consume desde ambas plataformas — no asumir "solo Android" al diseñar interfaces nuevas en `domain/`.
 - Patrón obligatorio por feature: **MVVM con separación de capas (Clean Architecture "light")**. Tres capas: `presentation/` → `domain/` → `data/`.
 - ViewModels exponen `StateFlow` o `LiveData` con un único modelo inmutable por pantalla (`HomeUiState`, etc.). Composable recibe estado + eventos y renderiza.
 - `data/` vive en `androidMain` (no en `commonMain`) porque por ahora solo hay Android. Si en el futuro se vuelve a sumar `commonMain`, las clases puras de Kotlin van ahí.
@@ -44,7 +44,7 @@ Contexto PaquitoBot (alcance actual, 2026-08-05):
 |---|---|
 | Crear una pantalla nueva | Definir UiState + (eventualmente) ViewModel con `StateFlow`. Mientras solo UI, los datos van hardcoded en el Composable. |
 | Consumir datos del LMS / API | Repository interface (`domain/repository/`) + impl mock (`data/repository/MockLmsRepository.kt`). Cuando llegue el back: agregar impl remota. |
-| Notificación push | `interface NotificationService` en `domain/` + impl Android en `data/` (Firebase/OneSignal). ViewModel solo conoce la interfaz. iOS no aplica a este repo. |
+| Notificación push | `interface NotificationService` en `domain/` + impl Android en `data/` (Firebase/OneSignal) + impl iOS equivalente cuando el colaborador de iOS la necesite. ViewModel/lado Swift solo conoce la interfaz. |
 | Cliente HTTP | Ktor Client con kotlinx.serialization. Configurar dentro de `data/remote/` con engine OkHttp para Android (o CIO multiplataforma si se vuelve a sumar iOS). |
 | Manejo de errores | `Result<T, AppError>` o jerarquía sellada `sealed class AppError { Network, Timeout, Unauthorized, Unknown }`. Mapear errores del backend en repository. |
 | Loading state | Parte del UiState (`Loading | Success(data) | Error(msg)`). NO manejar loading con flags sueltos en el ViewModel. |
@@ -97,8 +97,14 @@ androidApp/
     │   └── remote/              # (futuro) Remote*Repository cuando se conecte FastAPI
     └── MainActivity.kt          # entry point, llama a App()
 
-sharedLogic/                     # se mantiene como módulo aparte para futura iOS
+sharedLogic/                     # modulo compartido Android+iOS (targets iOS por descomentar)
 └── src/commonMain/kotlin/...    # clases puras compartibles (Platform info, etc.)
+
+iosApp/                          # proyecto Xcode nativo, consume sharedLogic como framework
+└── iosApp/
+    ├── Theme/                   # Theme.swift, Colors.swift, Typography.swift
+    ├── Components/              # SwiftUI equivalentes a androidApp/ui/components/
+    └── Screens/                 # SwiftUI equivalentes a androidApp/ui/{home,onboarding}/
 ```
 
 ### Nota sobre rutas Compose

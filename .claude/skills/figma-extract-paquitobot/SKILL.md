@@ -1,6 +1,6 @@
 ---
 name: figma-extract-paquitobot
-description: "Trigger: figma, design system, tokens, theme, extraer pantallas, get_variable_defs, get_design_context, get_metadata, get_screenshot, Main canvas, assets. Extrae design system y pantallas del archivo Figma Paquito (copia) hacia código nativo por plataforma (Compose Android + SwiftUI iOS), reutilizando el theme compartido."
+description: "Trigger: figma, design system, tokens, theme, extraer pantallas, get_variable_defs, get_design_context, get_metadata, get_screenshot, Main canvas, assets. Extrae design system y pantallas del archivo Figma Paquito-v2 hacia código nativo por plataforma (Compose Android + SwiftUI iOS), reutilizando el theme compartido."
 license: Apache-2.0
 metadata:
   author: "AndrewMechDev"
@@ -9,17 +9,17 @@ metadata:
 
 ## Activation Contract
 
-Activar cuando el trabajo implique extraer assets, colores, tipografía, componentes o pantallas del archivo Figma "Paquito (copia)" para integrarlos al proyecto KMP. Cubre tres responsabilidades acopladas (design system, Onboarding, Inicio) en una sola skill porque el skill-creator recomienda explícitamente este patrón cuando las áreas comparten contexto casi siempre.
+Activar cuando el trabajo implique extraer assets, colores, tipografía, componentes o pantallas del archivo Figma "Paquito-v2" para integrarlos al proyecto KMP. Cubre tres responsabilidades acopladas (design system, Onboarding, Inicio) en una sola skill porque el skill-creator recomienda explícitamente este patrón cuando las áreas comparten contexto casi siempre.
 
-Estructura real del archivo (validada contra `get_metadata` 2026-08-05):
+Estructura real del archivo (validada contra `get_metadata`/`get_design_context` 2026-08-06):
 - Página raíz única: `112:146 - assets?` (contiene íconos y componentes, pero **DESACTUALIZADA**).
 - Canvas principal: `109:97 - Main` (es la **fuente de verdad actual** de colores, tipografía, íconos en uso y pantallas).
 - Remoto: `https://github.com/AndrewMechDev/PaquitoBot.git`
-- fileKey: `Piy1K37xHS9jB1qXaaVtuQ`
+- fileKey: `KCxxCAY076SALBFB5UB4zf` (archivo "Paquito-v2"; supersede al `Piy1K37xHS9jB1qXaaVtuQ` de "Paquito (copia)")
 
 ## Hard Rules
 
-- **Alcance: solo Android en este repo**. iOS lo implementa otra persona en su propio repositorio/fork. Este repo no genera código SwiftUI ni `iosApp/` assets.
+- **Android e iOS conviven en este repo** (mono-repo KMP, decisión 2026-08-06). Un colaborador dedicado a iOS trabaja en rama propia (`gitflow-merge-directo`) dentro de este mismo repositorio, consumiendo `sharedLogic` como framework — NO en un fork aparte. Este repo SÍ genera código SwiftUI y assets en `iosApp/` cuando corresponda.
 - **Alcance del repo**: solo UI/visual. El backend vive en un repositorio aparte (FastAPI). No construir capa de red, repositorios ni ViewModels con datos reales hasta que el usuario indique que se va a conectar el backend al móvil.
 - **Main canvas (`109:97`) es la fuente de verdad**, no `assets?` (`112:146`). Si hay conflicto entre ambos, gana Main.
 - Antes de `get_variable_defs` o `get_screenshot`, el usuario **debe tener el nodo seleccionado en la app de Figma**; estas herramientas devuelven error "nothing selected" si se llaman sin selección activa, aunque se les pase `nodeId`.
@@ -42,7 +42,7 @@ Estructura real del archivo (validada contra `get_metadata` 2026-08-05):
 ## Execution Steps
 
 ### Paso 0 — Selección activa
-Pedir al usuario que tenga abierto el archivo Figma "Paquito (copia)" y el nodo relevante **seleccionado** antes de invocar `get_variable_defs`, `get_screenshot` o `get_design_context`. Sin selección, esas herramientas fallan.
+Pedir al usuario que tenga abierto el archivo Figma "Paquito-v2" y el nodo relevante **seleccionado** antes de invocar `get_variable_defs`, `get_screenshot` o `get_design_context`. Sin selección, esas herramientas fallan.
 
 ### Paso 1 — Identificar el frame (read-only)
 - `get_metadata` sobre `109:97` para refrescar mapa de frames si han pasado semanas desde la última consulta.
@@ -52,21 +52,21 @@ Pedir al usuario que tenga abierto el archivo Figma "Paquito (copia)" y el nodo 
 1. Usuario selecciona canvas Main (`109:97`) y frames clave (navbar, task_list, day) en la app Figma.
 2. `get_variable_defs` → devuelve pares `nombre → valor`. **Guardar la respuesta cruda** en `requerimientos/UI_INTEGRATION.md` antes de transformarla.
 3. Transformar a:
-   - `composeApp/src/commonMain/kotlin/.../theme/Theme.kt` con paleta + tipografía + spacing usando la API de Compose (`Color(0xFFXXXXXX)`, `Typography(...)`, `Shapes(...)`).
+   - `androidApp/src/main/kotlin/pe/tecsup/paquitobot/ui/theme/PaquitoTheme.kt` con paleta + tipografía + spacing usando la API de Compose (`Color(0xFFXXXXXX)`, `Typography(...)`, `Shapes(...)`).
    - `iosApp/iosApp/Theme/Theme.swift` + `Colors.swift` + `Typography.swift` con APIs nativas SwiftUI (`Color(.hex)`, `Font.system(...)`).
-4. Ambos archivos consumen los **mismos hex del step 2**: la fuente de verdad es única.
+4. Ambos archivos consumen los **mismos hex del step 2**: la fuente de verdad es única. No hay módulo de UI compartida (`sharedUI` fue eliminado del repo) — cada plataforma es nativa, pero los hex/valores de diseño deben coincidir entre `PaquitoTheme.kt` y `Theme.swift`.
 
 ### Paso 3 — Íconos (batch)
 - Exportar el set completo de íconos en una sola operación (no uno por uno) desde Figma.
 - Guardar:
-  - Compose: `composeApp/src/commonMain/composeResources/drawable/<nombre>.xml` (vectoriales) o PNG según corresponda.
+  - Android: `androidApp/src/main/res/drawable/ic_paquito_<nombre>.xml` (vector drawable — usar la skill `svg-to-vector-drawable` para la conversión).
   - iOS: `iosApp/iosApp/Assets.xcassets/<icon>.imageset/` con PDF vectorial.
 - **No dibujar íconos a mano** desde `get_design_context`. Solo descargar el asset exportado y referenciarlo.
 
 ### Paso 4 — Componentes reutilizables
 - Extraer componentes (navbar, task_list, day, paquito_bot) **una vez** vía `get_design_context` + `get_screenshot` (validación).
-- Implementar como componentes compartidos por plataforma:
-  - Compose: `composeApp/src/commonMain/kotlin/.../components/<Nombre><Componente>.kt` (parámetros para variantes detectadas en Figma).
+- Implementar como componentes compartidos por plataforma (no hay UI compartida entre Android/iOS, cada uno nativo):
+  - Compose: `androidApp/src/main/kotlin/pe/tecsup/paquitobot/ui/components/<NombreComponente>.kt` (parámetros para variantes detectadas en Figma).
   - SwiftUI: `iosApp/iosApp/Components/<NombreComponente>.swift`.
 - Reutilizar en Onboarding e Inicio. No regenerar variantes por pantalla.
 

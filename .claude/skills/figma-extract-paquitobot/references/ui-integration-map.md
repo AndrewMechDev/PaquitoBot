@@ -1,17 +1,19 @@
 # UI Integration Map — catálogo de frames Figma
 
-Snapshot vivo del archivo "Paquito (copia)" para guiar extracciones. nodeIds verificados con `get_metadata` el 2026-08-05.
+Snapshot vivo del archivo Figma actual para guiar extracciones. nodeIds verificados con `get_metadata`/`get_design_context` el 2026-08-06.
 
 ## Identificadores globales
 
 | Concepto | Valor |
 |---|---|
-| Archivo | "Paquito (copia)" (cuenta TECSUP, Antony Andrew Alca Peralta, Full seat) |
-| URL base | `https://www.figma.com/design/Piy1K37xHS9jB1qXaaVtuQ/Paquito--copia-` |
-| fileKey | `Piy1K37xHS9jB1qXaaVtuQ` |
+| Archivo | **"Paquito-v2"** (duplicado más reciente del usuario; supersede a "Paquito (copia)") |
+| URL base | `https://www.figma.com/design/KCxxCAY076SALBFB5UB4zf/Paquito-v2` |
+| fileKey | `KCxxCAY076SALBFB5UB4zf` |
 | Página root (única) | `112:146 - assets?` (desactualizado, no usar como fuente de tokens) |
 | Canvas principal (fuente de verdad) | `109:97 - Main` |
 | Modo edición | DevMode activo en cliente |
+
+> **Historial de archivos**: el proyecto pasó por "Paquito (copia)" (`Piy1K37xHS9jB1qXaaVtuQ`) → "Paquito-v2" (`KCxxCAY076SALBFB5UB4zf`, actual). Si en algún momento aparece un archivo más nuevo, actualizar esta tabla ANTES de extraer nada — los nodeIds no son estables entre duplicados del archivo.
 
 ## Frames clave en `109:97 - Main`
 
@@ -27,8 +29,19 @@ Snapshot vivo del archivo "Paquito (copia)" para guiar extracciones. nodeIds ver
 
 | Frame | nodeId | Estado implementación |
 |---|---|---|
-| `/home` saludo + semana + tareas (versión A, navbar fija, "¡Bienvenido, {user}!") | `351:644` | Pendiente |
-| `/home` extendido (header "Hola, Andrea", calendario semanal L-D, "Paquito te avisó" lista, alerta "VENCE EN 6 H" para Cálculo II Lab 4) | `364:219` | Pendiente (la más completa, candidata a versión final) |
+| `/home` saludo + semana + tareas (versión A, navbar fija, "¡Bienvenido, {user}!") | `351:644` | **Implementado** (`HomeScreen.kt`) — ver notas abajo, tiene desviaciones deliberadas del Figma actual |
+| `/home` extendido (header "Hola, Andrea", calendario semanal L-D, "Paquito te avisó" lista, alerta "VENCE EN 6 H" para Cálculo II Lab 4) | `364:219` | Pendiente (descartada como candidata; se optó por seguir iterando sobre `351:644`) |
+
+#### Desviaciones deliberadas de `351:644` vs código (registrar aquí, no perderlas en la próxima re-extracción)
+
+- **Fondo del frame**: Figma = `bg-white`. Código = `PaquitoColors.SurfaceHomeCanvas = #FFFFFF` (ya alineado).
+- **Días de la semana**: Figma muestra 6 días (Lunes-Sábado, grid 2x3). El código muestra **7 días** (agrega Domingo) en **una sola fila** con labels abreviados a 2 letras (`Lu Ma Mi Ju Vi Sa Do`), decisión de producto explícita del usuario — NO revertir a 6 ni al grid 3x3 en una futura re-extracción sin confirmar con el usuario primero.
+- **Ícono "Cursos" del Navbar**: usa variante `fill` (`ic_paquito_book_fill`), fiel a Figma.
+- **Radio de esquina** de las cards (semana, tareas): 35dp, fiel a Figma.
+- **Ícono de foro** al costado de "Tareas Pendientes": ELIMINADO — el Figma actual ya no lo tiene (existía en una iteración vieja).
+- **Navbar**: pill de tabs en estilo **glass claro** (sombra + `Brush.verticalGradient` translúcido + borde `Brush.linearGradient` oscuro sutil) — mejora de estilo pedida por el usuario (referencia Samsung Health), **no viene de Figma**.
+- **FAB de Paquito**: estilo **glass oscuro** (mismo patrón que la pill, paleta invertida: fondo oscuro translúcido + borde claro sutil). Esto es una decisión técnica, no de Figma: el ícono `ic_paquito_bot.xml` tiene espacio negativo propio en el cuerpo que solo se disimula sobre fondo oscuro/de color (confirmado con `get_screenshot` del nodo `351:441` aislado sobre el fondo cyan del artboard). Un FAB en glass CLARO deja ver ese espacio negativo como mancha blanca — no repetir ese intento sin resolver antes el espacio negativo del ícono.
+- **Ícono `ic_paquito_bot.xml`**: `fillColor=#FFFFFF` (blanco), porque el FAB tiene fondo oscuro. Si el fondo del FAB cambia a claro en el futuro, el fill debe volver a `#000000` — y hay que resolver el espacio negativo del cuerpo primero (agrandar ~20% el ícono dentro del círculo ayuda pero no es la causa raíz).
 
 ### Pantallas placeholder (en canvas pero vacías/inservibles)
 
@@ -45,6 +58,7 @@ Snapshot vivo del archivo "Paquito (copia)" para guiar extracciones. nodeIds ver
 | PAQUITO 1 (vector autoral) | `374:209` | Muchos sub-vectores; preservar para ícono principal |
 | PAQUITO 2 (Gemini removebg) | `375:531` | Versión rápida para avatares |
 | PAQUITO 3 (ChatGPT removebg) | `375:535` | Variante alternativa |
+| `paquito-bot icon` (el que usa el FAB del Navbar) | `351:441` | 50x40. Fuente real: `svg/paquito-bot icon.svg` en la raíz del repo (gitignoreado). Ver desviación de color arriba. |
 
 ## Componentes reutilizables (en `112:146 - assets?` / `242:103 - components`)
 
@@ -60,16 +74,17 @@ Snapshot vivo del archivo "Paquito (copia)" para guiar extracciones. nodeIds ver
 
 ## Íconos del set (en `112:150 - icons`)
 
-Para exportar todos en una sola operación. Vincular a `home`, `book`, `calendar_month`, `lab_profile`, `frame_person`, `robot_2`, además de los sueltos `forum`, `docs`, `stylus_note`.
+Para exportar todos en una sola operación. Vincular a `home`, `book`, `calendar_month`, `lab_profile`, `frame_person`, `robot_2`, además de los sueltos `forum` (exportado pero SIN USO actualmente, ver desviación arriba), `docs`, `stylus_note`.
 
 Cada ícono tiene 2 estados: `state=Default` (línea) y `state=fill` (relleno). Implementar como `enum class IconState { Default, Fill }` en Compose y como `enum IconStyle` en SwiftUI.
 
 ## Marcadores de progreso
 
-- [ ] Tokens extraídos de Main → pendiente selección activa del usuario
-- [ ] Theme.kt Compose generado
-- [ ] Colors.swift + Typography.swift generados
-- [ ] Íconos exportados → Compose drawable + iOS imageset
-- [ ] Componentes reutilizables implementados
+- [x] Tokens extraídos de Main (colores del Home A: `SurfaceHomeCanvas`, `SurfaceHomeWeekBg`, `SurfaceHomeTaskListBg`, etc.)
+- [x] Theme.kt Compose generado
+- [ ] Colors.swift + Typography.swift generados (pendiente, iOS aún no arrancó — ver plan de colaboración en `requerimientos/PROJECT_CONTEXT.md` / conversación con el equipo)
+- [x] Íconos exportados → Compose drawable (13 XML en `androidApp/src/main/res/drawable/`)
+- [ ] Íconos exportados → iOS imageset (pendiente)
+- [ ] Componentes reutilizables implementados como Composables compartidos (hoy están inline en `HomeScreen.kt`/`Navbar.kt`, no extraídos a archivos propios)
 - [ ] Pantallas Onboarding implementadas (3 frames)
-- [ ] Pantallas Inicio implementadas (2 frames, decidir cuál es la canónica)
+- [x] Pantalla Inicio implementada (`351:644`, con desviaciones documentadas arriba) — `364:219` descartada

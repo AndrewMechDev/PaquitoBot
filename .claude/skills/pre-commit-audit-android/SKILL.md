@@ -76,7 +76,7 @@ Por cada archivo `.kt` en el diff:
 | Versiones siguen formato válido | `major.minor.patch` o `major.minor.patch-suffix` |
 | `compileSdk` >= `targetSdk` | Leer ambos y comparar |
 | Módulos en `settings.gradle.kts` tienen `build.gradle.kts` | Verificar cada `include(":X")` apunte a un módulo real |
-| No hay targets iOS activos si el scope es Android-only | Revisar `kotlin { ... }` en build files, marcar como legacy cualquier `iosArm64()` / `iosSimulatorArm64()` |
+| Targets iOS en `sharedLogic/build.gradle.kts` coherentes con el estado del proyecto | Desde 2026-08-06 el repo es Android+iOS (colaborador dedicado a iOS). `iosArm64()`/`iosSimulatorArm64()` activos son ESPERADOS, no legacy. Solo marcar como problema si el bloque está comentado pero hay código Swift en `iosApp/` que depende de `sharedLogic` (framework no se generaría) |
 
 ### 5. Documentación viva
 
