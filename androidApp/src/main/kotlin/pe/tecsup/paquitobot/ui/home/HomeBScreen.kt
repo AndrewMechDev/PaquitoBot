@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import pe.tecsup.paquitobot.ui.components.AlertCard
 import pe.tecsup.paquitobot.ui.components.Day
 import pe.tecsup.paquitobot.ui.components.DayState
@@ -29,7 +30,6 @@ import pe.tecsup.paquitobot.ui.components.TaskList
 import pe.tecsup.paquitobot.ui.components.TaskListHeader
 import pe.tecsup.paquitobot.ui.components.TaskListItem
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
-import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
@@ -218,10 +218,7 @@ private fun HomeBHeader(greeting: String, avatarInitials: String) {
                 Text(
                     text = avatarInitials,
                     style = PaquitoTypography.Greeting.copy(
-                        fontSize = androidx.compose.ui.unit.TextUnit(
-                            17f,
-                            androidx.compose.ui.unit.TextUnitType.Sp,
-                        ),
+                        fontSize = 17.sp,
                         color = PaquitoColors.TextOnCardStrong,
                     ),
                 )

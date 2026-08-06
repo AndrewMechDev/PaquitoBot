@@ -1,6 +1,5 @@
 package pe.tecsup.paquitobot.ui.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -146,14 +145,14 @@ private fun AlertCardButton(
 ) {
     val bg = if (primary) PaquitoColors.BrandPrimary else Color(0x1FFFFFFF)
     val fg = if (primary) PaquitoColors.TextOnPrimaryDim else PaquitoColors.TextOnWhite
-    val border = if (primary) null else BorderStroke(width = 1.dp, color = Color(0x29FFFFFF))
+    val borderColor = if (primary) null else Color(0x29FFFFFF)
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(14.dp))
             .background(bg)
             .let { mod ->
-                if (border != null) {
-                    mod.border(border.width, border.color, RoundedCornerShape(14.dp))
+                if (borderColor != null) {
+                    mod.border(1.dp, borderColor, RoundedCornerShape(14.dp))
                 } else {
                     mod
                 }
