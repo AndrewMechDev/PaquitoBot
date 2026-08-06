@@ -91,7 +91,7 @@ fun Navbar(
                 modifier = Modifier
                     .size(width = 70.dp, height = 71.dp)
                     .clip(RoundedCornerShape(50))
-                    .background(PaquitoColors.BrandPrimary)
+                    .background(PaquitoColors.Background)
                     .clickable(onClick = onPaquitoClick)
                     .padding(10.dp),
                 contentAlignment = Alignment.Center,

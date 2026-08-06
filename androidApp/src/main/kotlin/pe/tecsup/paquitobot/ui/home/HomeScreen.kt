@@ -6,13 +6,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,7 +41,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  * "Paquito (copia)" (canvas Main `109:97`), re-extraído el 2026-08-05.
  *
  * Estructura (de arriba hacia abajo):
- *   1. Header / saludo     ("¡Bienvenido, {user}!" + fecha completa)
+ *   1. Header / saludo     ("¡Bienvenido, {nombre}!" + fecha completa)
  *   2. Calendario semanal  ("Semana 10" + card oscura con 6 dias en grid 3x2)
  *   3. Tareas pendientes   ("Tareas Pendientes" + lista con timestamps grandes)
  *   4. Navbar inferior     (3 tabs + boton Paquito + badge "3")
@@ -77,6 +80,9 @@ fun HomeScreen(
             )
 
             // 2 + 3. Calendario semanal + tareas pendientes.
+            // La lista de tareas usa scroll vertical interno (sin barra visible)
+            // para que cualquier numero de items sea accesible en pantallas
+            // pequenas. El calendario queda estatico encima.
             Column(
                 verticalArrangement = Arrangement.spacedBy(25.dp),
                 modifier = Modifier.fillMaxWidth(),
@@ -185,10 +191,12 @@ private fun HomeWeekSection(title: String, days: List<WeekDayData>) {
  * Variantes visuales (sacadas de Figma 351:644):
  *   - dia actual (selected=true):  bg rgba(211,211,211,0.28), label blanco translucido.
  *   - dia normal (selected=false): bg rgba(255,255,255,0.9), label gris translucido.
- *   - numero: 48sp; color rojo translucido si es critico, cyan translucido en otro caso.
+ *   - numero: 36sp (compactado para caber en el cell); color rojo translucido
+ *     si es critico, cyan translucido en otro caso.
  *
  * El dia se trunca a 7 caracteres con ellipsis para que "Miercoles" quepa en
- * el card chico sin desbordar.
+ * el card chico sin desbordar. La altura del cell usa `defaultMinSize(minHeight=83dp)`
+ * para que crezca si el contenido lo necesita (el lineHeight del numero es 40sp).
  */
 @Composable
 private fun WeekDayCell(day: WeekDayData, modifier: Modifier = Modifier) {
@@ -207,18 +215,21 @@ private fun WeekDayCell(day: WeekDayData, modifier: Modifier = Modifier) {
     } else {
         PaquitoColors.TextHomeDayNumber
     }
+    // La altura fija 83dp queda corta con fontSize=48sp + lineHeight por defecto
+    // (~58dp) + label 16sp + spacedBy(15dp). Usamos wrapContentHeight y dejamos
+    // que el numero crezca lo necesario.
     Column(
         modifier = modifier
-            .height(83.dp)
+            .defaultMinSize(minHeight = 83.dp)
             .clip(RoundedCornerShape(25.dp))
             .background(cellBg)
-            .padding(15.dp),
-        verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
+            .padding(horizontal = 15.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.Start,
     ) {
         Text(
             text = day.dayOfWeek,
-            fontSize = 16.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
             color = labelColor,
@@ -227,7 +238,8 @@ private fun WeekDayCell(day: WeekDayData, modifier: Modifier = Modifier) {
         )
         Text(
             text = day.dayNumber,
-            fontSize = 48.sp,
+            fontSize = 36.sp,
+            lineHeight = 40.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
             color = numberColor,
@@ -252,11 +264,17 @@ private fun HomeTasksSection(title: String, items: List<TaskEntry>) {
         )
 
         // Card wrapper translucida con la lista adentro.
+        // La lista interna usa scroll vertical sin barra visible: cuando hay mas
+        // items de los que caben en pantalla, el usuario puede deslizar.
+        val taskScroll = rememberScrollState()
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .defaultMinSize(minHeight = 100.dp)
+                .heightIn(max = 360.dp)
                 .clip(RoundedCornerShape(35.dp))
                 .background(PaquitoColors.SurfaceHomeTaskListBg)
+                .verticalScroll(taskScroll)
                 .padding(10.dp),
         ) {
             items.forEachIndexed { index, item ->
@@ -291,51 +309,57 @@ private fun TaskDivider() {
  *   - normal:  TextTimestampLarge      #29617B
  *   - urgente: TextTimestampLargeAccent  rgba(34,204,255,0.7)
  *   - futuro:  TextTimestampLargeMuted   rgba(0,201,251,0.5)
+ *
+ * Layout en Compose:
+ *   - El bloque izquierdo usa `weight(1f)` para tomar todo el ancho disponible
+ *     (excepto el timestamp) en vez de un width fijo. Asi el titulo puede usar
+ *     el espacio real y el timestamp queda alineado a la derecha sin overflow.
+ *   - `softWrap = false` en el timestamp evita que "12 h" se parta en dos lineas.
  */
 @Composable
 private fun TaskInfoRow(item: TaskEntry) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(15.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(horizontal = 15.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier.width(236.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Image(
+            painter = painterResource(id = item.iconRes),
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            contentScale = ContentScale.Fit,
+        )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            horizontalAlignment = Alignment.Start,
         ) {
-            Image(
-                painter = painterResource(id = item.iconRes),
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                contentScale = ContentScale.Fit,
+            Text(
+                text = item.label,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                fontFamily = PaquitoFont.DMSans,
+                color = PaquitoColors.TextHomeTaskLabel,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
-            Column(
-                verticalArrangement = Arrangement.spacedBy(5.dp),
-                horizontalAlignment = Alignment.Start,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    text = item.label,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = PaquitoFont.DMSans,
-                    color = PaquitoColors.TextHomeTaskLabel,
-                )
-                Text(
-                    text = item.title,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = PaquitoFont.DMSans,
-                    color = PaquitoColors.TextOnSurface,
-                )
-            }
+            Text(
+                text = item.title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = PaquitoFont.DMSans,
+                color = PaquitoColors.TextOnSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
         Text(
             text = item.timestamp,
-            fontSize = 40.sp,
+            fontSize = 36.sp,
+            lineHeight = 40.sp,
+            softWrap = false,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
             color = when (item.urgency) {
@@ -383,7 +407,7 @@ data class HomeScreenData(
 ) {
     companion object {
         fun default(): HomeScreenData = HomeScreenData(
-            greeting = "¡Bienvenido, {user}!",
+            greeting = "¡Bienvenido, Andrea!",
             dateLabel = "Lunes, 5 de enero de 2026",
             weekTitle = "Semana 10",
             days = listOf(
