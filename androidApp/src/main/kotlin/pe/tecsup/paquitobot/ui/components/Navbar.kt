@@ -27,6 +27,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pe.tecsup.paquitobot.R
@@ -34,7 +35,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
 /**
- * Tabs del Navbar (ordenados de izquierda a derecha según Figma nodeId 333:198).
+ * Tabs del Navbar (ordenados de izquierda a derecha segun Figma nodeId 333:198).
  */
 enum class NavTab(val label: String) {
     Inicio("Inicio"),
@@ -45,20 +46,27 @@ enum class NavTab(val label: String) {
 /**
  * Navbar inferior compartido por las pantallas Home, Chat, Cursos, Horarios.
  *
- * Extraído del Figma nodeId 351:645 (instance `navbar` dentro de Home A) el
- * 2026-08-05. Refinado el 2026-08-06 para compactar tamanos y darle al boton
- * Paquito mas presencia visual.
+ * Iteracion 2026-08-06:
+ *   - Padding lateral eliminado del wrapper externo; el Navbar ya no usa
+ *     fillMaxWidth() en el Row principal. Esto evita que el Row estire los
+ *     elementos y los mueva cuando cambia el contenido (ej. badge vs sin badge).
+ *     Ahora el Row ocupa solo su ancho intrinseco y se centra dentro del Box
+ *     que provee el caller (HomeScreen/ChatScreen/etc).
+ *   - Tamaños fijos y constantes:
+ *       * tab width 72dp (no flex, no weight, no spread).
+ *       * pill group gap 6dp entre tabs.
+ *       * pill <-> FAB gap 12dp.
+ *       * FAB 56x56dp.
+ *       * Badge 20x20dp.
+ *     Como todos los anchos son fijos, la Navbar mantiene EXACTAMENTE la misma
+ *     posicion horizontal en cualquier pantalla que la renderice, siempre que
+ *     el caller la centre.
  *
- *   - Fondo wrapper: rgba(255,255,255,0.1) pill con padding 5dp.
- *   - Tab activa: bg #EEEEEE, rounded 50dp.
- *   - Tab inactiva: rounded 35dp, transparente.
- *   - Boton Paquito: bg #FFFFFF, circular, con sombra suave (estilo FAB).
- *   - Badge notificaciones: bg #FF445A, rounded 12dp, encima del boton.
- *   - Texto tabs: DM Sans SemiBold 12sp, color #1C1B1F.
- *
- * Tamanos compactados para que el boton Paquito (prominente) quepa sin
- * desbordar el ancho de pantalla de un movil estandar (430dp Figma / 360-411dp
- * real en la mayoria de los devices).
+ * Como queda:
+ *   Ancho total = 3 * 72dp (tabs) + 2 * 6dp (gaps entre tabs) + 8dp (padding
+ *   pill horizontal) + 12dp (gap pill<->FAB) + 56dp (FAB) = 304dp.
+ *   En una pantalla de 360dp, sobra 28dp a cada lado (centrado).
+ *   En una de 411dp, sobra 53.5dp a cada lado.
  */
 @Composable
 fun Navbar(
@@ -67,13 +75,19 @@ fun Navbar(
     onPaquitoClick: () -> Unit,
     notificationCount: Int? = null,
     modifier: Modifier = Modifier,
+    horizontalPadding: Dp = 16.dp,
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        // Importante: NO usamos fillMaxWidth() para que el Row ocupe solo el
+        // ancho del contenido. Esto + el Box con contentAlignment=Center
+        // del caller garantiza que la Navbar se vea en la misma posicion
+        // horizontal en todas las pantallas (Home, Chat, Cursos, Horarios).
+        modifier = modifier.padding(horizontal = horizontalPadding),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         // Grupo de tabs (fondo pill translucido).
+        // Width fijo: 3 tabs * 72dp + 2 gaps * 6dp + padding 4dp * 2 = 232dp.
         Row(
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
@@ -112,7 +126,7 @@ fun Navbar(
             }
 
             // Badge de notificaciones (Figma 364:222): rounded 12dp, bg #FF445A,
-            // border 2px #FAFBFC, texto blanco Bold 10sp.
+            // border 1.5px #FAFBFC, texto blanco Bold 10sp.
             if (notificationCount != null && notificationCount > 0) {
                 Box(
                     modifier = Modifier
