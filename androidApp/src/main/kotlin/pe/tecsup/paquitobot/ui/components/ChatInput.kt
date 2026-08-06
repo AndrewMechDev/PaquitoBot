@@ -2,7 +2,6 @@ package pe.tecsup.paquitobot.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -21,8 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -35,24 +32,22 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
 /**
- * Input inferior del Chat con boton de enviar (Figma 285:376-285:381).
+ * Input inferior del Chat con boton de enviar, fiel al frame Figma
+ * `438:662` (grupo "send" `438:663`).
  *
  *   [_____________input_______________] [Boton enviar]
  *
- * Estilo del input:
- *   - Border 1dp rgba(13,21,32,0.10), rounded 18dp, alto 50dp.
- *   - Background #F6F7F9 con shadow inset 0 1 3 1 rgba(13,21,32,0.05).
- *   - Placeholder Instrument Sans Regular 15sp color #757575.
+ * Estilo del input: fondo plano `#F6F6F6`, rounded 20dp, sin borde ni
+ * sombra (el frame actual no los tiene - antes tenia border + shadow sutil
+ * de una iteracion vieja).
  *
- * Estilo del boton enviar:
- *   - 50x50, gradient vertical #2AD0FF -> #0393C9, rounded 18dp.
- *   - Icono flecha (ic_paquito_send_arrow) rotado 45 grados, blanco.
- *   - Shadow 0 10 11 rgba(3,140,196,0.38) + inset white highlight 0 1 0 0 rgba(255,255,255,0.5).
+ * Estilo del boton enviar: 47x47, fondo plano `PaquitoColors.BrandPrimary`
+ * (`#00C9FB`), rounded 20dp, sin gradiente ni sombra.
  */
 @Composable
 fun ChatInput(
     modifier: Modifier = Modifier,
-    placeholder: String = "Preguntale a Paquito...",
+    placeholder: String = "Escribe tu mensaje...",
     onSend: (String) -> Unit = {},
 ) {
     var text by remember { mutableStateOf("") }
@@ -66,15 +61,10 @@ fun ChatInput(
         Row(
             modifier = Modifier
                 .weight(1f)
-                .height(50.dp)
-                .shadow(
-                    elevation = 0.dp,
-                    shape = RoundedCornerShape(18.dp),
-                )
-                .clip(RoundedCornerShape(18.dp))
-                .background(Color(0xFFF6F7F9))
-                .border(1.dp, Color(0x1A0D1520), RoundedCornerShape(18.dp))
-                .padding(horizontal = 17.dp, vertical = 14.5.dp),
+                .height(47.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color(0xFFF6F6F6))
+                .padding(horizontal = 17.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             BasicTextField(
@@ -97,21 +87,11 @@ fun ChatInput(
 
 @Composable
 private fun SendButton(onClick: () -> Unit) {
-    val gradient = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFF2AD0FF),
-            Color(0xFF0393C9),
-        ),
-    )
     Row(
         modifier = Modifier
-            .size(50.dp)
-            .shadow(
-                elevation = 6.dp,
-                shape = RoundedCornerShape(18.dp),
-            )
-            .clip(RoundedCornerShape(18.dp))
-            .background(gradient)
+            .size(47.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(PaquitoColors.BrandPrimary)
             .clickable(onClick = onClick),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
@@ -120,7 +100,7 @@ private fun SendButton(onClick: () -> Unit) {
             painter = painterResource(id = R.drawable.ic_paquito_send_arrow),
             contentDescription = "Enviar mensaje",
             modifier = Modifier
-                .size(12.dp)
+                .size(14.dp)
                 .rotate(-45f),
             contentScale = ContentScale.Fit,
         )

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,11 +18,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import pe.tecsup.paquitobot.ui.chat.components.ChatHeader
+import pe.tecsup.paquitobot.ui.chat.components.SyncStatus
 import pe.tecsup.paquitobot.ui.components.ChatInput
 import pe.tecsup.paquitobot.ui.components.ChatMessage
 import pe.tecsup.paquitobot.ui.components.Message
@@ -35,24 +33,29 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
 /**
- * Pantalla completa del chat con Paquito (Figma 285:324).
+ * Pantalla completa del chat con Paquito, fiel al frame Figma `438:662`.
  *
  * Estructura:
- *   [Header glassmorphism con avatar + titulo + chip LMS]
- *   [Divider "HOY"]
- *   [Lista de mensajes (burbujas bot + usuario)]
- *   [Row scrolleable de chips de sugerencia]
+ *   [Header: flecha atras + "Hola, {nombre}" + subtitulo + chip de sync]
+ *   [Lista de mensajes (burbujas bot + usuario, planas)]
+ *   [Row scrolleable de chips de sugerencia] (se mantiene, no viene del
+ *     frame actual pero el usuario pidio conservarlo)
  *   [Input inferior + boton enviar]
  *   [Navbar inferior con badge]
  *
- * Mientras no hay backend, los mensajes y sugerencias son mock.
+ * Mientras no hay backend, los mensajes, sugerencias y [syncStatus] son
+ * mock/hardcoded. Cuando exista logica real, [syncStatus] se conecta al
+ * estado real de sincronizacion con el LMS.
  */
 @Composable
 fun ChatScreen(
+    userName: String = "{nombre}",
+    syncStatus: SyncStatus = SyncStatus.Synced,
     currentTab: NavTab = NavTab.Inicio,
     onTabSelected: (NavTab) -> Unit = {},
     notificationCount: Int? = 3,
     onPaquitoClick: () -> Unit = {},
+    onBackClick: () -> Unit = onPaquitoClick,
     modifier: Modifier = Modifier,
 ) {
     var messages by remember {
@@ -64,20 +67,15 @@ fun ChatScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(horizontal = 24.dp)
                 .padding(bottom = 110.dp), // espacio para la navbar
         ) {
-            // Header.
-            ChatHeader()
-
-            // Divider "HOY".
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 18.dp, bottom = 6.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                DayDivider(text = "HOY")
-            }
+            // Header: flecha atras + saludo + chip de sincronizacion.
+            ChatHeader(
+                userName = userName,
+                syncStatus = syncStatus,
+                onBackClick = onBackClick,
+            )
 
             // Lista de mensajes scrolleable.
             Column(
@@ -85,7 +83,7 @@ fun ChatScreen(
                     .fillMaxWidth()
                     .weight(1f)
                     .verticalScroll(scrollState)
-                    .padding(horizontal = 16.dp),
+                    .padding(top = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(11.dp),
             ) {
                 messages.forEach { msg ->
@@ -98,7 +96,7 @@ fun ChatScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                    .padding(vertical = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 listOf(
@@ -124,7 +122,7 @@ fun ChatScreen(
             ChatInput(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                    .padding(vertical = 12.dp),
                 onSend = { text ->
                     messages = messages + ChatMessage(
                         role = MessageRole.User,
@@ -183,25 +181,6 @@ private fun defaultMessages(): List<ChatMessage> = listOf(
         footnote = "Fuente: notas del LMS - 2 ago",
     ),
 )
-
-/** Chip divisor "HOY" del Figma 285:331-285:332. */
-@Composable
-private fun DayDivider(text: String) {
-    Box(
-        modifier = Modifier
-            .clip(androidx.compose.foundation.shape.RoundedCornerShape(10.dp))
-            .background(androidx.compose.ui.graphics.Color(0x120D1520))
-            .padding(horizontal = 11.dp, vertical = 5.dp),
-    ) {
-        Text(
-            text = text,
-            fontSize = 10.sp,
-            fontFamily = pe.tecsup.paquitobot.ui.theme.PaquitoFont.DMMono,
-            color = PaquitoColors.TextOnCardMuted,
-            letterSpacing = 1.sp,
-        )
-    }
-}
 
 @Preview(showBackground = true)
 @Composable

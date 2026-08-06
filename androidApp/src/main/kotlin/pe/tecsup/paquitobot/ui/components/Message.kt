@@ -3,7 +3,6 @@ package pe.tecsup.paquitobot.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,8 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,13 +42,12 @@ data class ChatMessage(
 )
 
 /**
- * Renderiza un [ChatMessage] respetando el diseño del Figma 285:324.
- *
- * - Burbuja del bot: rounded 22 22 22 7 (esquina inferior izquierda con menos
- *   radio para formar la "cola"). Fondo glassmorphism rgba(255,255,255,0.88)
- *   + border rgba(13,21,32,0.07) + shadow card.
- * - Burbuja del usuario: rounded 22 22 7 22 (cola a la derecha). Gradiente
- *   turquesa + border rgba(3,147,201,0.45) + shadow.
+ * Renderiza un [ChatMessage] fiel al frame Figma `438:662` (instancia
+ * "chat" `438:671`): burbujas planas sin sombra ni borde.
+ * - Burbuja del bot: fondo `#F6F6F6`, texto negro, esquina superior
+ *   izquierda con radio chico (2dp) formando la "cola".
+ * - Burbuja del usuario: fondo `PaquitoColors.BrandPrimary` (`#00C9FB`),
+ *   texto blanco, esquina superior derecha con radio chico (2dp).
  */
 @Composable
 fun Message(
@@ -63,6 +60,18 @@ fun Message(
     }
 }
 
+// Radios de burbuja fieles al frame Figma 438:662 (instancia "chat"
+// 438:671): rounded 20dp en 3 esquinas, 2dp en la esquina que forma la
+// "cola" hacia el emisor. Antes eran burbujas glassmorphism (sombra +
+// borde + fondo translucido/gradiente); el frame actual las pide PLANAS,
+// sin sombra ni borde.
+private val BotBubbleShape = RoundedCornerShape(
+    topStart = 2.dp, topEnd = 20.dp, bottomEnd = 20.dp, bottomStart = 20.dp,
+)
+private val UserBubbleShape = RoundedCornerShape(
+    topStart = 20.dp, topEnd = 2.dp, bottomEnd = 20.dp, bottomStart = 20.dp,
+)
+
 @Composable
 private fun BotBubble(message: ChatMessage, modifier: Modifier) {
     Row(
@@ -71,34 +80,17 @@ private fun BotBubble(message: ChatMessage, modifier: Modifier) {
     ) {
         Column(
             modifier = Modifier
-                .widthIn(max = 285.dp)
-                .shadow(
-                    elevation = 2.dp,
-                    shape = RoundedCornerShape(
-                        topStart = 22.dp,
-                        topEnd = 22.dp,
-                        bottomEnd = 22.dp,
-                        bottomStart = 7.dp,
-                    ),
-                )
-                .clip(
-                    RoundedCornerShape(
-                        topStart = 22.dp,
-                        topEnd = 22.dp,
-                        bottomEnd = 22.dp,
-                        bottomStart = 7.dp,
-                    ),
-                )
-                .background(PaquitoColors.SurfaceGlassStrong)
-                .border(1.dp, PaquitoColors.BorderDefault, RoundedCornerShape(22.dp, 22.dp, 22.dp, 7.dp))
+                .widthIn(max = 290.dp)
+                .clip(BotBubbleShape)
+                .background(Color(0xFFF6F6F6))
                 .padding(horizontal = 16.dp, vertical = 13.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
                 text = message.body,
-                fontSize = 14.sp,
-                color = PaquitoColors.TextBubble,
-                lineHeight = 22.sp,
+                fontSize = 20.sp,
+                color = Color.Black,
+                lineHeight = 24.sp,
             )
             if (message.footnote != null) {
                 BubbleFootnote(text = message.footnote)
@@ -109,52 +101,23 @@ private fun BotBubble(message: ChatMessage, modifier: Modifier) {
 
 @Composable
 private fun UserBubble(message: ChatMessage, modifier: Modifier) {
-    val gradient = Brush.linearGradient(
-        colors = listOf(
-            androidx.compose.ui.graphics.Color(0xFF2AD0FF),
-            androidx.compose.ui.graphics.Color(0xFF0393C9),
-        ),
-        start = androidx.compose.ui.geometry.Offset(0f, 0f),
-        end = androidx.compose.ui.geometry.Offset(150f, 200f),
-    )
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End,
     ) {
         Column(
             modifier = Modifier
-                .widthIn(max = 285.dp)
-                .shadow(
-                    elevation = 6.dp,
-                    shape = RoundedCornerShape(
-                        topStart = 22.dp,
-                        topEnd = 22.dp,
-                        bottomEnd = 7.dp,
-                        bottomStart = 22.dp,
-                    ),
-                )
-                .clip(
-                    RoundedCornerShape(
-                        topStart = 22.dp,
-                        topEnd = 22.dp,
-                        bottomEnd = 7.dp,
-                        bottomStart = 22.dp,
-                    ),
-                )
-                .background(gradient)
-                .border(
-                    width = 1.dp,
-                    color = androidx.compose.ui.graphics.Color(0x730393C9),
-                    shape = RoundedCornerShape(22.dp, 22.dp, 7.dp, 22.dp),
-                )
+                .widthIn(max = 290.dp)
+                .clip(UserBubbleShape)
+                .background(PaquitoColors.BrandPrimary)
                 .padding(horizontal = 16.dp, vertical = 13.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
                 text = message.body,
-                fontSize = 14.sp,
+                fontSize = 20.sp,
                 color = PaquitoColors.TextOnWhite,
-                lineHeight = 22.sp,
+                lineHeight = 24.sp,
             )
         }
     }
