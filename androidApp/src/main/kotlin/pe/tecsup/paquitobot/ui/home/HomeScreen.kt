@@ -66,12 +66,14 @@ fun HomeScreen(
             .fillMaxSize()
             .background(PaquitoColors.SurfaceHomeCanvas),
     ) {
-        // Cuerpo principal: padding-left 25dp, top 60dp, width 380dp (Figma).
+        // Cuerpo principal: padding-left 25dp, top 50dp, width 380dp (Figma).
+        // Compactado para que el contenido (header + semana + 4 tareas) entre
+        // en pantallas estandar sin necesidad de scrollear.
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 25.dp, top = 60.dp, end = 25.dp, bottom = 110.dp),
-            verticalArrangement = Arrangement.spacedBy(30.dp),
+                .padding(start = 20.dp, top = 50.dp, end = 20.dp, bottom = 100.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             // 1. Saludo + fecha.
             HomeMessage(
@@ -84,7 +86,7 @@ fun HomeScreen(
             // para que cualquier numero de items sea accesible en pantallas
             // pequenas. El calendario queda estatico encima.
             Column(
-                verticalArrangement = Arrangement.spacedBy(25.dp),
+                verticalArrangement = Arrangement.spacedBy(18.dp),
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 HomeWeekSection(
@@ -104,7 +106,7 @@ fun HomeScreen(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(bottom = 24.dp, start = 16.dp, end = 16.dp),
+                .padding(bottom = 18.dp, start = 12.dp, end = 12.dp),
         ) {
             Navbar(
                 currentTab = currentTab,
@@ -123,20 +125,22 @@ fun HomeScreen(
 @Composable
 private fun HomeMessage(greeting: String, dateLabel: String) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Text(
             text = greeting,
-            fontSize = 32.sp,
+            fontSize = 26.sp,
+            lineHeight = 30.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
             color = PaquitoColors.TextHomeStrong,
         )
         Text(
             text = dateLabel,
-            fontSize = 24.sp,
+            fontSize = 18.sp,
+            lineHeight = 22.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
             color = PaquitoColors.TextHomeMuted,
@@ -150,10 +154,11 @@ private fun HomeMessage(greeting: String, dateLabel: String) {
 
 @Composable
 private fun HomeWeekSection(title: String, days: List<WeekDayData>) {
-    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Text(
             text = title,
-            fontSize = 24.sp,
+            fontSize = 20.sp,
+            lineHeight = 24.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
             color = PaquitoColors.TextHomeStrong,
@@ -163,17 +168,17 @@ private fun HomeWeekSection(title: String, days: List<WeekDayData>) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(233.dp)
-                .clip(RoundedCornerShape(35.dp))
+                .height(190.dp)
+                .clip(RoundedCornerShape(28.dp))
                 .background(PaquitoColors.SurfaceHomeWeekBg)
-                .padding(10.dp),
-            verticalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterVertically),
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Distribuimos los dias en 2 filas de 3.
             days.chunked(3).forEach { rowDays ->
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(15.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     rowDays.forEach { day ->
@@ -215,21 +220,22 @@ private fun WeekDayCell(day: WeekDayData, modifier: Modifier = Modifier) {
     } else {
         PaquitoColors.TextHomeDayNumber
     }
-    // La altura fija 83dp queda corta con fontSize=48sp + lineHeight por defecto
-    // (~58dp) + label 16sp + spacedBy(15dp). Usamos wrapContentHeight y dejamos
-    // que el numero crezca lo necesario.
+    // Cell compacto: la altura del cell en la card de 190dp con 2 filas + padding
+    // da ~85dp por fila; usamos defaultMinSize 72dp y dejamos que crezca si hace
+    // falta. Fuentes mas chicas (label 12sp, numero 28sp) para compactar.
     Column(
         modifier = modifier
-            .defaultMinSize(minHeight = 83.dp)
-            .clip(RoundedCornerShape(25.dp))
+            .defaultMinSize(minHeight = 72.dp)
+            .clip(RoundedCornerShape(20.dp))
             .background(cellBg)
-            .padding(horizontal = 15.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.Start,
     ) {
         Text(
             text = day.dayOfWeek,
-            fontSize = 14.sp,
+            fontSize = 12.sp,
+            lineHeight = 14.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
             color = labelColor,
@@ -238,8 +244,8 @@ private fun WeekDayCell(day: WeekDayData, modifier: Modifier = Modifier) {
         )
         Text(
             text = day.dayNumber,
-            fontSize = 36.sp,
-            lineHeight = 40.sp,
+            fontSize = 28.sp,
+            lineHeight = 32.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
             color = numberColor,
@@ -254,10 +260,11 @@ private fun WeekDayCell(day: WeekDayData, modifier: Modifier = Modifier) {
 
 @Composable
 private fun HomeTasksSection(title: String, items: List<TaskEntry>) {
-    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Text(
             text = title,
-            fontSize = 24.sp,
+            fontSize = 20.sp,
+            lineHeight = 24.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
             color = PaquitoColors.TextHomeStrong,
@@ -270,12 +277,12 @@ private fun HomeTasksSection(title: String, items: List<TaskEntry>) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .defaultMinSize(minHeight = 100.dp)
-                .heightIn(max = 360.dp)
-                .clip(RoundedCornerShape(35.dp))
+                .defaultMinSize(minHeight = 80.dp)
+                .heightIn(max = 280.dp)
+                .clip(RoundedCornerShape(28.dp))
                 .background(PaquitoColors.SurfaceHomeTaskListBg)
                 .verticalScroll(taskScroll)
-                .padding(10.dp),
+                .padding(8.dp),
         ) {
             items.forEachIndexed { index, item ->
                 if (index > 0) {
@@ -321,14 +328,14 @@ private fun TaskInfoRow(item: TaskEntry) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 15.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Image(
             painter = painterResource(id = item.iconRes),
             contentDescription = null,
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(20.dp),
             contentScale = ContentScale.Fit,
         )
         Column(
@@ -338,7 +345,8 @@ private fun TaskInfoRow(item: TaskEntry) {
         ) {
             Text(
                 text = item.label,
-                fontSize = 14.sp,
+                fontSize = 12.sp,
+                lineHeight = 14.sp,
                 fontWeight = FontWeight.Medium,
                 fontFamily = PaquitoFont.DMSans,
                 color = PaquitoColors.TextHomeTaskLabel,
@@ -347,7 +355,8 @@ private fun TaskInfoRow(item: TaskEntry) {
             )
             Text(
                 text = item.title,
-                fontSize = 18.sp,
+                fontSize = 16.sp,
+                lineHeight = 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 fontFamily = PaquitoFont.DMSans,
                 color = PaquitoColors.TextOnSurface,
@@ -357,8 +366,8 @@ private fun TaskInfoRow(item: TaskEntry) {
         }
         Text(
             text = item.timestamp,
-            fontSize = 36.sp,
-            lineHeight = 40.sp,
+            fontSize = 28.sp,
+            lineHeight = 32.sp,
             softWrap = false,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
@@ -407,7 +416,7 @@ data class HomeScreenData(
 ) {
     companion object {
         fun default(): HomeScreenData = HomeScreenData(
-            greeting = "¡Bienvenido, Andrea!",
+            greeting = "¡Bienvenido, {user}!",
             dateLabel = "Lunes, 5 de enero de 2026",
             weekTitle = "Semana 10",
             days = listOf(

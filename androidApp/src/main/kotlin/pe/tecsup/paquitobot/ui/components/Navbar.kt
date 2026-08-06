@@ -8,18 +8,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -30,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
-import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
 /**
@@ -46,15 +46,19 @@ enum class NavTab(val label: String) {
  * Navbar inferior compartido por las pantallas Home, Chat, Cursos, Horarios.
  *
  * Extraído del Figma nodeId 351:645 (instance `navbar` dentro de Home A) el
- * 2026-08-05, con refinamientos del Home B (364:219) para el badge de
- * notificación (nodeId 364:222) y la sombra del botón Paquito (364:221).
+ * 2026-08-05. Refinado el 2026-08-06 para compactar tamanos y darle al boton
+ * Paquito mas presencia visual.
  *
  *   - Fondo wrapper: rgba(255,255,255,0.1) pill con padding 5dp.
- *   - Tab activa: bg #EEEEEE, rounded 50dp, w 95dp.
- *   - Tab inactiva: rounded 35dp, w 95dp.
- *   - Botón Paquito: bg #00C9FB, aspect-ratio 70:71, rounded 50dp.
- *   - Badge notificaciones: bg #FF445A, rounded 12dp, encima del botón.
- *   - Texto tabs: DM Sans SemiBold 14sp, color #1C1B1F.
+ *   - Tab activa: bg #EEEEEE, rounded 50dp.
+ *   - Tab inactiva: rounded 35dp, transparente.
+ *   - Boton Paquito: bg #FFFFFF, circular, con sombra suave (estilo FAB).
+ *   - Badge notificaciones: bg #FF445A, rounded 12dp, encima del boton.
+ *   - Texto tabs: DM Sans SemiBold 12sp, color #1C1B1F.
+ *
+ * Tamanos compactados para que el boton Paquito (prominente) quepa sin
+ * desbordar el ancho de pantalla de un movil estandar (430dp Figma / 360-411dp
+ * real en la mayoria de los devices).
  */
 @Composable
 fun Navbar(
@@ -67,33 +71,36 @@ fun Navbar(
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        // Grupo de tabs (fondo pill translúcido).
+        // Grupo de tabs (fondo pill translucido).
         Row(
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
                 .background(Color.White.copy(alpha = 0.1f))
-                .padding(5.dp),
+                .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             NavTab.Inicio.let { NavTabItem(it, currentTab == it) { onTabSelected(it) } }
             NavTab.Cursos.let { NavTabItem(it, currentTab == it) { onTabSelected(it) } }
             NavTab.Horarios.let { NavTabItem(it, currentTab == it) { onTabSelected(it) } }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Botón Paquito con badge opcional encima.
-        Box {
+        // Boton Paquito con badge opcional encima. Circular, blanco, con sombra.
+        Box(modifier = Modifier.padding(0.dp)) {
             Box(
                 modifier = Modifier
-                    .size(width = 70.dp, height = 71.dp)
-                    .clip(RoundedCornerShape(50))
+                    .size(width = 56.dp, height = 56.dp)
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = CircleShape,
+                        clip = false,
+                    )
+                    .clip(CircleShape)
                     .background(PaquitoColors.Background)
                     .clickable(onClick = onPaquitoClick)
-                    .padding(10.dp),
+                    .padding(8.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Image(
@@ -105,21 +112,20 @@ fun Navbar(
             }
 
             // Badge de notificaciones (Figma 364:222): rounded 12dp, bg #FF445A,
-            // border 3px #FAFBFC, texto blanco Bold 11sp.
+            // border 2px #FAFBFC, texto blanco Bold 10sp.
             if (notificationCount != null && notificationCount > 0) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(top = 0.dp, start = 0.dp, end = 0.dp, bottom = 0.dp)
-                        .size(23.dp)
+                        .size(width = 20.dp, height = 20.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(PaquitoColors.StateDanger)
-                        .border(2.dp, Color(0xFFFAFBFC), RoundedCornerShape(12.dp)),
+                        .border(1.5.dp, Color(0xFFFAFBFC), RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = notificationCount.toString(),
-                        fontSize = 11.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = PaquitoColors.TextOnWhite,
                     )
@@ -133,12 +139,12 @@ fun Navbar(
 private fun NavTabItem(tab: NavTab, selected: Boolean, onClick: () -> Unit) {
     Column(
         modifier = Modifier
-            .width(95.dp)
+            .width(72.dp)
             .clip(RoundedCornerShape(if (selected) 50 else 35))
             .background(if (selected) PaquitoColors.SurfaceElevated else Color.Transparent)
             .clickable(onClick = onClick)
-            .padding(10.dp),
-        verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically),
+            .padding(vertical = 6.dp, horizontal = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(
@@ -150,15 +156,16 @@ private fun NavTabItem(tab: NavTab, selected: Boolean, onClick: () -> Unit) {
                 }
             ),
             contentDescription = tab.label,
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(22.dp),
             contentScale = ContentScale.Fit,
         )
         Text(
             text = tab.label,
-            fontSize = 14.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
             color = PaquitoColors.TextOnSurface,
             textAlign = TextAlign.Center,
+            maxLines = 1,
         )
     }
 }
