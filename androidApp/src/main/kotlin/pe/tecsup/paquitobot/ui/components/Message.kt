@@ -1,7 +1,6 @@
 package pe.tecsup.paquitobot.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,17 +34,35 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 enum class MessageRole { Bot, User, System }
 
 /**
+ * Estado de entrega de un mensaje del usuario, estilo WhatsApp:
+ * - [Sent]: 1 palomita gris (salio del dispositivo).
+ * - [Delivered]: 2 palomitas grises (llego al servidor/bot).
+ * - [Read]: 2 palomitas celestes (el bot "lo proceso").
+ * Solo aplica a mensajes [MessageRole.User] - el bot no tiene estado de
+ * lectura propio. Sin logica real de entrega todavia (mock/hardcoded).
+ */
+enum class MessageStatus { Sent, Delivered, Read }
+
+/**
  * Mensaje individual del chat.
  *
- * @param role quien lo emite (Bot o User, determina el estilo).
+ * @param role quien lo emite (Bot, User o System).
  * @param body texto principal (acepta multiples parrafos separados por \n).
- * @param footnote texto opcional al pie del mensaje (separado por un border-top).
- *   Para los mensajes del bot: "Te aviso otra vez a las 20:00", "Fuente: notas del LMS · 2 ago".
+ * @param footnote texto opcional adicional bajo el body (ej. "Te aviso otra
+ *   vez a las 20:00", "Fuente: notas del LMS · 2 ago"). Iteracion 2026-08-06:
+ *   ya NO tiene caja con borde (se veia "raro/feo") - es texto simple, un
+ *   dato mas dentro de la burbuja.
+ * @param timestamp hora del mensaje (ej. "14:32"), se muestra chica abajo a
+ *   la derecha de la burbuja, estilo WhatsApp.
+ * @param status estado de entrega (solo relevante para [MessageRole.User]),
+ *   se muestra como palomitas junto al timestamp.
  */
 data class ChatMessage(
     val role: MessageRole,
     val body: String,
     val footnote: String? = null,
+    val timestamp: String? = null,
+    val status: MessageStatus? = null,
 )
 
 /**
@@ -92,7 +109,7 @@ private fun BotBubble(message: ChatMessage, modifier: Modifier) {
                 .clip(BotBubbleShape)
                 .background(Color(0xFFF6F6F6))
                 .padding(horizontal = 16.dp, vertical = 13.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Text(
                 text = message.body,
@@ -102,6 +119,9 @@ private fun BotBubble(message: ChatMessage, modifier: Modifier) {
             )
             if (message.footnote != null) {
                 BubbleFootnote(text = message.footnote)
+            }
+            if (message.timestamp != null) {
+                MessageMeta(timestamp = message.timestamp, status = null, onLightBubble = false)
             }
         }
     }
@@ -119,13 +139,45 @@ private fun UserBubble(message: ChatMessage, modifier: Modifier) {
                 .clip(UserBubbleShape)
                 .background(PaquitoColors.BrandPrimary)
                 .padding(horizontal = 16.dp, vertical = 13.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Text(
                 text = message.body,
                 fontSize = 15.sp,
                 color = PaquitoColors.TextOnWhite,
                 lineHeight = 20.sp,
+            )
+            if (message.timestamp != null) {
+                MessageMeta(timestamp = message.timestamp, status = message.status, onLightBubble = true)
+            }
+        }
+    }
+}
+
+/**
+ * Hora + palomitas de estado, estilo WhatsApp: chico, abajo a la derecha
+ * DE LA BURBUJA (no de la pantalla) - aplica igual para burbujas de bot
+ * (solo hora) y de usuario (hora + palomitas). [onLightBubble] ajusta el
+ * color para que se lea sobre el fondo cyan del usuario.
+ */
+@Composable
+private fun MessageMeta(timestamp: String, status: MessageStatus?, onLightBubble: Boolean) {
+    val textColor = if (onLightBubble) Color.White.copy(alpha = 0.85f) else PaquitoColors.TextOnCardMuted
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = timestamp,
+            fontSize = 11.sp,
+            color = textColor,
+        )
+        if (status != null) {
+            Text(
+                text = if (status == MessageStatus.Sent) " ✓" else " ✓✓",
+                fontSize = 11.sp,
+                color = if (status == MessageStatus.Read) PaquitoColors.StateInfo else textColor,
             )
         }
     }
@@ -155,22 +207,12 @@ private fun SystemNotice(message: ChatMessage, modifier: Modifier) {
 
 @Composable
 private fun BubbleFootnote(text: String) {
-    Column(
-        modifier = Modifier
-            .border(
-                width = 1.dp,
-                color = androidx.compose.ui.graphics.Color(0x1A0D1520),
-                shape = RoundedCornerShape(0.dp),
-            )
-            .padding(top = 10.dp, start = 0.dp, end = 0.dp, bottom = 0.dp),
-    ) {
-        Text(
-            text = text,
-            fontSize = 11.sp,
-            color = PaquitoColors.TextOnCardMuted,
-            lineHeight = 16.sp,
-        )
-    }
+    Text(
+        text = text,
+        fontSize = 11.sp,
+        color = PaquitoColors.TextOnCardMuted,
+        lineHeight = 16.sp,
+    )
 }
 
 @Preview(showBackground = true)
@@ -187,6 +229,7 @@ private fun MessagePreview() {
                 ChatMessage(
                     role = MessageRole.Bot,
                     body = "Hola Andrea. Revisé tu LMS: 3 cosas por vencer esta semana y una nota nueva en Cálculo II.",
+                    timestamp = "14:30",
                 ),
             )
             Message(
@@ -194,12 +237,15 @@ private fun MessagePreview() {
                     role = MessageRole.Bot,
                     body = "Lo más urgente:\nLaboratorio 4 — Cálculo II\nHoy 23:59 · 15% de la nota final",
                     footnote = "Te aviso otra vez a las 20:00",
+                    timestamp = "14:30",
                 ),
             )
             Message(
                 ChatMessage(
                     role = MessageRole.User,
                     body = "¿cómo voy en cálculo?",
+                    timestamp = "14:32",
+                    status = MessageStatus.Read,
                 ),
             )
             Message(
@@ -207,6 +253,7 @@ private fun MessagePreview() {
                     role = MessageRole.Bot,
                     body = "Vas en 14.8 con 3 de 5 evaluaciones. Si entregás el Lab 4 completo subís a ~15.6. Tu punto débil: los prácticos calificados (11, 13).",
                     footnote = "Fuente: notas del LMS · 2 ago",
+                    timestamp = "14:33",
                 ),
             )
         }

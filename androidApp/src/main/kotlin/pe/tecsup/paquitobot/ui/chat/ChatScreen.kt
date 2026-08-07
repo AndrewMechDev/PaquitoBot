@@ -25,6 +25,7 @@ import pe.tecsup.paquitobot.ui.components.ChatInput
 import pe.tecsup.paquitobot.ui.components.ChatMessage
 import pe.tecsup.paquitobot.ui.components.Message
 import pe.tecsup.paquitobot.ui.components.MessageRole
+import pe.tecsup.paquitobot.ui.components.MessageStatus
 import pe.tecsup.paquitobot.ui.components.SuggestionChip
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
@@ -69,12 +70,18 @@ fun ChatScreen(
     val scrollState = rememberScrollState()
 
     Box(modifier = modifier.fillMaxSize().background(PaquitoColors.Background)) {
+        // Iteracion 2026-08-06 (feedback "muy separado del teclado"): el
+        // padding(bottom=24dp) SUMABA por encima del imePadding() en vez de
+        // reemplazarlo, dejando un hueco grande entre el input y el teclado
+        // (imePadding ya agrega exactamente la altura del teclado; el 24dp
+        // fijo era ADEMAS de eso). Bajado a 8dp - un respiro chico cuando el
+        // teclado esta cerrado, sin duplicar espacio cuando esta abierto.
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .imePadding()
                 .padding(horizontal = 24.dp)
-                .padding(bottom = 24.dp),
+                .padding(bottom = 8.dp),
         ) {
             // Header: flecha atras + saludo.
             ChatHeader(
@@ -148,20 +155,25 @@ private fun defaultMessages(): List<ChatMessage> = listOf(
     ChatMessage(
         role = MessageRole.Bot,
         body = "Hola Andrea. Revise tu LMS: 3 cosas por vencer esta semana y una nota nueva en Calculo II.",
+        timestamp = "14:18",
     ),
     ChatMessage(
         role = MessageRole.Bot,
         body = "Lo mas urgente:\nLaboratorio 4 - Calculo II\nHoy 23:59 - 15% de la nota final",
         footnote = "Te aviso otra vez a las 20:00",
+        timestamp = "14:18",
     ),
     ChatMessage(
         role = MessageRole.User,
         body = "como voy en calculo?",
+        timestamp = "14:19",
+        status = MessageStatus.Read,
     ),
     ChatMessage(
         role = MessageRole.Bot,
         body = "Vas en 14.8 con 3 de 5 evaluaciones. Si entregas el Lab 4 completo subis a ~15.6. Tu punto debil: los practicos calificados (11, 13).",
         footnote = "Fuente: notas del LMS - 2 ago",
+        timestamp = "14:19",
     ),
 )
 
