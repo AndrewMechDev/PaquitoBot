@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Flecha "volver" del header de Chat (Figma nodeId 438:667, frame 438:662). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="21.33dp"
+    android:height="21.33dp"
+    android:viewportWidth="21.3333"
+    android:viewportHeight="21.3333">
+    <path
+        android:fillColor="#4A4C50"
+        android:pathData="M5.1,12L12.5667,19.4667L10.6667,21.3333L0,10.6667L10.6667,0L12.5667,1.86667L5.1,9.33333H21.3333V12H5.1Z" />
+</vector>

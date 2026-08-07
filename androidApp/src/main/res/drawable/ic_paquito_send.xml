@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icono "enviar" del boton del Chat (Figma nodeId I438:665;435:429, frame 438:662). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="19dp"
+    android:height="16dp"
+    android:viewportWidth="19"
+    android:viewportHeight="16">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M0,16V10L8,8L0,6V0L19,8L0,16Z" />
+</vector>

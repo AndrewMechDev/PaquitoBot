@@ -6,6 +6,9 @@ plugins {
 }
 
 kotlin {
+    // --- Targets iOS reactivados (2026-08-06): se suma un colaborador dedicado
+    // a iOS al equipo. Genera un framework estatico "SharedLogic.framework"
+    // que el proyecto Xcode en iosApp/ consume directo (sin CocoaPods).
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -15,12 +18,12 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     android {
        namespace = "pe.tecsup.paquitobot.sharedLogic"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
        minSdk = libs.versions.android.minSdk.get().toInt()
-    
+
        compilerOptions {
            jvmTarget = JvmTarget.JVM_11
        }
@@ -31,7 +34,7 @@ kotlin {
            isIncludeAndroidResources = true
        }
     }
-    
+
     sourceSets {
         commonMain.dependencies {
             // put your Multiplatform dependencies here

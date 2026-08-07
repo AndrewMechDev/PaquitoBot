@@ -17,3 +17,20 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
+
+# Reglas para recursos Android (reforzadas tras auditoría 2026-08-06).
+# Android Resource Compiler en res/drawable/ SOLO acepta .xml o .png.
+# Cualquier SVG aqui rompe el build con "The file name must end with .xml or .png".
+# Solo se permiten SVG en composeResources/ si la skill svg-to-vector-drawable
+# los va a convertir. Como politica general, mejor no commitear SVGs.
+**/res/drawable/*.svg
+**/res/drawable/**/*.svg
+**/res/raw/*.svg
+
+# Carpeta de SVGs fuente (referencia local, se convierten a vector drawable
+# con la skill svg-to-vector-drawable; no son el asset final del proyecto).
+/svg/
+
+# Cache local del skill-registry (regenerable, no es el registry en si -
+# ese es .atl/skill-registry.md, que SI se versiona).
+.atl/.skill-registry.cache.json
