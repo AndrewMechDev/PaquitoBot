@@ -13,10 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -53,20 +49,24 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  * Iteracion 2026-08-06 (estado de conexion): ya no hay un chip fijo de
  * "conectado/desconectado" en el header (se sacó, rompía el diseño). El
  * estado de conexion se comunica como un mensaje mas en el flujo via
- * `MessageRole.System` (ver `Message.kt`) - se dispara desde donde se
- * detecte la falla real cuando exista logica de red.
+ * `MessageRole.System` (ver `Message.kt`).
  *
- * Mientras no hay backend, los mensajes y sugerencias son mock/hardcoded.
+ * Iteracion 2026-08-11 (backend real): la pantalla dejo de manejar su
+ * propia lista de mensajes con `remember` - ahora recibe [uiState] +
+ * [onSendMessage] desde [ChatViewModel] (MVVM, stateless composable).
+ * Las sugerencias tambien pasan por [onSendMessage] en vez de mutar
+ * estado local directamente, para que toda pregunta (escrita o por chip)
+ * pase por el mismo camino hacia el backend.
  */
 @Composable
 fun ChatScreen(
+    uiState: ChatUiState,
+    onSendMessage: (String) -> Unit,
     userName: String = "{nombre}",
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var messages by remember {
-        mutableStateOf(defaultMessages())
-    }
+    val messages = uiState.messages
     val scrollState = rememberScrollState()
 
     Box(modifier = modifier.fillMaxSize().background(PaquitoColors.Background)) {
@@ -119,13 +119,7 @@ fun ChatScreen(
                 ).forEach { suggestion ->
                     SuggestionChip(
                         text = suggestion,
-                        onClick = {
-                            // Mock: anade la sugerencia como mensaje del usuario.
-                            messages = messages + ChatMessage(
-                                role = MessageRole.User,
-                                body = suggestion,
-                            )
-                        },
+                        onClick = { onSendMessage(suggestion) },
                     )
                 }
             }
@@ -135,17 +129,7 @@ fun ChatScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 12.dp),
-                onSend = { text ->
-                    messages = messages + ChatMessage(
-                        role = MessageRole.User,
-                        body = text,
-                    )
-                    // Mock respuesta automatica del bot.
-                    messages = messages + ChatMessage(
-                        role = MessageRole.Bot,
-                        body = "Buena pregunta. Estoy conectandome al LMS...",
-                    )
-                },
+                onSend = onSendMessage,
             )
         }
     }
@@ -181,6 +165,9 @@ private fun defaultMessages(): List<ChatMessage> = listOf(
 @Composable
 private fun ChatScreenPreview() {
     PaquitoTheme {
-        ChatScreen()
+        ChatScreen(
+            uiState = ChatUiState(messages = defaultMessages()),
+            onSendMessage = {},
+        )
     }
 }

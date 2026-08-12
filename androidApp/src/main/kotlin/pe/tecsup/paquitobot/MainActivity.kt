@@ -13,7 +13,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import pe.tecsup.paquitobot.ui.chat.ChatScreen
+import pe.tecsup.paquitobot.ui.chat.ChatViewModel
 import pe.tecsup.paquitobot.ui.components.NavTab
 import pe.tecsup.paquitobot.ui.home.HomeScreen
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
@@ -55,9 +58,15 @@ private fun AppRoot() {
             onTabSelected = { currentTab = it },
             onPaquitoClick = { rootScreen = RootScreen.Chat },
         )
-        RootScreen.Chat -> ChatScreen(
-            onBackClick = { rootScreen = RootScreen.Home },
-        )
+        RootScreen.Chat -> {
+            val chatViewModel: ChatViewModel = viewModel()
+            val chatUiState by chatViewModel.uiState.collectAsStateWithLifecycle()
+            ChatScreen(
+                uiState = chatUiState,
+                onSendMessage = chatViewModel::sendMessage,
+                onBackClick = { rootScreen = RootScreen.Home },
+            )
+        }
     }
 }
 
