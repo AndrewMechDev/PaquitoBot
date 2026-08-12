@@ -22,6 +22,7 @@ dependencies {
     implementation(libs.compose.components.resources)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.androidx.lifecycle.runtimeCompose)
+    implementation(libs.kotlinx.coroutines.core)
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
