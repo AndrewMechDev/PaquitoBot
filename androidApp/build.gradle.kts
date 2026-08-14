@@ -22,6 +22,14 @@ dependencies {
     implementation(libs.compose.components.resources)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.androidx.lifecycle.runtimeCompose)
+    implementation(libs.kotlinx.coroutines.core)
+
+    // Google Sign-In (Credential Manager - API moderna recomendada, reemplaza
+    // GoogleSignInClient) + almacenamiento cifrado del JWT del backend.
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.playServicesAuth)
+    implementation(libs.googleid)
+    implementation(libs.androidx.security.crypto)
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)

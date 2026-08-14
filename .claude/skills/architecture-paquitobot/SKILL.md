@@ -55,13 +55,14 @@ Contexto PaquitoBot (alcance actual, 2026-08-06):
 
 ## Stack y Servicios Externos
 
-| Servicio | Estado real en PaquitoBot (a 2026-08-05) | Acción |
+| Servicio | Estado real en PaquitoBot (a 2026-08-13) | Acción |
 |---|---|---|
-| Backend FastAPI | Confirmado, vive en repo aparte. | Mientras no conectado: nada. Al conectar: client Ktor en commonMain. |
+| Backend FastAPI (`paquitobot-rag`) | **Conectado**. Cliente (2026-08-14): un `HttpClient` compartido, `GET /healthz` para despertar Render, timeouts por operación (login/sync 90s, query 120s), `RequestTimeout` distinto de red. Ver `requerimientos/BACKEND_INTEGRATION.md`. | Verificar en dispositivo el login de primer intento. |
+| Auth del backend (JWT propio, login con Google + Canvas manual) | **Resuelto (2026-08-13)**: dos gates a nivel app, evaluados por `SessionViewModel` antes de mostrar Home/Chat: (1) `POST /auth/login` con Google Sign-In real (Credential Manager, `androidApp/.../auth/GoogleAuthClient.kt`); (2) `POST /auth/canvas/connect` con token de Canvas pegado manualmente (`ui/canvas/CanvasConnectScreen.kt` — todavía no hay OAuth de Canvas real). Ambos estados persisten en `SecureTokenStore` (`EncryptedSharedPreferences`). | Sin acción pendiente del lado del cliente para v1. Falta verificar el flujo completo (ambos gates) en dispositivo real. |
 | OneSignal | "Implementación real después, UI placeholder por ahora" | Definir `interface NotificationService` desde el inicio pero no impl. Cuando se implemente, decidir OneSignal vs FCM directo. |
 | Twilio | Caso de uso aún no definido | NO implementar nada hasta que producto confirme (OTP, alertas de faltas, etc.). |
-| RAG / IA generativa | No confirmado | NO implementar nada. Si llega: proveedor externo vía FastAPI, no en KMP. |
-| Supabase | No confirmado | NO implementar nada. La auth probablemente viva en FastAPI, no en KMP directo. |
+| RAG / IA generativa | Implementado del lado del backend (`paquitobot-rag`, LangChain + MiniMax). El cliente KMP solo consume `/query`, no implementa nada de RAG. | Sin acción del lado KMP. |
+| Supabase | Confirmado del lado del backend (Postgres + PGVector). El cliente KMP no se conecta a Supabase directamente, solo al backend FastAPI. | Sin acción del lado KMP. |
 
 Cuando el usuario confirme cualquiera de estos servicios: actualizar esta tabla, agregar la interfaz correspondiente en `commonMain`, y dejar la implementación real para la sesión que se implemente.
 
@@ -84,21 +85,34 @@ Cuando el usuario confirme cualquiera de estos servicios: actualizar esta tabla,
 androidApp/
 └── src/main/kotlin/pe/tecsup/paquitobot/
     ├── presentation/
-    │   ├── screens/
+    │   ├── screens/              # (aspiracional - ver nota abajo)
     │   │   ├── onboarding/      # WelcomeScreen, NotificationsScreen
     │   │   └── home/            # HomeScreen, TaskList, etc.
     │   ├── components/          # Navbar, Day, TaskInfo (Composables reutilizables)
     │   └── theme/               # Theme.kt + PaquitoColors/Typography/Shapes/Spacing
-    ├── domain/
-    │   ├── models/              # data classes puras (Task, Course, LabNote, StudentProfile)
-    │   └── repository/          # interfaces (TaskRepository, NotificationService)
-    ├── data/
-    │   ├── repository/          # Mock*Repository hasta conectar backend
-    │   └── remote/              # (futuro) Remote*Repository cuando se conecte FastAPI
-    └── MainActivity.kt          # entry point, llama a App()
+    └── MainActivity.kt          # entry point, llama a AppRoot()
 
-sharedLogic/                     # modulo compartido Android+iOS (targets iOS por descomentar)
-└── src/commonMain/kotlin/...    # clases puras compartibles (Platform info, etc.)
+# Nota real (2026-08-11): las pantallas hoy viven en ui/{home,chat,onboarding}/
+# y ui/components/, NO en presentation/screens/ como sugiere el diagrama de
+# arriba - esa estructura es aspiracional para cuando haya mas ViewModels.
+# ChatViewModel.kt (primer ViewModel real del proyecto) vive en ui/chat/,
+# junto a la screen que consume, no en una carpeta presentation/ separada.
+
+sharedLogic/                     # modulo compartido Android+iOS
+└── src/commonMain/kotlin/pe/tecsup/paquitobot/
+    ├── domain/chat/              # ChatRepository (interfaz), ChatAnswer (modelo de dominio)
+    ├── domain/auth/              # AuthRepository (interfaz), AuthSession (modelo de dominio)
+    ├── domain/canvas/            # CanvasRepository (interfaz)
+    ├── data/remote/              # PaquitoBotApi (Ktor), TokenProvider, DTOs, errores tipados
+    ├── data/repository/          # RemoteChatRepository/RemoteAuthRepository/RemoteCanvasRepository (impl real) + factories de wiring
+    └── Platform.kt, Greeting.kt  # utilidades KMP originales del template
+
+androidApp/.../
+├── auth/                        # GoogleAuthClient (Credential Manager) + SecureTokenStore (impl real de TokenProvider)
+├── session/                     # SessionViewModel - dueño de los gates de app (isAuthenticated / isCanvasConnected)
+└── ui/
+    ├── auth/AuthGateScreen.kt   # gate 1: login con Google
+    └── canvas/                  # gate 2: CanvasConnectViewModel + CanvasConnectScreen
 
 iosApp/                          # proyecto Xcode nativo, consume sharedLogic como framework
 └── iosApp/

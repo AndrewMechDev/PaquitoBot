@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">PaquitoBot</string>
+
+    <!--
+      Google OAuth Web Client ID (NO es secreto - es un identificador
+      publico, mismo patron que usa la documentacion oficial de Google
+      Sign-In). Debe coincidir EXACTO con GOOGLE_CLIENT_ID en Render (el
+      backend lo usa como "audience" al verificar el id_token en
+      POST /auth/login). Si el proyecto de Google Cloud cambia, actualizar
+      este valor Y la env var de Render juntos.
+    -->
+    <string name="google_web_client_id" translatable="false">475675958107-cs5m1jvelm6gvvoov45g4tvebie426pi.apps.googleusercontent.com</string>
 </resources>
