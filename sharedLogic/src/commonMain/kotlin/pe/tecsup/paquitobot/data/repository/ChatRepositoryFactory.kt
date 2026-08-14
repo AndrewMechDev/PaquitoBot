@@ -3,7 +3,7 @@ package pe.tecsup.paquitobot.data.repository
 import pe.tecsup.paquitobot.data.remote.NoOpTokenProvider
 import pe.tecsup.paquitobot.data.remote.PaquitoBotApi
 import pe.tecsup.paquitobot.data.remote.TokenProvider
-import pe.tecsup.paquitobot.data.remote.createPaquitoBotHttpClient
+import pe.tecsup.paquitobot.data.remote.sharedPaquitoBotHttpClient
 import pe.tecsup.paquitobot.domain.chat.ChatRepository
 
 /**
@@ -19,7 +19,7 @@ import pe.tecsup.paquitobot.domain.chat.ChatRepository
 fun createDefaultChatRepository(tokenProvider: TokenProvider = NoOpTokenProvider): ChatRepository =
     RemoteChatRepository(
         api = PaquitoBotApi(
-            httpClient = createPaquitoBotHttpClient(),
+            httpClient = sharedPaquitoBotHttpClient(),
             tokenProvider = tokenProvider,
         ),
     )

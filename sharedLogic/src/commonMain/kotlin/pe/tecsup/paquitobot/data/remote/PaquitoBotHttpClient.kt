@@ -6,7 +6,9 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.logging.SIMPLE
 import io.ktor.client.request.header
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
@@ -15,22 +17,36 @@ import kotlinx.serialization.json.Json
 const val PAQUITOBOT_BACKEND_BASE_URL: String = "https://paquitobot-rag.onrender.com"
 
 /**
- * Crea el [HttpClient] compartido para consumir `paquitobot-rag`.
+ * Timeouts por operacion (ms). Render free duerme el servicio: un wake-up
+ * suele tardar 30-90s. El default anterior (20s) cortaba login/query y la
+ * UI lo mostraba como "Google rechazó" / "sin conexion".
+ */
+const val LOGIN_REQUEST_TIMEOUT_MILLIS: Long = 90_000
+const val HEALTHZ_REQUEST_TIMEOUT_MILLIS: Long = 90_000
+const val SYNC_REQUEST_TIMEOUT_MILLIS: Long = 90_000
+const val QUERY_REQUEST_TIMEOUT_MILLIS: Long = 120_000
+const val CANVAS_CONNECT_TIMEOUT_MILLIS: Long = 30_000
+
+private object PaquitoBotHttpClientHolder {
+    val instance: HttpClient by lazy { createPaquitoBotHttpClient() }
+}
+
+/**
+ * Un solo [HttpClient] para Auth, Canvas y Chat. Cada factory creaba el
+ * suyo y pagaba un handshake TLS distinto por pantalla.
+ */
+fun sharedPaquitoBotHttpClient(): HttpClient = PaquitoBotHttpClientHolder.instance
+
+/**
+ * Crea el [HttpClient] para consumir `paquitobot-rag`.
  *
- * Engine CIO: multiplataforma (JVM/Android + Kotlin/Native), pensado para
- * que Android e iOS compartan esta misma clase - ver `architecture-paquitobot`
- * skill. NOTA: verificado que compila en Android (JVM); NO se pudo
- * verificar la compilacion real para iOS en esta sesion (se desarrollo en
- * Windows, sin Xcode - Kotlin/Native para iOS no compila fuera de macOS).
- * Si tu compañero de iOS encuentra problemas con CIO en Darwin, la
- * alternativa estandar de Ktor para Apple es el engine `Darwin`
- * (`io.ktor:ktor-client-darwin`, basado en `NSURLSession`) - cambiar el
- * `HttpClient(CIO)` de abajo por un factory `expect/actual` por plataforma
- * si hace falta.
+ * Engine CIO: multiplataforma (JVM/Android + Kotlin/Native). Verificado
+ * en Android; iOS no se pudo compilar en Windows. Si CIO falla en Darwin,
+ * pasar a engine `Darwin` via expect/actual.
  *
- * IMPORTANTE: el logger NUNCA loguea headers (por eso `LogLevel.INFO`, no
- * `HEADERS` ni `ALL`) - el header `Authorization` lleva el JWT del backend
- * y no debe aparecer en ningun log, ni de este cliente ni de Logcat.
+ * El logger NUNCA loguea headers (`LogLevel.INFO`) - `Authorization` no
+ * debe aparecer en Logcat. `Logger.SIMPLE` es obligatorio: sin el, SLF4J
+ * deja el logger mudo en Android.
  */
 fun createPaquitoBotHttpClient(): HttpClient = HttpClient(CIO) {
     expectSuccess = false
@@ -40,18 +56,20 @@ fun createPaquitoBotHttpClient(): HttpClient = HttpClient(CIO) {
             Json {
                 ignoreUnknownKeys = true
                 isLenient = true
+                encodeDefaults = false
             },
         )
     }
 
     install(HttpTimeout) {
-        requestTimeoutMillis = 20_000
-        connectTimeoutMillis = 10_000
-        socketTimeoutMillis = 20_000
+        requestTimeoutMillis = QUERY_REQUEST_TIMEOUT_MILLIS
+        connectTimeoutMillis = 15_000
+        socketTimeoutMillis = QUERY_REQUEST_TIMEOUT_MILLIS
     }
 
     install(Logging) {
         level = LogLevel.INFO
+        logger = Logger.SIMPLE
     }
 
     defaultRequest {

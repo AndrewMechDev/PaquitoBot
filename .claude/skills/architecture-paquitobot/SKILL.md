@@ -55,10 +55,10 @@ Contexto PaquitoBot (alcance actual, 2026-08-06):
 
 ## Stack y Servicios Externos
 
-| Servicio | Estado real en PaquitoBot (a 2026-08-11) | Acción |
+| Servicio | Estado real en PaquitoBot (a 2026-08-13) | Acción |
 |---|---|---|
-| Backend FastAPI (`paquitobot-rag`) | **Conectado parcialmente** (2026-08-11): `POST /query` consumido desde `ChatScreen` vía `ChatRepository`/`PaquitoBotApi` en `sharedLogic/commonMain` (Ktor CIO). Ver `requerimientos/BACKEND_INTEGRATION.md` para el contrato completo. | `/auth/canvas/connect` y `/sync` quedan sin consumir hasta que exista login real (ver bloqueante de auth abajo). |
-| Auth del backend (JWT propio, no Canvas OAuth) | **Bloqueante conocido, en standby**: todos los endpoints exigen `Authorization: Bearer <jwt>` firmado con `BACKEND_SECRET`, y el backend hoy NO tiene endpoint que lo emita. El compañero de backend va a crear ese endpoint. | `TokenProvider` (interfaz en `sharedLogic/data/remote/`) ya existe con una implementación `NoOpTokenProvider` (siempre `null`). Cuando el compañero entregue el login, implementar `TokenProvider` real - nada más del cliente cambia. |
+| Backend FastAPI (`paquitobot-rag`) | **Conectado**. Cliente (2026-08-14): un `HttpClient` compartido, `GET /healthz` para despertar Render, timeouts por operación (login/sync 90s, query 120s), `RequestTimeout` distinto de red. Ver `requerimientos/BACKEND_INTEGRATION.md`. | Verificar en dispositivo el login de primer intento. |
+| Auth del backend (JWT propio, login con Google + Canvas manual) | **Resuelto (2026-08-13)**: dos gates a nivel app, evaluados por `SessionViewModel` antes de mostrar Home/Chat: (1) `POST /auth/login` con Google Sign-In real (Credential Manager, `androidApp/.../auth/GoogleAuthClient.kt`); (2) `POST /auth/canvas/connect` con token de Canvas pegado manualmente (`ui/canvas/CanvasConnectScreen.kt` — todavía no hay OAuth de Canvas real). Ambos estados persisten en `SecureTokenStore` (`EncryptedSharedPreferences`). | Sin acción pendiente del lado del cliente para v1. Falta verificar el flujo completo (ambos gates) en dispositivo real. |
 | OneSignal | "Implementación real después, UI placeholder por ahora" | Definir `interface NotificationService` desde el inicio pero no impl. Cuando se implemente, decidir OneSignal vs FCM directo. |
 | Twilio | Caso de uso aún no definido | NO implementar nada hasta que producto confirme (OTP, alertas de faltas, etc.). |
 | RAG / IA generativa | Implementado del lado del backend (`paquitobot-rag`, LangChain + MiniMax). El cliente KMP solo consume `/query`, no implementa nada de RAG. | Sin acción del lado KMP. |
@@ -101,9 +101,18 @@ androidApp/
 sharedLogic/                     # modulo compartido Android+iOS
 └── src/commonMain/kotlin/pe/tecsup/paquitobot/
     ├── domain/chat/              # ChatRepository (interfaz), ChatAnswer (modelo de dominio)
+    ├── domain/auth/              # AuthRepository (interfaz), AuthSession (modelo de dominio)
+    ├── domain/canvas/            # CanvasRepository (interfaz)
     ├── data/remote/              # PaquitoBotApi (Ktor), TokenProvider, DTOs, errores tipados
-    ├── data/repository/          # RemoteChatRepository (impl real) + factory de wiring
+    ├── data/repository/          # RemoteChatRepository/RemoteAuthRepository/RemoteCanvasRepository (impl real) + factories de wiring
     └── Platform.kt, Greeting.kt  # utilidades KMP originales del template
+
+androidApp/.../
+├── auth/                        # GoogleAuthClient (Credential Manager) + SecureTokenStore (impl real de TokenProvider)
+├── session/                     # SessionViewModel - dueño de los gates de app (isAuthenticated / isCanvasConnected)
+└── ui/
+    ├── auth/AuthGateScreen.kt   # gate 1: login con Google
+    └── canvas/                  # gate 2: CanvasConnectViewModel + CanvasConnectScreen
 
 iosApp/                          # proyecto Xcode nativo, consume sharedLogic como framework
 └── iosApp/

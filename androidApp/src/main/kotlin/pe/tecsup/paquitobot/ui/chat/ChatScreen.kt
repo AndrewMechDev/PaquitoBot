@@ -57,6 +57,11 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  * Las sugerencias tambien pasan por [onSendMessage] en vez de mutar
  * estado local directamente, para que toda pregunta (escrita o por chip)
  * pase por el mismo camino hacia el backend.
+ *
+ * Iteracion 2026-08-13 (gates a nivel app): el login con Google y la
+ * conexion con Canvas ahora bloquean TODA la app desde `MainActivity`
+ * (`AuthGateScreen` / `CanvasConnectScreen`), antes de que esta pantalla
+ * siquiera se muestre - ya no maneja `isAuthenticated` ni gate propio.
  */
 @Composable
 fun ChatScreen(
