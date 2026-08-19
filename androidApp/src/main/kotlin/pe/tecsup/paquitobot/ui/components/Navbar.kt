@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -274,21 +275,32 @@ fun Navbar(
 }
 
 /**
- * Iteracion 2026-08-13 (bug real, reportado por el usuario con captura):
- * el indicador de tab seleccionado usaba `PaquitoColors.SurfaceElevated`
- * (`#EEEEEE`) - un color plano 100% OPACO. Sobre la pildora de vidrio
- * (`hazeEffect`, translucida) esto se veia como un bloque blanco solido
- * pegado adentro del Navbar, rompiendo el efecto vidrio desde adentro.
- * Cambiado a blanco translucido (alpha 0.55) para que el indicador se
- * sienta parte del mismo lenguaje de vidrio, no un parche opaco encima.
+ * Iteracion 2026-08-13: el indicador de tab seleccionado usaba
+ * `PaquitoColors.SurfaceElevated` (`#EEEEEE`) - un color plano 100%
+ * OPACO. Sobre la pildora de vidrio (`hazeEffect`, translucida) esto se
+ * veia como un bloque blanco solido pegado adentro del Navbar, rompiendo
+ * el efecto vidrio desde adentro. Se cambio a blanco translucido (alpha
+ * 0.55).
+ *
+ * Iteracion 2026-08-19 (bug real, reportado por el usuario con captura):
+ * ese blanco translucido resulto DEMASIADO sutil sobre la pildora de
+ * vidrio ya translucida - "Inicio" y "Cursos" se veian identicos entre
+ * si sin importar cual estaba seleccionado, porque el icono (vector
+ * drawable con color fijo `#1C1B1F`) y el texto (siempre
+ * `TextOnSurface`) NUNCA cambiaban con `selected`. La UNICA señal de
+ * seleccion era ese fondo casi imperceptible. Fix: icono y texto
+ * cambian a `BrandPrimary` (color de marca) cuando `selected`, ademas de
+ * un fondo con tinte de marca (no blanco liso) - la seleccion ahora se
+ * nota por COLOR, no solo por un fondo sutil.
  */
 @Composable
 private fun NavTabItem(tab: NavTab, selected: Boolean, onClick: () -> Unit) {
+    val contentColor = if (selected) PaquitoColors.BrandPrimary else PaquitoColors.TextOnSurface
     Column(
         modifier = Modifier
             .width(72.dp)
             .clip(RoundedCornerShape(if (selected) 50 else 35))
-            .background(if (selected) Color.White.copy(alpha = 0.55f) else Color.Transparent)
+            .background(if (selected) PaquitoColors.BrandPrimary.copy(alpha = 0.16f) else Color.Transparent)
             .clickable(onClick = onClick)
             .padding(vertical = 6.dp, horizontal = 4.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
@@ -305,13 +317,14 @@ private fun NavTabItem(tab: NavTab, selected: Boolean, onClick: () -> Unit) {
             contentDescription = tab.label,
             modifier = Modifier.size(22.dp),
             contentScale = ContentScale.Fit,
+            colorFilter = if (selected) ColorFilter.tint(PaquitoColors.BrandPrimary) else null,
         )
         Text(
             text = tab.label,
             fontSize = 12.sp,
             fontFamily = PaquitoFont.DMSans,
             fontWeight = FontWeight.SemiBold,
-            color = PaquitoColors.TextOnSurface,
+            color = contentColor,
             textAlign = TextAlign.Center,
             maxLines = 1,
         )

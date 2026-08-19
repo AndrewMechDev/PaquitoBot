@@ -50,6 +50,8 @@ Por cada archivo `.kt` en el diff:
 | Todos los `PaquitoFont.*` resuelven | Idem |
 | Todos los `PaquitoTypography.*` resuelven | Idem |
 | Todos los `PaquitoShapes.*` resuelven | Idem |
+| Todo `Text(...)` tiene fuente explícita | O `fontFamily = PaquitoFont.DMSans` (nunca omitirlo — cae en Roboto del sistema, bug real 2026-08-19), o mejor `style = PaquitoTypography.*` |
+| Ningún `Text(...)` nuevo usa `PaquitoFont.DMMono`/`InstrumentSans`/`BricolageGrotesque` | Decisión de UX 2026-08-19: **una sola fuente en todo el proyecto** (DM Sans). Esas 3 familias quedan declaradas sin uso — no reintroducirlas |
 | Todas las funciones `@Composable` están anotadas | Buscar funciones que llaman a otras `@Composable` (Text, Row, Column, Box, Image, etc.) sin `@Composable` |
 | `Modifier.padding(...)` con firma válida | Las firmas válidas son: `padding(all)`, `padding(horizontal, vertical)`, `padding(start, top, end, bottom)`, `padding(paddingValues)`. NO mezclar |
 | `Modifier.border(...)` con orden correcto | Esperado: `width: Dp, color: Color, shape: Shape`. Detectar `color=Dp` o `width=Color` |
@@ -144,6 +146,10 @@ Devolver un reporte markdown con:
 | 2026-08-05 | `android:strokeOpacity` en XML drawable | Drawables | Usar `android:strokeAlpha` |
 | 2026-08-05 | SVGs placeholder con bounding-boxes vacíos | Drawables | Filtrar SVGs con paths vacíos antes de convertir |
 | 2026-08-06 | `*.svg` en `res/drawable/` rompe el build con "The file name must end with .xml or .png" | Drawables | **Nunca commitear SVGs en res/drawable/** — `.gitignore` reforzado |
+| 2026-08-19 | Toda la pantalla de Chat (burbujas, input, chips), el Navbar y las cards de onboarding sin `fontFamily` en sus `Text()` — caían en Roboto del sistema, invisible hasta que el usuario lo notó | Kotlin | Chequear SIEMPRE que `Text()` tenga fuente explícita (fila agregada arriba) |
+| 2026-08-19 | Indicador de tab seleccionado en `Navbar` (`NavTabItem`) solo cambiaba un fondo translúcido sutil — icono y texto NUNCA cambiaban de color con `selected`. Sobre la píldora de vidrio (Haze) el fondo se volvía casi imperceptible: "Inicio" y "Cursos" se veían idénticos sin importar cuál estaba activo | Kotlin/UX | Un estado `selected` necesita señal por **color** (icono + texto tintados), no solo un fondo sutil — más robusto contra fondos translúcidos/blur |
+| 2026-08-19 | `SwipeToDismissBox` en un loop sin `key()` estable por item — al eliminar uno, el siguiente heredaba el estado "ya swipeado" (card visualmente "pegada" con el fondo rojo) | Kotlin | Todo `forEach` que renderiza `SwipeToDismissBox` (o cualquier estado con memoria propia) necesita `key(item.id)` — nunca depender de la posición en la lista |
+| 2026-08-13 | Píldora del Navbar con Haze (`hazeSource`) flotando sobre un padding vacío de 110dp — blur de "nada" (fondo blanco vacío) sigue siendo blanco sólido, el glassmorphism no tenía contenido real que difuminar | Kotlin/UX | Un elemento con blur de fondo necesita contenido REAL detrás para que el efecto se note — no reservar espacio vacío bajo un elemento con `hazeEffect` |
 
 ## References
 

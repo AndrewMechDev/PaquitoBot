@@ -37,6 +37,7 @@ Contexto PaquitoBot (alcance actual, 2026-08-06):
 - Servicios externos (OneSignal, Twilio, etc.) se abstraen detrás de interfaces (`NotificationService`) en `data/` o `domain/` y se implementan en `androidMain`. El ViewModel solo conoce la interfaz.
 - **No se introduce MVI** puro hasta tener 5+ pantallas con estado complejo (ej. /chat). Evaluar caso por caso.
 - **No se introduce Clean Architecture estricta** (agregado root, dispatcher dedicado, use cases para todo). Solo las tres carpetas + interfaces. Crecer el rigor solo cuando la lógica lo pida.
+- **Una sola familia tipográfica en toda la app**: `PaquitoFont.DMSans` (decisión de UX, 2026-08-19). Todo `Text()` nuevo usa `style = PaquitoTypography.*` (preferido) o `fontFamily = PaquitoFont.DMSans` explícito — nunca omitirlo. `DMMono`/`InstrumentSans`/`BricolageGrotesque` quedan declaradas sin uso, no reintroducirlas. Ver checklist en `pre-commit-audit-android`.
 
 ## Decision Gates
 
@@ -59,6 +60,8 @@ Contexto PaquitoBot (alcance actual, 2026-08-06):
 |---|---|---|
 | Backend FastAPI (`paquitobot-rag`) | **Conectado**. Cliente (2026-08-14): un `HttpClient` compartido, `HEAD /healthz` para despertar Render, timeouts por operación (login/sync 90s, query 120s), `RequestTimeout` distinto de red. Ver `requerimientos/BACKEND_INTEGRATION.md`. | Verificar en dispositivo el login de primer intento. |
 | Auth del backend (JWT propio, login con Google + Canvas manual) | **Resuelto**. Gates a nivel app. El nombre de Home/Chat sale del `givenName` de Google. Pestañas Cursos/Horarios son UI mock (2026-08-17). | REST: `GET /me`, cursos, notas, asistencia, inbox de entregas. Ver `BACKEND_INTEGRATION.md`. |
+| Notificaciones (campana + bandeja) | **UI mock (2026-08-19)**: `NotificationBellButton` en el header del Home abre `ui/notifications/NotificationsInboxScreen.kt` — toggle cuadros/lista, swipe-to-delete (Snackbar "Deshacer"), eliminar todas (confirm), detalle en popup. Datos hardcoded, sin backend de notificaciones. | Cuando exista backend de avisos: reemplazar `NotificationsInboxData.default()` por un repository real, mismo patrón que `HomeScreenData`. |
+| Haze (`dev.chrisbanes.haze`) | **Agregado (2026-08-13)**: blur de fondo real para el Navbar flotante (antes era opacidad plana simulada). Ver Lecciones en `pre-commit-audit-android` sobre blur-sobre-padding-vacío. | Sin acción pendiente. |
 | OneSignal | "Implementación real después, UI placeholder por ahora" | Definir `interface NotificationService` desde el inicio pero no impl. Cuando se implemente, decidir OneSignal vs FCM directo. |
 | Twilio | Caso de uso aún no definido | NO implementar nada hasta que producto confirme (OTP, alertas de faltas, etc.). |
 | RAG / IA generativa | Implementado del lado del backend (`paquitobot-rag`, LangChain + MiniMax). El cliente KMP solo consume `/query`, no implementa nada de RAG. | Sin acción del lado KMP. |

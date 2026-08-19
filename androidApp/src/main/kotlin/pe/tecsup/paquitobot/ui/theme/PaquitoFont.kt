@@ -8,16 +8,15 @@ import pe.tecsup.paquitobot.R
 /**
  * Familias tipográficas de PaquitoBot.
  *
- * Descargadas de Google Fonts (open source, SIL OFL). Las 4 familias que
- * aparecen en el Figma "Paquito (copia)":
+ * Descargadas de Google Fonts (open source, SIL OFL). El Figma original
+ * mezclaba 4 familias (DM Sans, DM Mono, Instrument Sans, Bricolage
+ * Grotesque) para roles distintos, pero eso rompia la consistencia
+ * visual entre pantallas.
  *
- *   - DM Sans              → títulos y cuerpo principal
- *   - DM Mono              → badges, etiquetas de día, timestamps
- *   - Instrument Sans      → textos sobre cards (Home B)
- *   - Bricolage Grotesque  → saludo principal y card de alerta (Home B)
- *
- * Cada familia expone sus pesos Regular / Medium / SemiBold / Bold
- * (algunas solo tienen los pesos que se usan, marcado en comentario).
+ * Decision de UX (2026-08-19): TODO `PaquitoTypography` usa solo [DMSans]
+ * - es la unica familia activa en el proyecto. `DMMono`/`InstrumentSans`/
+ * `BricolageGrotesque` quedan declaradas pero SIN USO - no referenciarlas
+ * desde ningun Composable nuevo, rompen el patron.
  */
 object PaquitoFont {
     val DMSans = FontFamily(
