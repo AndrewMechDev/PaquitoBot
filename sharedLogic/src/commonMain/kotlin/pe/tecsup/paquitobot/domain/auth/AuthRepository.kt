@@ -11,7 +11,7 @@ data class AuthSession(
 /** Puerto de dominio para el login con Google. */
 interface AuthRepository {
     /**
-     * Despierta el backend (`GET /healthz`) sin auth. Best-effort: un fallo
+     * Despierta el backend (`HEAD /healthz`) sin auth. Best-effort: un fallo
      * no bloquea el flujo de Google, solo deja el servicio frio.
      */
     suspend fun wakeBackend(): Result<Unit>

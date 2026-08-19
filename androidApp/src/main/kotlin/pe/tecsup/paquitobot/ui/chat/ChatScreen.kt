@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -67,7 +68,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 fun ChatScreen(
     uiState: ChatUiState,
     onSendMessage: (String) -> Unit,
-    userName: String = "{nombre}",
+    userName: String = "estudiante",
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -84,6 +85,7 @@ fun ChatScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .systemBarsPadding()
                 .imePadding()
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 8.dp),
@@ -116,12 +118,7 @@ fun ChatScreen(
                     .padding(vertical = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                listOf(
-                    "Que vence esta semana?",
-                    "Como voy?",
-                    "Mis laboratorios",
-                    "Proximo examen",
-                ).forEach { suggestion ->
+                ChatSuggestionPrompts.forEach { suggestion ->
                     SuggestionChip(
                         text = suggestion,
                         onClick = { onSendMessage(suggestion) },
@@ -139,6 +136,18 @@ fun ChatScreen(
         }
     }
 }
+
+/**
+ * Prompts alineados al tool `get_user_courses_current_term` del backend
+ * (ciclo TECSUP: ago-dic = periodo 2). No hay REST de cursos; el chip
+ * dispara el mismo `POST /query` que una pregunta escrita.
+ */
+private val ChatSuggestionPrompts = listOf(
+    "Que cursos tengo este ciclo?",
+    "Que vence este ciclo?",
+    "Mis laboratorios",
+    "Como voy?",
+)
 
 private fun defaultMessages(): List<ChatMessage> = listOf(
     ChatMessage(
@@ -173,6 +182,7 @@ private fun ChatScreenPreview() {
         ChatScreen(
             uiState = ChatUiState(messages = defaultMessages()),
             onSendMessage = {},
+            userName = "Andrea",
         )
     }
 }

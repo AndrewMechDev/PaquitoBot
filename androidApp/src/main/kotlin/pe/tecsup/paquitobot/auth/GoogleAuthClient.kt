@@ -13,6 +13,24 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingExcept
 import java.security.MessageDigest
 import java.util.UUID
 
+/** Resultado del sheet de Google: JWT de id_token + nombre para la UI. */
+data class GoogleSignInResult(
+    val idToken: String,
+    val givenName: String?,
+    val displayName: String?,
+    val email: String?,
+) {
+    fun firstName(): String {
+        val given = givenName?.trim().orEmpty()
+        if (given.isNotEmpty()) return given.split(" ").first()
+        val display = displayName?.trim().orEmpty()
+        if (display.isNotEmpty()) return display.split(" ").first()
+        val mail = email?.trim().orEmpty()
+        if (mail.contains("@")) return mail.substringBefore("@")
+        return "estudiante"
+    }
+}
+
 /** Fallos del sheet de Google, distintos de un 401 del backend. */
 sealed class GoogleSignInFailure(message: String) : Exception(message) {
     data object Cancelled : GoogleSignInFailure("El usuario cancelo el inicio de sesion")
@@ -39,8 +57,8 @@ class GoogleAuthClient(
 ) {
     private val credentialManager = CredentialManager.create(context)
 
-    /** Devuelve el `id_token` de Google, listo para mandar a `POST /auth/login`. */
-    suspend fun signIn(): Result<String> {
+    /** Devuelve el `id_token` de Google mas el nombre visible para Home/Chat. */
+    suspend fun signIn(): Result<GoogleSignInResult> {
         val nonce = hashedNonce()
         val primary = signInWithGoogleButton(nonce)
         val primaryError = primary.exceptionOrNull()
@@ -56,7 +74,7 @@ class GoogleAuthClient(
         )
     }
 
-    private suspend fun signInWithGoogleButton(nonce: String): Result<String> {
+    private suspend fun signInWithGoogleButton(nonce: String): Result<GoogleSignInResult> {
         val option = GetSignInWithGoogleOption.Builder(webClientId)
             .setNonce(nonce)
             .build()
@@ -66,7 +84,7 @@ class GoogleAuthClient(
         return extractIdToken(request)
     }
 
-    private suspend fun signInWithGoogleId(nonce: String): Result<String> {
+    private suspend fun signInWithGoogleId(nonce: String): Result<GoogleSignInResult> {
         val option = GetGoogleIdOption.Builder()
             .setServerClientId(webClientId)
             .setFilterByAuthorizedAccounts(false)
@@ -79,11 +97,18 @@ class GoogleAuthClient(
         return extractIdToken(request)
     }
 
-    private suspend fun extractIdToken(request: GetCredentialRequest): Result<String> {
+    private suspend fun extractIdToken(request: GetCredentialRequest): Result<GoogleSignInResult> {
         return try {
             val result = credentialManager.getCredential(context, request)
             val credential = GoogleIdTokenCredential.createFrom(result.credential.data)
-            Result.success(credential.idToken)
+            Result.success(
+                GoogleSignInResult(
+                    idToken = credential.idToken,
+                    givenName = credential.givenName,
+                    displayName = credential.displayName,
+                    email = credential.id,
+                ),
+            )
         } catch (exc: GetCredentialException) {
             Result.failure(exc)
         } catch (exc: GoogleIdTokenParsingException) {
