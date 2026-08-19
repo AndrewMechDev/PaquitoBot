@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.ui.components.AppTabScaffold
+import pe.tecsup.paquitobot.ui.components.CanvasMockErrorBanner
 import pe.tecsup.paquitobot.ui.components.NavTab
 import pe.tecsup.paquitobot.ui.components.NotificationBellButton
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
@@ -76,9 +77,9 @@ fun HomeScreen(
     currentTab: NavTab = NavTab.Inicio,
     onTabSelected: (NavTab) -> Unit = {},
     onPaquitoClick: () -> Unit = {},
-    onTrackClick: () -> Unit = { onTabSelected(NavTab.Cursos) },
-    onAbsencesClick: () -> Unit = { onTabSelected(NavTab.Horarios) },
     onNotificationsClick: () -> Unit = {},
+    errorMessage: String? = null,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     // Iteracion 2026-08-13 (filtro por dia): que dia esta seleccionado en el
@@ -90,6 +91,13 @@ fun HomeScreen(
     val selectedDay = data.days.firstOrNull { it.dayNumber == selectedDayNumber }
     val tasksForSelectedDay = data.tasks.filter { it.dayNumber == selectedDayNumber }
 
+    // Iteracion 2026-08-19 (card de ranking por ciclo, funcional): que ciclo
+    // se esta mostrando en la card verde vive como estado de UI, arranca en
+    // el ciclo completado MAS RECIENTE (el anterior al actual - canvas-mock
+    // no tiene el concepto de "ciclo" en absoluto, ver comentario en
+    // `HomeScreenData`).
+    var selectedCycleIndex by remember(data) { mutableStateOf(data.cycleRankings.lastIndex) }
+
     AppTabScaffold(
         currentTab = currentTab,
         onTabSelected = onTabSelected,
@@ -97,6 +105,9 @@ fun HomeScreen(
         notificationCount = data.pendingCount,
         modifier = modifier,
     ) {
+        if (errorMessage != null) {
+            CanvasMockErrorBanner(message = errorMessage, onRetry = onRetry)
+        }
         HomeMessage(
             greeting = data.greeting,
             dateLabel = data.dateLabel,
@@ -104,12 +115,18 @@ fun HomeScreen(
             onNotificationsClick = onNotificationsClick,
         )
         PainSnapshotRow(
-            trackValue = data.trackValue,
-            absencesUsed = data.absencesUsed,
-            absencesLimit = data.absencesLimit,
-            dueThisWeek = data.dueThisWeek,
-            onTrackClick = onTrackClick,
-            onAbsencesClick = onAbsencesClick,
+            overallRanking = data.overallRanking,
+            careerCode = data.careerCode,
+            currentCycle = data.currentCycle,
+            cycleRankings = data.cycleRankings,
+            selectedCycleIndex = selectedCycleIndex,
+            onCycleClick = {
+                if (data.cycleRankings.isNotEmpty()) {
+                    selectedCycleIndex = (selectedCycleIndex - 1).let {
+                        if (it < 0) data.cycleRankings.lastIndex else it
+                    }
+                }
+            },
         )
         HomeWeekSection(
             title = data.weekTitle,
@@ -125,42 +142,53 @@ fun HomeScreen(
     }
 }
 
+/**
+ * Iteracion 2026-08-19 (repensado, pedido explicito del usuario): las 3
+ * cards ya NO muestran datos de canvas-mock (promedio/faltas/entregas -
+ * esos siguen viviendo en Cursos y Horarios) sino informacion academica de
+ * "ranking": ranking general acumulado (todos los ciclos antes del
+ * actual), ranking del ciclo anterior al que cursas (seleccionable entre
+ * los ciclos ya finalizados, 1° a 6°), y codigo de carrera + ciclo actual.
+ *
+ * ⚠️ DATO DEMO, no viene de canvas-mock: ese backend no tiene NINGUN
+ * concepto de "ranking", "ciclo" ni "codigo de carrera" en sus 8 endpoints
+ * (ver skill `canvas-mock-backend`) - ni el mock ni Canvas real exponen
+ * esto hoy. Confirmado con el usuario (2026-08-19) usar datos fijos de
+ * demo, documentados como tal, en vez de dejarlo pendiente - mismo
+ * criterio que `ASSUMED_ABSENCE_LIMIT` en `AcademicViewModel`.
+ */
 @Composable
 private fun PainSnapshotRow(
-    trackValue: String,
-    absencesUsed: Int,
-    absencesLimit: Int,
-    dueThisWeek: Int,
-    onTrackClick: () -> Unit,
-    onAbsencesClick: () -> Unit,
+    overallRanking: Double,
+    careerCode: String,
+    currentCycle: Int,
+    cycleRankings: List<CycleRanking>,
+    selectedCycleIndex: Int,
+    onCycleClick: () -> Unit,
 ) {
+    val selectedCycle = cycleRankings.getOrNull(selectedCycleIndex)
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         SnapshotChip(
-            label = "Como vas",
-            value = trackValue,
+            label = "Ranking",
+            value = "%.1f".format(overallRanking),
             hint = "de 20",
-            onClick = onTrackClick,
+            onClick = null,
             modifier = Modifier.weight(1f),
         )
         SnapshotChip(
-            label = "Faltas",
-            value = "$absencesUsed/$absencesLimit",
-            hint = "limite",
-            onClick = onAbsencesClick,
+            label = "Ranking ciclo",
+            value = selectedCycle?.let { "%.1f".format(it.ranking) } ?: "—",
+            hint = selectedCycle?.let { "${it.cycle}° ciclo · toca para cambiar" } ?: "sin ciclos previos",
+            onClick = if (cycleRankings.isNotEmpty()) onCycleClick else null,
             modifier = Modifier.weight(1f),
-            valueColor = if (absencesUsed >= absencesLimit - 1) {
-                PaquitoColors.StateDanger
-            } else {
-                PaquitoColors.StateWarning
-            },
         )
         SnapshotChip(
-            label = "Entregas",
-            value = "$dueThisWeek",
-            hint = "esta semana",
+            label = "Carrera",
+            value = careerCode,
+            hint = "${currentCycle}° ciclo actual",
             onClick = null,
             modifier = Modifier.weight(1f),
         )
@@ -188,7 +216,7 @@ private fun SnapshotChip(
     ) {
         Text(
             text = label,
-            fontSize = 11.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             fontFamily = PaquitoFont.DMSans,
             color = PaquitoColors.TextHomeTaskLabel,
@@ -196,7 +224,7 @@ private fun SnapshotChip(
         )
         Text(
             text = value,
-            fontSize = 20.sp,
+            fontSize = 21.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
             color = valueColor,
@@ -204,10 +232,11 @@ private fun SnapshotChip(
         )
         Text(
             text = hint,
-            fontSize = 10.sp,
+            fontSize = 11.sp,
+            lineHeight = 13.sp,
             fontFamily = PaquitoFont.DMSans,
             color = PaquitoColors.TextOnCardMuted,
-            maxLines = 1,
+            maxLines = 2,
         )
     }
 }
@@ -583,6 +612,16 @@ data class TaskEntry(
     @androidx.annotation.DrawableRes val iconRes: Int,
 )
 
+/**
+ * Ranking de un ciclo YA FINALIZADO (1° al 6°, nunca el ciclo en curso -
+ * ver comentario de [HomeScreenData]). `ranking` va de 0 a 20 con
+ * decimales, igual que las notas.
+ */
+data class CycleRanking(
+    val cycle: Int,
+    val ranking: Double,
+)
+
 /** Snapshot de la pantalla Home. Vendra del Repository cuando este listo. */
 data class HomeScreenData(
     val greeting: String,
@@ -592,10 +631,14 @@ data class HomeScreenData(
     val tasksHeader: String,
     val tasks: List<TaskEntry>,
     val pendingCount: Int,
-    val trackValue: String,
-    val absencesUsed: Int,
-    val absencesLimit: Int,
-    val dueThisWeek: Int,
+    // Ranking academico general (acumulado, todos los ciclos antes del
+    // actual) y ranking por ciclo (seleccionable, ver `PainSnapshotRow`) -
+    // dato de DEMO, canvas-mock no tiene este concepto (ver comentario en
+    // `PainSnapshotRow`).
+    val overallRanking: Double,
+    val careerCode: String,
+    val currentCycle: Int,
+    val cycleRankings: List<CycleRanking>,
     // `pendingCount` de arriba es el badge del FAB de Paquito (tareas
     // pendientes) - este es un contador DISTINTO para la campana del header
     // (avisos generales: vencimientos, notas nuevas, sync de Canvas). Se
@@ -618,8 +661,11 @@ data class HomeScreenData(
                 WeekDayData("Domingo",   "09", "09/08/26", isToday = false, isCritical = false),
             ),
             tasksHeader = "Tareas Pendientes",
-            // Domingo (09) queda a proposito sin ninguna tarea, para probar
-            // el estado vacio "No hay tareas pendientes".
+            // Iteracion 2026-08-19 (mas variedad, pedido del usuario): cada
+            // dia tiene una cantidad distinta de tareas (2, 1, 2, 1, 1, 1),
+            // menos Domingo (09) que queda a proposito sin ninguna - para
+            // probar el estado vacio "No hay tareas pendientes" y porque
+            // ningun curso agenda entregas en fin de semana.
             tasks = listOf(
                 TaskEntry(
                     label = "Calculo II · lab",
@@ -630,12 +676,36 @@ data class HomeScreenData(
                     iconRes = R.drawable.ic_paquito_lab_profile,
                 ),
                 TaskEntry(
-                    label = "Algoritmos · foro",
-                    title = "Foro 2",
+                    label = "Algoritmos · lectura",
+                    title = "Lectura: Complejidad algoritmica",
+                    timestamp = "18 h",
+                    urgency = TaskUrgency.Normal,
+                    dayNumber = "03",
+                    iconRes = R.drawable.ic_paquito_book_outline,
+                ),
+                TaskEntry(
+                    label = "Fisica I · practica",
+                    title = "Practica 2",
+                    timestamp = "1 d",
+                    urgency = TaskUrgency.Normal,
+                    dayNumber = "04",
+                    iconRes = R.drawable.ic_paquito_docs_default,
+                ),
+                TaskEntry(
+                    label = "Algoritmos · pendiente",
+                    title = "Pendiente 2",
                     timestamp = "2 d",
                     urgency = TaskUrgency.Urgent,
                     dayNumber = "05",
                     iconRes = R.drawable.ic_paquito_docs_default,
+                ),
+                TaskEntry(
+                    label = "Calculo II · lab",
+                    title = "Laboratorio 5",
+                    timestamp = "2 d",
+                    urgency = TaskUrgency.Normal,
+                    dayNumber = "05",
+                    iconRes = R.drawable.ic_paquito_lab_profile,
                 ),
                 TaskEntry(
                     label = "Fisica I · practica",
@@ -646,6 +716,14 @@ data class HomeScreenData(
                     iconRes = R.drawable.ic_paquito_docs_default,
                 ),
                 TaskEntry(
+                    label = "Algoritmos · lectura",
+                    title = "Lectura: Arboles balanceados",
+                    timestamp = "4 d",
+                    urgency = TaskUrgency.Future,
+                    dayNumber = "07",
+                    iconRes = R.drawable.ic_paquito_book_outline,
+                ),
+                TaskEntry(
                     label = "Calculo II · practica",
                     title = "Practica 3",
                     timestamp = "7 d",
@@ -654,11 +732,17 @@ data class HomeScreenData(
                     iconRes = R.drawable.ic_paquito_docs_default,
                 ),
             ),
-            pendingCount = 3,
-            trackValue = "14.8",
-            absencesUsed = 2,
-            absencesLimit = 5,
-            dueThisWeek = 3,
+            pendingCount = 8,
+            overallRanking = 15.0,
+            careerCode = "C-24",
+            currentCycle = 6,
+            cycleRankings = listOf(
+                CycleRanking(cycle = 1, ranking = 14.2),
+                CycleRanking(cycle = 2, ranking = 15.6),
+                CycleRanking(cycle = 3, ranking = 13.8),
+                CycleRanking(cycle = 4, ranking = 16.4),
+                CycleRanking(cycle = 5, ranking = 15.1),
+            ),
             unreadNotificationsCount = 2,
         )
     }

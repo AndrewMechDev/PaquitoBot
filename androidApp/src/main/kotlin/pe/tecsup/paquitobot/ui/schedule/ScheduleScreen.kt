@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import pe.tecsup.paquitobot.ui.components.AppTabScaffold
+import pe.tecsup.paquitobot.ui.components.CanvasMockErrorBanner
 import pe.tecsup.paquitobot.ui.components.NavTab
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
@@ -46,6 +47,8 @@ fun ScheduleScreen(
     currentTab: NavTab = NavTab.Horarios,
     onTabSelected: (NavTab) -> Unit = {},
     onPaquitoClick: () -> Unit = {},
+    errorMessage: String? = null,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     AppTabScaffold(
@@ -55,6 +58,9 @@ fun ScheduleScreen(
         notificationCount = data.pendingCount,
         modifier = modifier,
     ) {
+        if (errorMessage != null) {
+            CanvasMockErrorBanner(message = errorMessage, onRetry = onRetry)
+        }
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = "Horarios",
