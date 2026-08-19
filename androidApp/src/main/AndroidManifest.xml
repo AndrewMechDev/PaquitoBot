@@ -3,14 +3,29 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!--
+      usesCleartextTraffic (2026-08-19): necesario SOLO para probar
+      canvas-mock (backend local de pruebas, sin HTTPS - ver skill
+      canvas-mock-backend). Es temporal, igual que esa integracion.
+
+      NO usar un network_security_config.xml con <domain-config> por
+      dominio para esto - bug real encontrado: agregar reglas por-dominio
+      pone a Android en modo "domain aware" para validar certificados, y
+      el motor TLS de Ktor (CIO) llama a un metodo viejo de validacion
+      que Android rechaza en ese modo - rompe TODO el trafico HTTPS de la
+      app (crash real: probar canvas-mock crasheaba hasta las llamadas a
+      paquitobot-rag, que no tiene nada que ver). `usesCleartextTraffic`
+      es mas amplio (cleartext en toda la app, no solo hacia canvas-mock)
+      pero no activa esa logica por-dominio y no rompe nada.
+    -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        android:theme="@android:style/Theme.Material.Light.NoActionBar"
+        android:usesCleartextTraffic="true">
         <activity
             android:exported="true"
             android:name=".MainActivity"
