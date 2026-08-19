@@ -27,11 +27,11 @@ import pe.tecsup.paquitobot.auth.SecureTokenStore
 import pe.tecsup.paquitobot.session.SessionViewModel
 import pe.tecsup.paquitobot.ui.academic.AcademicConnectScreen
 import pe.tecsup.paquitobot.ui.academic.AcademicConnectViewModel
+import pe.tecsup.paquitobot.ui.academic.AcademicCourseDetailViewModel
+import pe.tecsup.paquitobot.ui.academic.AcademicHomeViewModel
 import pe.tecsup.paquitobot.ui.academic.AcademicScheduleViewModel
 import pe.tecsup.paquitobot.ui.academic.AcademicViewModel
 import pe.tecsup.paquitobot.ui.auth.AuthGateScreen
-import pe.tecsup.paquitobot.ui.canvas.CanvasConnectScreen
-import pe.tecsup.paquitobot.ui.canvas.CanvasConnectViewModel
 import pe.tecsup.paquitobot.ui.chat.ChatScreen
 import pe.tecsup.paquitobot.ui.chat.ChatViewModel
 import pe.tecsup.paquitobot.ui.components.NavTab
@@ -78,15 +78,16 @@ class MainActivity : ComponentActivity() {
 }
 
 /**
- * Iteracion 2026-08-13 (flujo de gates): antes de mostrar Home o Chat, la
- * app pasa por dos gates secuenciales evaluados con [SessionViewModel]:
+ * Flujo de gates antes de mostrar Home o Chat (actualizado 2026-08-19):
  *
- *   1. Sin sesion de Google -> [AuthGateScreen].
- *   2. Con sesion pero sin Canvas conectado -> [CanvasConnectScreen].
- *   3. Con ambos -> Home/Chat normal, sin volver a pedir nada.
+ *   1. Sin sesion de Google -> [AuthGateScreen] (unico gate OBLIGATORIO).
+ *   2. Con sesion, sin canvas-mock conectado -> gate OPCIONAL de
+ *      canvas-mock (siempre se puede omitir - ver skill
+ *      canvas-mock-backend).
+ *   3. Con Google + (mock conectado u omitido) -> Home/Chat normal.
  *
- * Decision del usuario: ambos gates bloquean TODA la app (no solo el
- * chat), y una vez pasados no se vuelven a mostrar durante la sesion.
+ * El gate de Canvas REAL (paquitobot-rag) esta retirado del flujo
+ * mientras no haya API real de Canvas disponible.
  */
 @Composable
 private fun AppRoot() {
@@ -142,23 +143,15 @@ private fun AppRoot() {
             },
         )
 
-        !sessionUiState.isCanvasConnected -> {
-            val canvasViewModel: CanvasConnectViewModel = viewModel(
-                factory = remember {
-                    viewModelFactory {
-                        initializer { CanvasConnectViewModel(tokenStore = tokenStore) }
-                    }
-                },
-            )
-            val canvasUiState by canvasViewModel.uiState.collectAsStateWithLifecycle()
-            CanvasConnectScreen(
-                uiState = canvasUiState,
-                onConnectClick = canvasViewModel::connect,
-                onContinueClick = sessionViewModel::markCanvasConnected,
-            )
-        }
+        // Gate del Canvas REAL (paquitobot-rag) RETIRADO del flujo
+        // (2026-08-19): mientras no haya API real de Canvas, la unica
+        // fuente de datos academicos es canvas-mock (gate de abajo,
+        // opcional). Se mantiene solo el gate de Google como obligatorio.
+        // CanvasConnectScreen/CanvasConnectViewModel quedan sin uso aca a
+        // proposito - no se borran porque son necesarios el dia que haya
+        // integracion Canvas real.
 
-        // Cuarto gate (2026-08-19), OPCIONAL: canvas-mock (ver skill
+        // Tercer gate (2026-08-19), OPCIONAL: canvas-mock (ver skill
         // canvas-mock-backend). A diferencia de los gates de arriba, este
         // SIEMPRE se puede omitir - los datos mock son una demo, no un
         // requisito. Independiente del gate de Canvas real de arriba (dos
@@ -193,15 +186,39 @@ private fun AppRoot() {
 
             when (rootScreen) {
                 RootScreen.Tabs -> when (currentTab) {
-                    NavTab.Inicio -> HomeScreen(
-                        data = HomeScreenData.default().copy(
-                            greeting = "¡Bienvenido, $userFirstName!",
-                        ),
-                        currentTab = currentTab,
-                        onTabSelected = { currentTab = it },
-                        onPaquitoClick = { rootScreen = RootScreen.Chat },
-                        onNotificationsClick = { rootScreen = RootScreen.Notifications },
-                    )
+                    NavTab.Inicio -> {
+                        // Mismo criterio que Cursos/Horarios: real si hay key mock conectada.
+                        if (canvasMockKeyStore.hasApiKey()) {
+                            val homeViewModel: AcademicHomeViewModel = viewModel(
+                                factory = remember {
+                                    viewModelFactory {
+                                        initializer { AcademicHomeViewModel(keyStore = canvasMockKeyStore) }
+                                    }
+                                },
+                            )
+                            val homeData by homeViewModel.uiState.collectAsStateWithLifecycle()
+                            val homeError by homeViewModel.errorMessage.collectAsStateWithLifecycle()
+                            HomeScreen(
+                                data = homeData.copy(greeting = "¡Bienvenido, $userFirstName!"),
+                                currentTab = currentTab,
+                                onTabSelected = { currentTab = it },
+                                onPaquitoClick = { rootScreen = RootScreen.Chat },
+                                onNotificationsClick = { rootScreen = RootScreen.Notifications },
+                                errorMessage = homeError,
+                                onRetry = homeViewModel::load,
+                            )
+                        } else {
+                            HomeScreen(
+                                data = HomeScreenData.default().copy(
+                                    greeting = "¡Bienvenido, $userFirstName!",
+                                ),
+                                currentTab = currentTab,
+                                onTabSelected = { currentTab = it },
+                                onPaquitoClick = { rootScreen = RootScreen.Chat },
+                                onNotificationsClick = { rootScreen = RootScreen.Notifications },
+                            )
+                        }
+                    }
                     NavTab.Cursos -> {
                         // Iteracion 2026-08-19: si el estudiante conecto una
                         // cuenta mock (ver skill canvas-mock-backend), Cursos
@@ -216,6 +233,7 @@ private fun AppRoot() {
                                 },
                             )
                             val academicData by academicViewModel.uiState.collectAsStateWithLifecycle()
+                            val academicError by academicViewModel.errorMessage.collectAsStateWithLifecycle()
                             CoursesScreen(
                                 data = academicData,
                                 currentTab = currentTab,
@@ -225,6 +243,8 @@ private fun AppRoot() {
                                     selectedCourse = course
                                     rootScreen = RootScreen.CourseDetail
                                 },
+                                errorMessage = academicError,
+                                onRetry = academicViewModel::load,
                             )
                         } else {
                             CoursesScreen(
@@ -249,11 +269,14 @@ private fun AppRoot() {
                                 },
                             )
                             val scheduleData by scheduleViewModel.uiState.collectAsStateWithLifecycle()
+                            val scheduleError by scheduleViewModel.errorMessage.collectAsStateWithLifecycle()
                             ScheduleScreen(
                                 data = scheduleData,
                                 currentTab = currentTab,
                                 onTabSelected = { currentTab = it },
                                 onPaquitoClick = { rootScreen = RootScreen.Chat },
+                                errorMessage = scheduleError,
+                                onRetry = scheduleViewModel::load,
                             )
                         } else {
                             ScheduleScreen(
@@ -280,12 +303,37 @@ private fun AppRoot() {
                         onBackClick = { rootScreen = RootScreen.Tabs },
                     )
                 }
-                RootScreen.CourseDetail -> CourseDetailScreen(
-                    data = CourseDetailData.forCourse(
-                        selectedCourse ?: CoursesScreenData.default().courses.first(),
-                    ),
-                    onBackClick = { rootScreen = RootScreen.Tabs },
-                )
+                RootScreen.CourseDetail -> {
+                    val course = selectedCourse ?: CoursesScreenData.default().courses.first()
+                    // Real solo si hay key mock conectada Y el id del curso es
+                    // numerico (viene de canvas-mock) - el mock hardcodeado usa
+                    // ids tipo "calculo-ii", que no son un curso real ahi.
+                    if (canvasMockKeyStore.hasApiKey() && course.id.toIntOrNull() != null) {
+                        val detailViewModel: AcademicCourseDetailViewModel = viewModel(
+                            key = course.id,
+                            factory = remember(course.id) {
+                                viewModelFactory {
+                                    initializer {
+                                        AcademicCourseDetailViewModel(keyStore = canvasMockKeyStore, course = course)
+                                    }
+                                }
+                            },
+                        )
+                        val detailData by detailViewModel.uiState.collectAsStateWithLifecycle()
+                        val detailError by detailViewModel.errorMessage.collectAsStateWithLifecycle()
+                        CourseDetailScreen(
+                            data = detailData,
+                            errorMessage = detailError,
+                            onRetry = detailViewModel::load,
+                            onBackClick = { rootScreen = RootScreen.Tabs },
+                        )
+                    } else {
+                        CourseDetailScreen(
+                            data = CourseDetailData.forCourse(course),
+                            onBackClick = { rootScreen = RootScreen.Tabs },
+                        )
+                    }
+                }
                 RootScreen.Notifications -> NotificationsInboxScreen(
                     onBackClick = { rootScreen = RootScreen.Tabs },
                 )
