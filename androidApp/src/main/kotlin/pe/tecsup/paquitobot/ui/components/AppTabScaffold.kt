@@ -54,6 +54,14 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoColors
  *   limitacion conocida en `Navbar.kt`) - ahora el Navbar difumina de
  *   verdad el contenido que tiene detras en vez de taparlo con una franja
  *   translucida plana.
+ * - Bug real encontrado en auditoria (reportado por el usuario "sigue
+ *   viendose un bloque blanco"): el padding inferior reservado para que
+ *   el Navbar "flote" era de 110dp - un espacio VACIO donde nunca hay
+ *   contenido real. Blur de "nada" (fondo blanco vacio) sigue siendo
+ *   blanco solido, asi que el glass nunca tenia nada que difuminar de
+ *   verdad. Bajado a un padding normal para que el contenido real llegue
+ *   hasta el fondo de la pantalla y el Navbar flote genuinamente ENCIMA
+ *   de contenido (cards, texto), no de un hueco en blanco.
  * - El Navbar se oculta (fade + slide) SOLO si el scroll supera un umbral
  *   de velocidad/delta (scroll rapido) - un scroll lento o el contenido
  *   quieto no lo ocultan. Reaparece al superar el umbral scrolleando para
@@ -110,7 +118,7 @@ fun AppTabScaffold(
                 .nestedScroll(nestedScrollConnection)
                 .verticalScroll(rememberScrollState())
                 .hazeSource(state = hazeState)
-                .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 110.dp),
+                .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 40.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
             content = content,
         )

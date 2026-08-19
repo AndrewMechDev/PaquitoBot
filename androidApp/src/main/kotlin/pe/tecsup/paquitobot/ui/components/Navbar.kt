@@ -271,13 +271,22 @@ fun Navbar(
     }
 }
 
+/**
+ * Iteracion 2026-08-13 (bug real, reportado por el usuario con captura):
+ * el indicador de tab seleccionado usaba `PaquitoColors.SurfaceElevated`
+ * (`#EEEEEE`) - un color plano 100% OPACO. Sobre la pildora de vidrio
+ * (`hazeEffect`, translucida) esto se veia como un bloque blanco solido
+ * pegado adentro del Navbar, rompiendo el efecto vidrio desde adentro.
+ * Cambiado a blanco translucido (alpha 0.55) para que el indicador se
+ * sienta parte del mismo lenguaje de vidrio, no un parche opaco encima.
+ */
 @Composable
 private fun NavTabItem(tab: NavTab, selected: Boolean, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .width(72.dp)
             .clip(RoundedCornerShape(if (selected) 50 else 35))
-            .background(if (selected) PaquitoColors.SurfaceElevated else Color.Transparent)
+            .background(if (selected) Color.White.copy(alpha = 0.55f) else Color.Transparent)
             .clickable(onClick = onClick)
             .padding(vertical = 6.dp, horizontal = 4.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),

@@ -3,6 +3,7 @@ package pe.tecsup.paquitobot.ui.notifications
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -131,7 +132,10 @@ fun NotificationsInboxScreen(
                         .clickable(onClick = onBackClick),
                     contentScale = ContentScale.Fit,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     LayoutToggleButton(
                         variant = variant,
                         onToggle = {
@@ -143,12 +147,7 @@ fun NotificationsInboxScreen(
                         },
                     )
                     if (items.isNotEmpty()) {
-                        Text(
-                            text = "Eliminar todas",
-                            style = PaquitoTypography.BodySmall,
-                            color = PaquitoColors.StateDanger,
-                            modifier = Modifier.clickable { confirmDeleteAll = true },
-                        )
+                        DeleteAllButton(onClick = { confirmDeleteAll = true })
                     }
                 }
             }
@@ -237,7 +236,10 @@ private fun LayoutToggleButton(variant: NotificationCardVariant, onToggle: () ->
             .size(36.dp)
             .clip(CircleShape)
             .background(PaquitoColors.SurfaceElevated)
-            .clickable(onClick = onToggle),
+            .clickable(
+                onClickLabel = if (variant == NotificationCardVariant.Full) "Ver en cuadros" else "Ver en lista",
+                onClick = onToggle,
+            ),
         contentAlignment = Alignment.Center,
     ) {
         when (variant) {
@@ -268,6 +270,50 @@ private fun LayoutToggleButton(variant: NotificationCardVariant, onToggle: () ->
                     )
                 }
             }
+        }
+    }
+}
+
+/**
+ * Boton "eliminar todas" - icono de tacho dibujado con primitivas (tapa +
+ * cuerpo con borde), mismo tamaño/estilo circular que [LayoutToggleButton]
+ * para que ambos iconos del header se vean como un par consistente.
+ * Reemplaza el texto "Eliminar todas" (feedback del usuario: usar icono).
+ */
+@Composable
+private fun DeleteAllButton(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(36.dp)
+            .clip(CircleShape)
+            .background(PaquitoColors.StateDanger.copy(alpha = 0.12f))
+            .clickable(onClickLabel = "Eliminar todas las notificaciones", onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            // Tapa del tacho.
+            Box(
+                Modifier
+                    .width(14.dp)
+                    .height(2.dp)
+                    .clip(RoundedCornerShape(1.dp))
+                    .background(PaquitoColors.StateDanger),
+            )
+            // Cuerpo del tacho.
+            Box(
+                modifier = Modifier
+                    .width(11.dp)
+                    .height(10.dp)
+                    .clip(RoundedCornerShape(bottomStart = 3.dp, bottomEnd = 3.dp, topStart = 1.dp, topEnd = 1.dp))
+                    .border(
+                        width = 1.5.dp,
+                        color = PaquitoColors.StateDanger,
+                        shape = RoundedCornerShape(bottomStart = 3.dp, bottomEnd = 3.dp, topStart = 1.dp, topEnd = 1.dp),
+                    ),
+            )
         }
     }
 }
