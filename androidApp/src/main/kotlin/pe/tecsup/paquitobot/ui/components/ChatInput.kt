@@ -48,6 +48,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 fun ChatInput(
     modifier: Modifier = Modifier,
     placeholder: String = "Escribe tu mensaje...",
+    enabled: Boolean = true,
     onSend: (String) -> Unit = {},
 ) {
     var text by remember { mutableStateOf("") }
@@ -71,28 +72,34 @@ fun ChatInput(
                 value = text,
                 onValueChange = { text = it },
                 placeholder = placeholder,
+                enabled = enabled,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
 
-        // Boton enviar.
-        SendButton(onClick = {
-            if (text.isNotBlank()) {
-                onSend(text.trim())
-                text = ""
-            }
-        })
+        // Boton enviar - deshabilitado (medio transparente) mientras
+        // [enabled] es false, evita mandar una pregunta nueva antes de
+        // que llegue la respuesta anterior.
+        SendButton(
+            enabled = enabled,
+            onClick = {
+                if (enabled && text.isNotBlank()) {
+                    onSend(text.trim())
+                    text = ""
+                }
+            },
+        )
     }
 }
 
 @Composable
-private fun SendButton(onClick: () -> Unit) {
+private fun SendButton(enabled: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .size(47.dp)
             .clip(RoundedCornerShape(20.dp))
-            .background(PaquitoColors.BrandPrimary)
-            .clickable(onClick = onClick),
+            .background(PaquitoColors.BrandPrimary.copy(alpha = if (enabled) 1f else 0.5f))
+            .clickable(enabled = enabled, onClick = onClick),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -111,11 +118,13 @@ private fun BasicTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     androidx.compose.foundation.text.BasicTextField(
         value = value,
         onValueChange = onValueChange,
+        enabled = enabled,
         modifier = modifier,
         textStyle = TextStyle(
             fontSize = 15.sp,

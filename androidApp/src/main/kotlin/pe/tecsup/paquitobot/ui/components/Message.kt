@@ -1,22 +1,36 @@
 package pe.tecsup.paquitobot.ui.components
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoFont
 import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
@@ -103,21 +117,20 @@ private fun BotBubble(message: ChatMessage, modifier: Modifier) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.Bottom,
     ) {
+        PaquitoAvatar()
         Column(
             modifier = Modifier
-                .widthIn(max = 290.dp)
+                .widthIn(max = 258.dp)
                 .clip(BotBubbleShape)
                 .background(Color(0xFFF6F6F6))
                 .padding(horizontal = 16.dp, vertical = 13.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Text(
-                text = message.body,
-                fontSize = 15.sp,
-                fontFamily = PaquitoFont.DMSans,
-                color = Color.Black,
-                lineHeight = 20.sp,
+            PaquitoMarkdown(
+                content = message.body,
+                textColor = Color.Black,
             )
             if (message.footnote != null) {
                 BubbleFootnote(text = message.footnote)
@@ -127,6 +140,81 @@ private fun BotBubble(message: ChatMessage, modifier: Modifier) {
             }
         }
     }
+}
+
+/**
+ * Avatar chico de Paquito junto a cada burbuja del bot - mismo icono
+ * (`ic_paquito_bot`, aspect ratio real 50:40) que ya se usa en el FAB del
+ * Navbar, en circulo oscuro para que se note sobre el fondo claro de la
+ * burbuja. Le da identidad visual al chat (antes solo texto plano, sin
+ * ninguna señal de "quien" esta respondiendo).
+ */
+@Composable
+private fun PaquitoAvatar() {
+    Row(
+        modifier = Modifier
+            .padding(end = 8.dp)
+            .size(28.dp)
+            .clip(CircleShape)
+            .background(Color(0xFF1C1B1F)),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_paquito_bot),
+            contentDescription = null,
+            modifier = Modifier.size(width = 20.dp, height = 16.dp),
+            contentScale = ContentScale.Fit,
+        )
+    }
+}
+
+/**
+ * Burbuja "escribiendo..." mientras se espera la respuesta del bot -
+ * mismo estilo que [BotBubble], 3 puntos con una animacion de fade
+ * secuencial simple (sin depender de una libreria de animacion externa).
+ */
+@Composable
+fun TypingIndicatorBubble(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.Bottom,
+    ) {
+        PaquitoAvatar()
+        Row(
+            modifier = Modifier
+                .clip(BotBubbleShape)
+                .background(Color(0xFFF6F6F6))
+                .padding(horizontal = 16.dp, vertical = 15.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            repeat(3) { index ->
+                TypingDot(delayMillis = index * 160)
+            }
+        }
+    }
+}
+
+@Composable
+private fun TypingDot(delayMillis: Int) {
+    val transition = rememberInfiniteTransition(label = "typing-dot")
+    val alpha by transition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 600, delayMillis = delayMillis, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "typing-dot-alpha",
+    )
+    Row(
+        modifier = Modifier
+            .size(7.dp)
+            .alpha(alpha)
+            .clip(CircleShape)
+            .background(PaquitoColors.TextOnCardMuted),
+    ) {}
 }
 
 @Composable

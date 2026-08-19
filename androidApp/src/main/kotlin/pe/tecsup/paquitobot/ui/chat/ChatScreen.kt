@@ -14,16 +14,19 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import pe.tecsup.paquitobot.ui.chat.components.ChatHeader
+import pe.tecsup.paquitobot.ui.chat.components.ChatGreeting
+import pe.tecsup.paquitobot.ui.chat.components.ChatTopBar
 import pe.tecsup.paquitobot.ui.components.ChatInput
 import pe.tecsup.paquitobot.ui.components.ChatMessage
 import pe.tecsup.paquitobot.ui.components.Message
 import pe.tecsup.paquitobot.ui.components.MessageRole
 import pe.tecsup.paquitobot.ui.components.MessageStatus
 import pe.tecsup.paquitobot.ui.components.SuggestionChip
+import pe.tecsup.paquitobot.ui.components.TypingIndicatorBubble
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
@@ -63,6 +66,21 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  * conexion con Canvas ahora bloquean TODA la app desde `MainActivity`
  * (`AuthGateScreen` / `CanvasConnectScreen`), antes de que esta pantalla
  * siquiera se muestre - ya no maneja `isAuthenticated` ni gate propio.
+ *
+ * Iteracion 2026-08-19 (bugs reales, captura del usuario):
+ * - El header completo (flecha + saludo + subtitulo) vivia FIJO fuera del
+ *   scroll, consumiendo espacio permanente de la vista en pantallas
+ *   chicas. Se separa: [ChatTopBar] (solo la flecha) queda fija arriba -
+ *   el usuario siempre necesita poder volver -; el saludo (`ChatGreeting`)
+ *   pasa a ser el primer item DENTRO de la lista scrolleable de mensajes,
+ *   asi se va con el scroll al leer el historial.
+ * - Los chips de sugerencia tambien consumian espacio fijo permanente del
+ *   footer. Ahora solo se muestran cuando todavia no hay mensajes (inicio
+ *   de la conversacion) - mismo criterio que apps de chat con IA (las
+ *   sugerencias son para arrancar, no para acompañar toda la charla).
+ * - El scroll no bajaba solo al enviar/recibir un mensaje: el mensaje mas
+ *   reciente quedaba tapado por el footer fijo. Se agrega auto-scroll al
+ *   final de la lista cada vez que cambia la cantidad de mensajes.
  */
 @Composable
 fun ChatScreen(
@@ -74,6 +92,16 @@ fun ChatScreen(
 ) {
     val messages = uiState.messages
     val scrollState = rememberScrollState()
+
+    // Auto-scroll al ultimo mensaje: sin esto, al enviar o recibir una
+    // respuesta el scroll se quedaba en la posicion anterior y el mensaje
+    // nuevo quedaba tapado por el footer fijo (bug real, captura del
+    // usuario 2026-08-19).
+    LaunchedEffect(messages.size, uiState.isSending) {
+        if (messages.isNotEmpty() || uiState.isSending) {
+            scrollState.animateScrollTo(scrollState.maxValue)
+        }
+    }
 
     Box(modifier = modifier.fillMaxSize().background(PaquitoColors.Background)) {
         // Iteracion 2026-08-06 (feedback "muy separado del teclado"): el
@@ -90,13 +118,13 @@ fun ChatScreen(
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 8.dp),
         ) {
-            // Header: flecha atras + saludo.
-            ChatHeader(
-                userName = userName,
-                onBackClick = onBackClick,
-            )
+            // Fija arriba: SOLO la flecha atras (chica) - el saludo se movio
+            // adentro del scroll, ver comentario de la clase.
+            ChatTopBar(onBackClick = onBackClick)
 
-            // Lista de mensajes scrolleable.
+            // Lista de mensajes scrolleable. El saludo es el primer item -
+            // se va con el scroll al leer el historial, en vez de quedar
+            // fijo consumiendo espacio permanente.
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -105,32 +133,42 @@ fun ChatScreen(
                     .padding(top = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(11.dp),
             ) {
+                ChatGreeting(userName = userName)
                 messages.forEach { msg ->
                     Message(message = msg)
                 }
-            }
-
-            // Chips de sugerencia (scrollable horizontal).
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(vertical = 10.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                ChatSuggestionPrompts.forEach { suggestion ->
-                    SuggestionChip(
-                        text = suggestion,
-                        onClick = { onSendMessage(suggestion) },
-                    )
+                if (uiState.isSending) {
+                    TypingIndicatorBubble()
                 }
             }
 
-            // Input.
+            // Chips de sugerencia: solo antes del primer mensaje (arranque
+            // de la conversacion) - despues dejan de ocupar espacio fijo
+            // permanente en el footer.
+            if (messages.isEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(vertical = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    ChatSuggestionPrompts.forEach { suggestion ->
+                        SuggestionChip(
+                            text = suggestion,
+                            onClick = { onSendMessage(suggestion) },
+                        )
+                    }
+                }
+            }
+
+            // Input - deshabilitado mientras se espera respuesta (evita
+            // mandar una segunda pregunta antes de que llegue la primera).
             ChatInput(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 12.dp),
+                enabled = !uiState.isSending,
                 onSend = onSendMessage,
             )
         }

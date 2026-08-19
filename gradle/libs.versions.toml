@@ -19,6 +19,7 @@ kotlin = "2.4.10"
 kotlinx-coroutines = "1.9.0"
 kotlinx-serialization = "1.7.3"
 ktor = "3.0.3"
+markdownRenderer = "0.40.2"
 material3 = "1.11.0-alpha07"
 
 [libraries]
@@ -52,6 +53,8 @@ googleid = { module = "com.google.android.libraries.identity.googleid:googleid",
 androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "androidx-security-crypto" }
 haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 haze-materials = { module = "dev.chrisbanes.haze:haze-materials", version.ref = "haze" }
+markdown-renderer = { module = "com.mikepenz:multiplatform-markdown-renderer", version.ref = "markdownRenderer" }
+markdown-renderer-m3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdownRenderer" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

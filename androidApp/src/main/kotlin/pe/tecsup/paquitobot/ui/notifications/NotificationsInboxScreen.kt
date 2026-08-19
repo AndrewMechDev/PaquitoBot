@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import pe.tecsup.paquitobot.R
+import pe.tecsup.paquitobot.ui.components.PaquitoMarkdown
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
@@ -546,10 +547,11 @@ private fun NotificationDetailDialog(item: NotificationInboxItem, onDismiss: () 
         title = { Text(item.title) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    text = item.body,
-                    style = PaquitoTypography.BodyLarge,
-                    color = PaquitoColors.TextOnCardStrong,
+                PaquitoMarkdown(
+                    content = item.body,
+                    textColor = PaquitoColors.TextOnCardStrong,
+                    fontSize = PaquitoTypography.BodyLarge.fontSize,
+                    lineHeight = PaquitoTypography.BodyLarge.lineHeight,
                 )
                 Text(
                     text = "Hace ${item.timestamp}",

@@ -36,6 +36,12 @@ dependencies {
     implementation(libs.haze)
     implementation(libs.haze.materials)
 
+    // Renderiza el Markdown crudo que devuelve paquitobot-rag (negritas,
+    // tablas, headers) en vez de mostrar el texto plano con "**"/"##"
+    // literales - variante m3 para que respete Material3/PaquitoTheme.
+    implementation(libs.markdown.renderer)
+    implementation(libs.markdown.renderer.m3)
+
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
 }
