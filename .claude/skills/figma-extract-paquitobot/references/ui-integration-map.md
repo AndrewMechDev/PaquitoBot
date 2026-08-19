@@ -21,8 +21,8 @@ Snapshot vivo del archivo Figma actual para guiar extracciones. nodeIds verifica
 
 | Frame | nodeId | Estado implementación |
 |---|---|---|
-| `/` welcome inicial (Paquito bot icono, "Configuremos tu asistente", botón Continuar) | `112:3` | Pendiente |
-| `/` notificaciones (3 cards verticales: Calificaciones, Plazos de Entrega, Asistencias) | `112:135` | Pendiente |
+| `/` welcome inicial (Paquito bot icono, "Configuremos tu asistente", botón Continuar) | `112:3` | **Implementado** (`WelcomeScreen.kt`) — mascota sola, sin icono 100px. Base visual de `AuthGateScreen`. |
+| `/` notificaciones (3 cards verticales: Calificaciones, Plazos de Entrega, Asistencias) | `112:135` | **Implementado** (`OnboardingNotificationsScreen.kt`, variante Compact) |
 | `/` notificaciones alternativas (3 cards horizontales opciones) | `156:124` | Pendiente |
 
 ### Inicio (sección `351:537`)
@@ -59,8 +59,8 @@ Snapshot vivo del archivo Figma actual para guiar extracciones. nodeIds verifica
 | Sección | nodeId del frame | Notas |
 |---|---|---|
 | `/chat` | `351:667` | Solo navbar; implementar después |
-| `/courses` | `351:697` | Solo navbar |
-| `/home` horarios | `351:719` | Solo navbar |
+| `/courses` lista de cursos del ciclo | `351:697` | **Implementado UI mock** (`CoursesScreen.kt`). Figma solo trae navbar; cuerpo de producto (promedio + faltas). |
+| `/home` horarios | `351:719` | **Implementado UI mock** (`ScheduleScreen.kt`). Figma solo trae navbar; timeline clases/entregas/faltas. |
 
 ### Personaje Paquito (assets gráficos)
 
@@ -97,5 +97,6 @@ Cada ícono tiene 2 estados: `state=Default` (línea) y `state=fill` (relleno). 
 - [x] Íconos exportados → Compose drawable (13 XML en `androidApp/src/main/res/drawable/`)
 - [ ] Íconos exportados → iOS imageset (pendiente)
 - [ ] Componentes reutilizables implementados como Composables compartidos (hoy están inline en `HomeScreen.kt`/`Navbar.kt`, no extraídos a archivos propios)
-- [ ] Pantallas Onboarding implementadas (3 frames)
+- [x] Pantallas Onboarding implementadas (Welcome `112:3` + notificaciones `112:135`/`156:124` + tour 3 dolores; cableadas en `MainActivity` antes de Google)
 - [x] Pantalla Inicio implementada (`351:644`, con desviaciones documentadas arriba) — `364:219` descartada
+- [x] Pestañas Cursos / Horarios + detalle de curso (UI mock, 2026-08-17; sin body en Figma)

@@ -6,13 +6,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,34 +23,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import pe.tecsup.paquitobot.ui.components.NotificationCard
 import pe.tecsup.paquitobot.ui.components.NotificationCardVariant
 import pe.tecsup.paquitobot.ui.components.NotificationType
+import pe.tecsup.paquitobot.ui.components.PaquitoPrimaryButton
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
-import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
 
 /**
- * Screen de Onboarding: eleccion de notificaciones a activar.
+ * Eleccion de avisos (Figma `112:135` Compact / `156:124` Full).
  *
- * Compone los dos frames alternativos del Figma canvas Main:
- *   - 112:135 (variant Compact): grid 2 columnas x 2 filas con la tercera
- *     card sola al final (Figma usa flex-wrap, no es grid estricto).
- *   - 156:124 (variant Full): lista vertical de 3 cards full-width.
- *
- * Variante default: Compact. El usuario puede alternar via el segmented
- * control en la parte superior.
- *
- * Tokens claves:
- *   - fondo card inactiva = SurfaceOverlay = rgba(0,0,0,0.02)
- *   - fondo card activa    = BrandPrimary @ 10% alpha
- *   - texto titulo         = TextPrimary @ 75% alpha
- *   - boton Continuar      = BrandPrimary bg + TextOnPrimary (igual Welcome)
+ * El padding top de 350dp copiaba la coordenada absoluta de Figma y empujaba
+ * titulo, cards y Continuar fuera de pantalla. Ahora el contenido arranca
+ * bajo la status bar y Continuar queda anclado abajo (edge-to-edge).
  */
 @Composable
 fun OnboardingNotificationsScreen(
@@ -63,40 +53,38 @@ fun OnboardingNotificationsScreen(
     var variant by remember { mutableStateOf(NotificationCardVariant.Compact) }
     var enabled by remember { mutableStateOf(initialEnabled) }
 
-    Box(
+    Column(
         modifier = modifier
             .fillMaxSize()
-            .background(PaquitoColors.Background),
+            .background(PaquitoColors.Background)
+            .systemBarsPadding()
+            .padding(horizontal = PaquitoSpacing.lg)
+            .padding(top = 32.dp, bottom = PaquitoSpacing.lg),
     ) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(
+                text = "Notificaciones",
+                style = PaquitoTypography.DisplayLarge,
+                color = PaquitoColors.TextPrimary,
+            )
+            Text(
+                text = "Activa tus avisos",
+                style = PaquitoTypography.HeadlineSmall,
+                color = PaquitoColors.TextSecondary,
+            )
+        }
+
+        Spacer(modifier = Modifier.padding(top = 20.dp))
+
+        VariantToggle(variant = variant, onVariantChange = { variant = it })
+
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    start = PaquitoSpacing.lg,
-                    end = PaquitoSpacing.lg,
-                    top = 350.dp,
-                    bottom = PaquitoSpacing.xxl,
-                ),
+                .weight(1f)
+                .padding(top = 20.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            // Titulo y subtitulo.
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(
-                    text = "Notificaciones",
-                    style = PaquitoTypography.DisplayLarge,
-                    color = PaquitoColors.TextPrimary,
-                )
-                Text(
-                    text = "Activa tus avisos",
-                    style = PaquitoTypography.HeadlineSmall,
-                    color = PaquitoColors.TextSecondary,
-                )
-            }
-
-            // Segmented control: Compact vs Full.
-            VariantToggle(variant = variant, onVariantChange = { variant = it })
-
-            // Contenedor de cards segun variante.
             when (variant) {
                 NotificationCardVariant.Compact -> CompactGrid(
                     enabled = enabled,
@@ -107,27 +95,13 @@ fun OnboardingNotificationsScreen(
                     onToggle = { type -> toggleNotification(enabled, type) { enabled = it } },
                 )
             }
-
-            // Boton Continuar.
-            Button(
-                onClick = { onContinue(enabled) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(51.dp),
-                shape = PaquitoShapes.large,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = PaquitoColors.BrandPrimary,
-                    contentColor = PaquitoColors.TextOnPrimary,
-                ),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(15.dp),
-            ) {
-                Text(
-                    text = "Continuar",
-                    style = PaquitoTypography.BodyLarge,
-                    color = PaquitoColors.TextOnPrimary,
-                )
-            }
         }
+
+        PaquitoPrimaryButton(
+            text = "Continuar",
+            onClick = { onContinue(enabled) },
+            modifier = Modifier.padding(top = 16.dp),
+        )
     }
 }
 
@@ -140,7 +114,7 @@ private fun VariantToggle(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(50))
-            .background(PaquitoColors.SurfaceOverlay)
+            .background(PaquitoColors.SurfaceElevated)
             .padding(4.dp),
     ) {
         ToggleSegment(
@@ -168,16 +142,15 @@ private fun ToggleSegment(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(50))
-            .background(if (selected) PaquitoColors.Background else Color.Transparent)
+            .background(if (selected) PaquitoColors.BrandPrimary else PaquitoColors.SurfaceElevated)
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 10.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = label,
-            style = PaquitoTypography.BodyMedium.copy(
-                color = if (selected) PaquitoColors.TextPrimary else PaquitoColors.TextSecondary,
-            ),
+            style = PaquitoTypography.BodyMedium,
+            color = if (selected) PaquitoColors.TextOnPrimary else PaquitoColors.TextSecondary,
         )
     }
 }
@@ -187,31 +160,40 @@ private fun CompactGrid(
     enabled: Set<NotificationType>,
     onToggle: (NotificationType) -> Unit,
 ) {
-    // Figma 112:135: dos cards en la primera fila, tercera sola en la segunda.
-    // Layout manual: 2 Rows con gap 20dp entre cards y filas.
-    val allTypes = NotificationType.values().toList()
+    val allTypes = NotificationType.entries
     val firstRow = allTypes.take(2)
     val secondRow = allTypes.drop(2)
-    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
             firstRow.forEach { type ->
                 NotificationCard(
                     type = type,
                     variant = NotificationCardVariant.Compact,
                     enabled = type in enabled,
                     onToggle = { onToggle(type) },
+                    modifier = Modifier.weight(1f),
                 )
             }
         }
         if (secondRow.isNotEmpty()) {
-            Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
                 secondRow.forEach { type ->
                     NotificationCard(
                         type = type,
                         variant = NotificationCardVariant.Compact,
                         enabled = type in enabled,
                         onToggle = { onToggle(type) },
+                        modifier = Modifier.weight(1f),
                     )
+                }
+                if (secondRow.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }
@@ -227,7 +209,7 @@ private fun FullList(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
-        NotificationType.values().forEach { type ->
+        NotificationType.entries.forEach { type ->
             NotificationCard(
                 type = type,
                 variant = NotificationCardVariant.Full,
@@ -246,7 +228,7 @@ private fun toggleNotification(
     setter(if (type in current) current - type else current + type)
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "2. Notificaciones")
 @Composable
 private fun OnboardingNotificationsScreenPreview() {
     PaquitoTheme {

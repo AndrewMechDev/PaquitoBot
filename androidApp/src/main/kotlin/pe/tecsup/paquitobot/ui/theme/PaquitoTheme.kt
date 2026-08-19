@@ -108,6 +108,7 @@ object PaquitoTypography {
     val DisplayLarge   = TextStyle(fontSize = 34.sp, fontWeight = FontWeight.SemiBold, fontFamily = PaquitoFont.DMSans)
     val HeadlineSmall  = TextStyle(fontSize = 23.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
     val BodyLarge      = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
+    val BodySmall      = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
     val BodyMedium     = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.InstrumentSans)
     val Caption        = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMMono)
     val LabelSmall     = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium,   fontFamily = PaquitoFont.DMSans)

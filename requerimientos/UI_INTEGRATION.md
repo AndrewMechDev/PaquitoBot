@@ -21,6 +21,25 @@ Estado vivo de la integración entre el archivo Figma "Paquito (copia)" y el có
 - El módulo `sharedUI/` fue eliminado del repo porque exportaba Composables que iban contra la regla de UI no compartida. Se mantiene solo `sharedLogic/` para clases puras Kotlin.
 - Toda extracción valida contra `Main` (no `assets?`). Ver `references/ui-integration-map.md` en la skill para catálogo completo de frames.
 
+## Flujo de primer uso (2026-08-17)
+
+Orden en `MainActivity`: Welcome (`112:3`) → Notificaciones (`112:135`) → Tour 3 dolores (sin frame Figma) → Google → Canvas → pestañas Inicio / Cursos / Horarios + Chat (FAB) + detalle de curso.
+
+Visualizar sin reinstalar:
+- Android Studio → `ui/FirstRunFlowPreviews.kt` (previews 1–10).
+- Dispositivo: borrar datos de la app para volver a ver Welcome.
+
+Pestañas (Figma `351:697` Cursos y `351:719` Horarios solo traen navbar; el cuerpo es de producto, mismos tokens que Home):
+- **Inicio**: snapshot Cómo vas / Faltas / Entregas + semana + lista unificada.
+- **Cursos**: promedio y faltas por materia → detalle prácticas/labs/foros.
+- **Horarios**: clases + entregas + faltas en una línea de tiempo.
+
+Auditoría UX 2026-08-14:
+- No apilar icono 100px + mascota en Welcome (se superponían sobre el título).
+- No copiar `top: 350dp` de Figma: empujaba notificaciones y escondía Continuar.
+- Activity `enableEdgeToEdge` exige `systemBarsPadding` o el CTA queda bajo la barra de gestos.
+- Nombre de saludo: Google `givenName`, no `{nombre}` (backend aún sin `GET /me`).
+
 ## Alcance del proyecto (actualizado 2026-08-05)
 
 - **Backend vive en un repositorio aparte (FastAPI)**, no en este repo.
@@ -245,7 +264,7 @@ Este frame es el que se terminó usando como canónico para el Home definitivo (
 | `text/timestamp-large-muted` | `rgba(0,201,251,0.5)` (timestamp futuro lejano) | `0x8000C9FB` | Compose: `PaquitoColors.TextTimestampLargeMuted` |
 | `text/home-task-label` | `rgba(28,27,31,0.5)` (label "Curso" sobre task info) | `0x801C1B1F` | Compose: `PaquitoColors.TextHomeTaskLabel` ✅ nuevo |
 
-**Nota sobre el "¡Bienvenido, {user}!"**: el placeholder literal del frame Figma. Cuando se conecte el backend, se reemplaza por el nombre real del estudiante.
+**Nota sobre el saludo**: Figma dice `¡Bienvenido, {user}!`. En runtime `MainActivity` inyecta el `givenName` de Google. El default de preview es `estudiante`, no las llaves literales.
 
 ### Estructura del calendario semanal
 
