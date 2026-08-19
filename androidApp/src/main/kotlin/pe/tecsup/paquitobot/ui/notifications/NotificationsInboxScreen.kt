@@ -1,6 +1,10 @@
 package pe.tecsup.paquitobot.ui.notifications
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,7 +35,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +52,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
@@ -170,27 +177,37 @@ fun NotificationsInboxScreen(
                 ) {
                     when (variant) {
                         NotificationCardVariant.Full -> items.forEach { item ->
-                            SwipeableNotification(
-                                onDelete = { deleteItem(item) },
-                            ) {
-                                NotificationInboxRow(item, onClick = { selectedItem = item })
+                            key(item.id) {
+                                SwipeableNotification(
+                                    onDelete = { deleteItem(item) },
+                                ) {
+                                    NotificationInboxRow(item, onClick = { selectedItem = item })
+                                }
                             }
                         }
                         NotificationCardVariant.Compact -> items.chunked(2).forEach { row ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            ) {
-                                row.forEach { item ->
-                                    SwipeableNotification(
-                                        modifier = Modifier.weight(1f),
-                                        onDelete = { deleteItem(item) },
-                                    ) {
-                                        NotificationInboxCard(item, onClick = { selectedItem = item })
+                            // Key a nivel de fila (primer id) para que Compose tambien
+                            // trate cada FILA como estable cuando el chunking se corre
+                            // por un borrado - evita que la fila entera "salte" de
+                            // posicion en la tabla de composicion.
+                            key(row.first().id) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                ) {
+                                    row.forEach { item ->
+                                        key(item.id) {
+                                            SwipeableNotification(
+                                                modifier = Modifier.weight(1f),
+                                                onDelete = { deleteItem(item) },
+                                            ) {
+                                                NotificationInboxCard(item, onClick = { selectedItem = item })
+                                            }
+                                        }
                                     }
-                                }
-                                if (row.size == 1) {
-                                    Box(modifier = Modifier.weight(1f))
+                                    if (row.size == 1) {
+                                        Box(modifier = Modifier.weight(1f))
+                                    }
                                 }
                             }
                         }
@@ -338,9 +355,17 @@ private fun EmptyState() {
 
 /**
  * Envuelve [content] en `SwipeToDismissBox`: swipe de derecha a izquierda
- * revela un fondo rojo con "-" y dispara [onDelete] al completarse. Sin
- * confirmacion aca (ver nota en [NotificationsInboxScreen]) - el
- * `Snackbar` "Deshacer" que arma [onDelete] es la red de seguridad.
+ * revela un fondo rojo con "-". Sin confirmacion aca (ver nota en
+ * [NotificationsInboxScreen]) - el `Snackbar` "Deshacer" que arma
+ * [onDelete] es la red de seguridad.
+ *
+ * Iteracion 2026-08-19 (bug real, reportado por el usuario con captura):
+ * antes [onDelete] se llamaba SINCRONICAMENTE apenas se completaba el
+ * swipe, sacando el item de la lista real en el mismo instante - se
+ * sentia "demasiado rapido"/brusco, sin transicion. Ahora el swipe solo
+ * marca [removed], que dispara una salida animada (`shrinkVertically` +
+ * fade) vía [AnimatedVisibility]; [onDelete] recien se llama
+ * [EXIT_DELAY_MS] despues, una vez que esa animacion ya termino visualmente.
  */
 @Composable
 private fun SwipeableNotification(
@@ -348,25 +373,40 @@ private fun SwipeableNotification(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
+    var removed by remember { mutableStateOf(false) }
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.EndToStart) {
-                onDelete()
+                removed = true
                 true
             } else {
                 false
             }
         },
     )
-    SwipeToDismissBox(
-        state = dismissState,
+    LaunchedEffect(removed) {
+        if (removed) {
+            delay(EXIT_DELAY_MS)
+            onDelete()
+        }
+    }
+    AnimatedVisibility(
+        visible = !removed,
+        exit = shrinkVertically(animationSpec = tween(EXIT_DELAY_MS.toInt())) + fadeOut(tween(180)),
         modifier = modifier,
-        enableDismissFromStartToEnd = false,
-        backgroundContent = { SwipeDeleteBackground() },
     ) {
-        content()
+        SwipeToDismissBox(
+            state = dismissState,
+            enableDismissFromStartToEnd = false,
+            backgroundContent = { SwipeDeleteBackground() },
+        ) {
+            content()
+        }
     }
 }
+
+/** Duracion de la animacion de salida antes de sacar el item de la lista real. */
+private const val EXIT_DELAY_MS = 220L
 
 @Composable
 private fun SwipeDeleteBackground() {
@@ -524,8 +564,18 @@ private fun NotificationDetailDialog(item: NotificationInboxItem, onDismiss: () 
 /** Urgencia visual de una notificacion (afecta solo el color del timestamp). */
 enum class NotificationSeverity { Info, Urgent }
 
-/** Item individual de la bandeja de notificaciones. */
+/**
+ * Item individual de la bandeja de notificaciones.
+ *
+ * [id] es la clave estable para `key()` en los loops de composicion - sin
+ * esto, Compose asocia el estado de swipe (`SwipeToDismissBoxState`) a la
+ * POSICION en la lista en vez de al item real. Al eliminar uno, el
+ * siguiente hereda el estado "ya swipeado" del que ocupaba esa posicion
+ * antes - bug real reportado por el usuario (una card quedaba "pegada"
+ * mostrando el fondo rojo sin que la tocara).
+ */
 data class NotificationInboxItem(
+    val id: String,
     val title: String,
     val body: String,
     val timestamp: String,
@@ -541,6 +591,7 @@ data class NotificationsInboxData(
         fun default(): NotificationsInboxData = NotificationsInboxData(
             items = listOf(
                 NotificationInboxItem(
+                    id = "lab4-vencimiento",
                     title = "Laboratorio 4 vence pronto",
                     body = "Cálculo II · 15% de la nota final. Entregá el informe completo con las 5 preguntas resueltas antes de las 23:59 para no perder puntaje.",
                     timestamp = "12 h",
@@ -548,6 +599,7 @@ data class NotificationsInboxData(
                     iconRes = R.drawable.ic_paquito_lab_profile,
                 ),
                 NotificationInboxItem(
+                    id = "practica2-nota",
                     title = "Nueva nota disponible",
                     body = "Práctica 2 calificada en Física I",
                     timestamp = "1 d",
@@ -555,6 +607,7 @@ data class NotificationsInboxData(
                     iconRes = R.drawable.ic_paquito_docs_default,
                 ),
                 NotificationInboxItem(
+                    id = "canvas-sync",
                     title = "Canvas sincronizado",
                     body = "Tus cursos y tareas están al día",
                     timestamp = "2 d",
