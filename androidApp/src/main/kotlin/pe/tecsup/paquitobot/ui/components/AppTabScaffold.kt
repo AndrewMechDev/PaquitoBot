@@ -62,6 +62,18 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoColors
  *   verdad. Bajado a un padding normal para que el contenido real llegue
  *   hasta el fondo de la pantalla y el Navbar flote genuinamente ENCIMA
  *   de contenido (cards, texto), no de un hueco en blanco.
+ * - Iteracion 2026-08-19 (bug real, pedido del usuario: "replicar el
+ *   comportamiento de Samsung Health"): ese `bottom = 40.dp` de arriba era
+ *   MENOR que el espacio real que ocupa el Navbar flotante (~76dp de FAB +
+ *   24dp de margen inferior ≈ 100dp) - el ultimo item de cada pantalla
+ *   quedaba parcialmente tapado por el Navbar incluso en scroll maximo,
+ *   sin mas distancia de scroll disponible para revelarlo (solo se veia
+ *   completo si el usuario seguia arrastrando para forzar el ocultamiento
+ *   por velocidad). Se sube a [BOTTOM_CONTENT_PADDING] (mayor al
+ *   footprint real del Navbar) para que en scroll maximo el contenido real
+ *   YA este completamente libre del Navbar sin depender de ese gesto -
+ *   esto SI es contenido real detras del padding (a diferencia del bug de
+ *   110dp de arriba), solo se reserva espacio adicional despues de el.
  * - El Navbar se oculta (fade + slide) SOLO si el scroll supera un umbral
  *   de velocidad/delta (scroll rapido) - un scroll lento o el contenido
  *   quieto no lo ocultan. Reaparece al superar el umbral scrolleando para
@@ -118,7 +130,7 @@ fun AppTabScaffold(
                 .nestedScroll(nestedScrollConnection)
                 .verticalScroll(rememberScrollState())
                 .hazeSource(state = hazeState)
-                .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 40.dp),
+                .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = BOTTOM_CONTENT_PADDING),
             verticalArrangement = Arrangement.spacedBy(20.dp),
             content = content,
         )
@@ -150,3 +162,12 @@ fun AppTabScaffold(
 /** Delta minimo (por evento de scroll) para considerar el scroll "rapido" y ocultar el Navbar. */
 private val SCROLL_HIDE_THRESHOLD = 12.dp
 private const val SETTLE_DELAY_MS = 300L
+
+/**
+ * Espacio reservado DESPUES del ultimo item real de cada pantalla, mayor
+ * al footprint del Navbar flotante (~76dp de FAB + 24dp de margen inferior
+ * ≈ 100dp) mas un respiro chico - asi en scroll maximo el ultimo contenido
+ * real ya esta completamente libre del Navbar, sin necesitar el gesto de
+ * ocultamiento por velocidad para leerlo.
+ */
+private val BOTTOM_CONTENT_PADDING = 112.dp

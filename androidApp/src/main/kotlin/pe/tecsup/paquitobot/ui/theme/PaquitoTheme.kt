@@ -118,8 +118,12 @@ object PaquitoTypography {
     val BodyLarge      = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
     val BodySmall      = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
     val BodyMedium     = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
-    val Caption        = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
-    val LabelSmall     = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium,   fontFamily = PaquitoFont.DMSans)
+    // Iteracion 2026-08-19 (pedido del usuario: "un poco chico"): +1sp en
+    // los tokens mas chicos (Caption/LabelSmall) - ya se usan en decenas de
+    // pantallas via `PaquitoTypography.*`, asi que un bump centralizado
+    // aca mejora la legibilidad en todas sin tocar cada Text() a mano.
+    val Caption        = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
+    val LabelSmall     = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium,   fontFamily = PaquitoFont.DMSans)
 
     // Nuevos (Home B)
     val Greeting       = TextStyle(fontSize = 30.sp, fontWeight = FontWeight.Bold,     fontFamily = PaquitoFont.DMSans)
