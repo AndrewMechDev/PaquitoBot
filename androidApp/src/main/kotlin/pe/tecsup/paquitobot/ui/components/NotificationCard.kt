@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
+import pe.tecsup.paquitobot.ui.theme.PaquitoFont
 import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
@@ -124,6 +125,7 @@ private fun NotificationCardCompact(
         Text(
             text = type.title,
             fontSize = 22.sp,
+            fontFamily = PaquitoFont.DMSans,
             fontWeight = FontWeight.SemiBold,
             color = PaquitoColors.TextPrimary.copy(alpha = 0.75f),
             maxLines = 2,
@@ -163,6 +165,7 @@ private fun NotificationCardFull(
         Text(
             text = type.title,
             fontSize = 22.sp,
+            fontFamily = PaquitoFont.DMSans,
             fontWeight = FontWeight.SemiBold,
             color = PaquitoColors.TextPrimary.copy(alpha = 0.75f),
         )

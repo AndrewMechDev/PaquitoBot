@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
+import pe.tecsup.paquitobot.ui.theme.PaquitoFont
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
 /**
@@ -77,6 +78,7 @@ fun NotificationBellButton(
                 Text(
                     text = if (unreadCount > 9) "9+" else unreadCount.toString(),
                     fontSize = 9.sp,
+                    fontFamily = PaquitoFont.DMSans,
                     fontWeight = FontWeight.Bold,
                     color = PaquitoColors.TextOnWhite,
                 )

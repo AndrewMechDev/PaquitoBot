@@ -11,6 +11,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
+import pe.tecsup.paquitobot.ui.theme.PaquitoFont
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
 /**
@@ -37,6 +38,7 @@ fun SuggestionChip(
     Text(
         text = text,
         fontSize = 13.sp,
+        fontFamily = PaquitoFont.DMSans,
         color = PaquitoColors.TextOnCardStrong,
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))

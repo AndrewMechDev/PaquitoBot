@@ -39,6 +39,7 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import dev.chrisbanes.haze.rememberHazeState
 import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
+import pe.tecsup.paquitobot.ui.theme.PaquitoFont
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
 /**
@@ -261,6 +262,7 @@ fun Navbar(
                         Text(
                             text = notificationCount.toString(),
                             fontSize = 11.sp,
+                            fontFamily = PaquitoFont.DMSans,
                             fontWeight = FontWeight.Bold,
                             color = PaquitoColors.TextOnWhite,
                         )
@@ -307,6 +309,7 @@ private fun NavTabItem(tab: NavTab, selected: Boolean, onClick: () -> Unit) {
         Text(
             text = tab.label,
             fontSize = 12.sp,
+            fontFamily = PaquitoFont.DMSans,
             fontWeight = FontWeight.SemiBold,
             color = PaquitoColors.TextOnSurface,
             textAlign = TextAlign.Center,

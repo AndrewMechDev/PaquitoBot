@@ -39,6 +39,7 @@ import pe.tecsup.paquitobot.ui.components.NotificationBellButton
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoFont
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
+import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
 
 /**
  * Pantalla Home de PaquitoBot, fiel al frame Figma `351:644` del archivo
@@ -241,20 +242,14 @@ private fun HomeMessage(
         ) {
             Text(
                 text = greeting,
-                fontSize = 26.sp,
-                lineHeight = 30.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = PaquitoFont.DMSans,
+                style = PaquitoTypography.DisplayLarge,
                 color = PaquitoColors.TextHomeStrong,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = dateLabel,
-                fontSize = 18.sp,
-                lineHeight = 22.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = PaquitoFont.DMSans,
+                style = PaquitoTypography.HeadlineSmall,
                 color = PaquitoColors.TextHomeMuted,
             )
         }
