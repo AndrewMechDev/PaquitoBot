@@ -614,6 +614,19 @@ data class NotificationsInboxData(
                     severity = NotificationSeverity.Info,
                     iconRes = R.drawable.ic_paquito_calendar_fill,
                 ),
+                // 2026-08-19: se movio aca desde un banner fijo en
+                // ScheduleScreen (reportado por el usuario: "eso entra como
+                // notificacion y no deberia estar ahi" - un aviso de
+                // asistencia es contenido de notificacion, no un banner
+                // pegado en la grilla de horarios).
+                NotificationInboxItem(
+                    id = "asistencia-ciclo",
+                    title = "Asistencia del ciclo",
+                    body = "2 de 5 faltas usadas. Te quedan 3 antes del jalado automático.",
+                    timestamp = "3 d",
+                    severity = NotificationSeverity.Urgent,
+                    iconRes = R.drawable.ic_paquito_frame_person,
+                ),
             ),
         )
 

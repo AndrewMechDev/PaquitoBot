@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,6 +24,13 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
 /**
  * Pestaña Cursos. Frame Figma `351:697` solo tiene navbar.
  * Dolor: "no saben si van bien" — promedio, faltas y proxima entrega por curso.
+ *
+ * Iteracion 2026-08-19 (bug real, reportado por el usuario en Horarios,
+ * mismo patron aca): la lista ya NO tiene su propio
+ * `Column(weight(1f).verticalScroll(...))` - desde el fix del Navbar
+ * (2026-08-13), `AppTabScaffold` scrollea toda la pantalla como una sola
+ * superficie. Un scroll anidado adentro de otro sin altura acotada dejaba
+ * el titulo pegado arriba, como si fuera un header fijo.
  */
 @Composable
 fun CoursesScreen(
@@ -55,12 +60,7 @@ fun CoursesScreen(
                 color = PaquitoColors.TextHomeMuted,
             )
         }
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             data.courses.forEach { course ->
                 CourseSummaryCard(
                     course = course,

@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,6 +25,20 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
 /**
  * Pestaña Horarios. Frame Figma `351:719` solo tiene navbar.
  * Une clases (faltas) + vencimientos (desorden de canales) en una linea de tiempo.
+ *
+ * Iteracion 2026-08-19 (bugs reales, reportados por el usuario con captura):
+ * - El titulo + banner de asistencia se veian como un header "fijo" que no
+ *   scrolleaba con el resto. Causa: esta pantalla envolvia la lista de dias
+ *   en su PROPIO `Column(weight(1f).verticalScroll(...))` - un scroll
+ *   anidado adentro de `AppTabScaffold`, que desde el fix del Navbar
+ *   (2026-08-13) YA scrollea toda la pantalla como una sola superficie.
+ *   Ese doble scroll (uno anidado dentro de otro sin altura acotada) dejaba
+ *   todo lo de arriba pegado. Fix: la lista de dias ya no tiene su propio
+ *   `verticalScroll` - fluye como parte del scroll unico de la pantalla.
+ * - El banner "Asistencia del ciclo" se saca de aca por completo: es
+ *   contenido de AVISO (algo que le "avisa" al estudiante), no un dato fijo
+ *   de la grilla de horarios - le corresponde a la bandeja de
+ *   notificaciones (`NotificationsInboxScreen`), no a un banner pegado acá.
  */
 @Composable
 fun ScheduleScreen(
@@ -55,42 +67,11 @@ fun ScheduleScreen(
                 color = PaquitoColors.TextHomeMuted,
             )
         }
-        AbsenceBanner(used = data.absencesUsed, limit = data.absencesLimit)
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             data.days.forEach { day ->
                 DayBlock(day = day)
             }
         }
-    }
-}
-
-@Composable
-private fun AbsenceBanner(used: Int, limit: Int) {
-    val remaining = (limit - used).coerceAtLeast(0)
-    val color = if (remaining <= 2) PaquitoColors.StateDanger else PaquitoColors.StateWarning
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(PaquitoShapes.large)
-            .background(PaquitoColors.SurfaceElevated)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Text(
-            text = "Asistencia del ciclo",
-            style = PaquitoTypography.TaskTitle,
-            color = PaquitoColors.TextOnCardStrong,
-        )
-        Text(
-            text = "$used de $limit faltas usadas. Te quedan $remaining antes del jalado automatico.",
-            style = PaquitoTypography.BodySmall,
-            color = color,
-        )
     }
 }
 
@@ -167,16 +148,12 @@ data class ScheduleDay(
 data class ScheduleScreenData(
     val weekLabel: String,
     val pendingCount: Int,
-    val absencesUsed: Int,
-    val absencesLimit: Int,
     val days: List<ScheduleDay>,
 ) {
     companion object {
         fun default(): ScheduleScreenData = ScheduleScreenData(
             weekLabel = "Semana 10 · 3 al 9 ago",
             pendingCount = 3,
-            absencesUsed = 2,
-            absencesLimit = 5,
             days = listOf(
                 ScheduleDay(
                     label = "Lunes 3",
