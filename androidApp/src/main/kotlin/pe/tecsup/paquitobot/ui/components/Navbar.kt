@@ -32,6 +32,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
+import dev.chrisbanes.haze.rememberHazeState
 import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
@@ -71,12 +76,14 @@ enum class NavTab(val label: String) {
  *   En una pantalla de 360dp, sobra 20dp a cada lado (centrado).
  *   En una de 411dp, sobra 45.5dp a cada lado.
  */
+@OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun Navbar(
     currentTab: NavTab,
     onTabSelected: (NavTab) -> Unit,
     onPaquitoClick: () -> Unit,
     notificationCount: Int? = null,
+    hazeState: HazeState? = null,
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = 16.dp,
 ) {
@@ -109,9 +116,14 @@ fun Navbar(
         // borde 0.14/0.04->0.10/0.03. El MISMO patron (sombra + fondo
         // translucido + borde oscuro en degrade) se reutiliza en el FAB de
         // Paquito, mas abajo, para mantener consistencia visual.
-        // NOTA tecnica: sigue sin haber blur real (Modifier.blur no
-        // difumina lo que esta DETRAS de esta capa; un backdrop blur real
-        // requeriria la libreria Haze, no agregada a este proyecto).
+        // Iteracion 2026-08-13 (blur real, reportado por el usuario "se ve
+        // como una franja blanca solida"): la opacidad plana de arriba SIN
+        // blur de fondo se veia opaca en vez de vidrio sobre el Home blanco.
+        // Ahora usa `hazeEffect` (libreria Haze) que si difumina el
+        // contenido real detras de la pildora - `hazeState` viene de
+        // `AppTabScaffold`, que marca el contenido scrolleable como
+        // `hazeSource`. Si `hazeState` es null (ej. Preview aislado sin
+        // fuente detras) cae al fallback de opacidad plana de antes.
         // Width fijo: 3 tabs * 72dp + 2 gaps * 6dp + padding 4dp * 2 = 232dp.
         Row(
             modifier = Modifier
@@ -121,13 +133,14 @@ fun Navbar(
                     clip = false,
                 )
                 .clip(RoundedCornerShape(50))
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.42f),
-                            Color.White.copy(alpha = 0.24f),
-                        ),
-                    ),
+                .then(
+                    if (hazeState != null) {
+                        Modifier.hazeEffect(state = hazeState, style = HazeMaterials.ultraThin(Color.White))
+                    } else {
+                        // Fallback sin blur real (ej. Preview, sin hazeSource detras):
+                        // opacidad plana, mismo tono que el estilo Haze de arriba.
+                        Modifier.background(Color.White.copy(alpha = 0.35f))
+                    },
                 )
                 .border(
                     width = 1.dp,
@@ -185,13 +198,22 @@ fun Navbar(
                             clip = false,
                         )
                         .clip(CircleShape)
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color(0xFF2A2930).copy(alpha = 0.92f),
-                                    Color(0xFF1C1B1F).copy(alpha = 0.88f),
-                                ),
-                            ),
+                        .then(
+                            if (hazeState != null) {
+                                Modifier.hazeEffect(
+                                    state = hazeState,
+                                    style = HazeMaterials.ultraThin(Color(0xFF1C1B1F)),
+                                )
+                            } else {
+                                Modifier.background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color(0xFF2A2930).copy(alpha = 0.92f),
+                                            Color(0xFF1C1B1F).copy(alpha = 0.88f),
+                                        ),
+                                    ),
+                                )
+                            },
                         )
                         .border(
                             width = 1.dp,

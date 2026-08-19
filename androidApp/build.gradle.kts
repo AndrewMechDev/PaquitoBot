@@ -31,6 +31,11 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.androidx.security.crypto)
 
+    // Glassmorphism real (blur de fondo) para el Navbar flotante - reemplaza
+    // la opacidad simulada sin blur que habia antes.
+    implementation(libs.haze)
+    implementation(libs.haze.materials)
+
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
 }
