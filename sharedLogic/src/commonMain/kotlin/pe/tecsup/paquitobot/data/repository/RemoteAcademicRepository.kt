@@ -5,6 +5,7 @@ import pe.tecsup.paquitobot.data.remote.TokenProvider
 import pe.tecsup.paquitobot.data.remote.sharedCanvasMockHttpClient
 import pe.tecsup.paquitobot.domain.academic.AcademicAssignment
 import pe.tecsup.paquitobot.domain.academic.AcademicAttendance
+import pe.tecsup.paquitobot.domain.academic.AcademicClassSession
 import pe.tecsup.paquitobot.domain.academic.AcademicCourse
 import pe.tecsup.paquitobot.domain.academic.AcademicGrade
 import pe.tecsup.paquitobot.domain.academic.AcademicProfile
@@ -41,6 +42,11 @@ class RemoteAcademicRepository(
     override suspend fun courseAttendance(courseId: Int): Result<List<AcademicAttendance>> =
         api.courseAttendance(courseId).map { list ->
             list.map { AcademicAttendance(it.classSessionId, it.status == "present") }
+        }
+
+    override suspend fun courseClassSessions(courseId: Int): Result<List<AcademicClassSession>> =
+        api.courseClassSessions(courseId).map { list ->
+            list.map { AcademicClassSession(it.id, it.courseId, it.startAt, it.endAt) }
         }
 }
 

@@ -32,6 +32,13 @@ data class AcademicAssignment(
     val dueAt: String?,
 )
 
+data class AcademicClassSession(
+    val id: Int,
+    val courseId: Int,
+    val startAt: String?,
+    val endAt: String?,
+)
+
 /**
  * Puerto de dominio para datos academicos - hoy implementado por
  * `canvas-mock` (ver skill `canvas-mock-backend`), a futuro por la API
@@ -45,4 +52,5 @@ interface AcademicRepository {
     suspend fun courseAssignments(courseId: Int): Result<List<AcademicAssignment>>
     suspend fun courseGrades(courseId: Int): Result<List<AcademicGrade>>
     suspend fun courseAttendance(courseId: Int): Result<List<AcademicAttendance>>
+    suspend fun courseClassSessions(courseId: Int): Result<List<AcademicClassSession>>
 }

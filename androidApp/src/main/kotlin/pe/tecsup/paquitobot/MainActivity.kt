@@ -27,6 +27,7 @@ import pe.tecsup.paquitobot.auth.SecureTokenStore
 import pe.tecsup.paquitobot.session.SessionViewModel
 import pe.tecsup.paquitobot.ui.academic.AcademicConnectScreen
 import pe.tecsup.paquitobot.ui.academic.AcademicConnectViewModel
+import pe.tecsup.paquitobot.ui.academic.AcademicScheduleViewModel
 import pe.tecsup.paquitobot.ui.academic.AcademicViewModel
 import pe.tecsup.paquitobot.ui.auth.AuthGateScreen
 import pe.tecsup.paquitobot.ui.canvas.CanvasConnectScreen
@@ -237,11 +238,31 @@ private fun AppRoot() {
                             )
                         }
                     }
-                    NavTab.Horarios -> ScheduleScreen(
-                        currentTab = currentTab,
-                        onTabSelected = { currentTab = it },
-                        onPaquitoClick = { rootScreen = RootScreen.Chat },
-                    )
+                    NavTab.Horarios -> {
+                        // Mismo criterio que Cursos: real si hay key mock conectada.
+                        if (canvasMockKeyStore.hasApiKey()) {
+                            val scheduleViewModel: AcademicScheduleViewModel = viewModel(
+                                factory = remember {
+                                    viewModelFactory {
+                                        initializer { AcademicScheduleViewModel(keyStore = canvasMockKeyStore) }
+                                    }
+                                },
+                            )
+                            val scheduleData by scheduleViewModel.uiState.collectAsStateWithLifecycle()
+                            ScheduleScreen(
+                                data = scheduleData,
+                                currentTab = currentTab,
+                                onTabSelected = { currentTab = it },
+                                onPaquitoClick = { rootScreen = RootScreen.Chat },
+                            )
+                        } else {
+                            ScheduleScreen(
+                                currentTab = currentTab,
+                                onTabSelected = { currentTab = it },
+                                onPaquitoClick = { rootScreen = RootScreen.Chat },
+                            )
+                        }
+                    }
                 }
                 RootScreen.Chat -> {
                     val chatViewModel: ChatViewModel = viewModel(
