@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,9 +21,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.launch
+import pe.tecsup.paquitobot.auth.CanvasMockKeyStore
 import pe.tecsup.paquitobot.auth.GoogleAuthClient
 import pe.tecsup.paquitobot.auth.SecureTokenStore
 import pe.tecsup.paquitobot.session.SessionViewModel
+import pe.tecsup.paquitobot.ui.academic.AcademicConnectScreen
+import pe.tecsup.paquitobot.ui.academic.AcademicConnectViewModel
+import pe.tecsup.paquitobot.ui.academic.AcademicViewModel
 import pe.tecsup.paquitobot.ui.auth.AuthGateScreen
 import pe.tecsup.paquitobot.ui.canvas.CanvasConnectScreen
 import pe.tecsup.paquitobot.ui.canvas.CanvasConnectViewModel
@@ -87,6 +92,10 @@ private fun AppRoot() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val tokenStore = remember { SecureTokenStore(context.applicationContext) }
+    val canvasMockKeyStore = remember { CanvasMockKeyStore(context.applicationContext) }
+    var academicGatePassed by remember {
+        mutableStateOf(canvasMockKeyStore.hasApiKey() || canvasMockKeyStore.isSkipped())
+    }
     val googleAuthClient = remember {
         GoogleAuthClient(
             context = context,
@@ -148,6 +157,33 @@ private fun AppRoot() {
             )
         }
 
+        // Cuarto gate (2026-08-19), OPCIONAL: canvas-mock (ver skill
+        // canvas-mock-backend). A diferencia de los gates de arriba, este
+        // SIEMPRE se puede omitir - los datos mock son una demo, no un
+        // requisito. Independiente del gate de Canvas real de arriba (dos
+        // backends distintos).
+        !academicGatePassed -> {
+            val academicConnectViewModel: AcademicConnectViewModel = viewModel(
+                factory = remember {
+                    viewModelFactory {
+                        initializer { AcademicConnectViewModel(keyStore = canvasMockKeyStore) }
+                    }
+                },
+            )
+            val academicUiState by academicConnectViewModel.uiState.collectAsStateWithLifecycle()
+            LaunchedEffect(academicUiState.isConnected) {
+                if (academicUiState.isConnected) academicGatePassed = true
+            }
+            AcademicConnectScreen(
+                uiState = academicUiState,
+                onConnectClick = academicConnectViewModel::connect,
+                onSkipClick = {
+                    canvasMockKeyStore.markSkipped()
+                    academicGatePassed = true
+                },
+            )
+        }
+
         else -> {
             var currentTab by remember { mutableStateOf(NavTab.Inicio) }
             var rootScreen by remember { mutableStateOf(RootScreen.Tabs) }
@@ -165,15 +201,42 @@ private fun AppRoot() {
                         onPaquitoClick = { rootScreen = RootScreen.Chat },
                         onNotificationsClick = { rootScreen = RootScreen.Notifications },
                     )
-                    NavTab.Cursos -> CoursesScreen(
-                        currentTab = currentTab,
-                        onTabSelected = { currentTab = it },
-                        onPaquitoClick = { rootScreen = RootScreen.Chat },
-                        onCourseClick = { course ->
-                            selectedCourse = course
-                            rootScreen = RootScreen.CourseDetail
-                        },
-                    )
+                    NavTab.Cursos -> {
+                        // Iteracion 2026-08-19: si el estudiante conecto una
+                        // cuenta mock (ver skill canvas-mock-backend), Cursos
+                        // muestra datos REALES de canvas-mock en vez del mock
+                        // hardcodeado. Si omitio el gate, sigue con el mock.
+                        if (canvasMockKeyStore.hasApiKey()) {
+                            val academicViewModel: AcademicViewModel = viewModel(
+                                factory = remember {
+                                    viewModelFactory {
+                                        initializer { AcademicViewModel(keyStore = canvasMockKeyStore) }
+                                    }
+                                },
+                            )
+                            val academicData by academicViewModel.uiState.collectAsStateWithLifecycle()
+                            CoursesScreen(
+                                data = academicData,
+                                currentTab = currentTab,
+                                onTabSelected = { currentTab = it },
+                                onPaquitoClick = { rootScreen = RootScreen.Chat },
+                                onCourseClick = { course ->
+                                    selectedCourse = course
+                                    rootScreen = RootScreen.CourseDetail
+                                },
+                            )
+                        } else {
+                            CoursesScreen(
+                                currentTab = currentTab,
+                                onTabSelected = { currentTab = it },
+                                onPaquitoClick = { rootScreen = RootScreen.Chat },
+                                onCourseClick = { course ->
+                                    selectedCourse = course
+                                    rootScreen = RootScreen.CourseDetail
+                                },
+                            )
+                        }
+                    }
                     NavTab.Horarios -> ScheduleScreen(
                         currentTab = currentTab,
                         onTabSelected = { currentTab = it },
