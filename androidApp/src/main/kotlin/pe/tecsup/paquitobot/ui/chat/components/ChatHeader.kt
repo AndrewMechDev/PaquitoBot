@@ -46,7 +46,7 @@ fun ChatHeader(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = 58.dp),
+            .padding(top = 8.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Image(
@@ -79,6 +79,6 @@ fun ChatHeader(
 @Composable
 private fun ChatHeaderPreview() {
     PaquitoTheme {
-        ChatHeader(userName = "{nombre}", onBackClick = {})
+        ChatHeader(userName = "Andrea", onBackClick = {})
     }
 }

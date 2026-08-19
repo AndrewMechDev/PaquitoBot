@@ -21,10 +21,10 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  * (burbujas e input tambien planos, ver `Message.kt`/`ChatInput.kt`).
  *
  * Ejemplos:
- *   "Que vence esta semana?"
- *   "Como voy?"
+ *   "Que cursos tengo este ciclo?"
+ *   "Que vence este ciclo?"
  *   "Mis laboratorios"
- *   "Proximo examen"
+ *   "Como voy?"
  *
  * Si hay overflow horizontal, los chips quedan en un Row scrolleable.
  */
@@ -50,6 +50,6 @@ fun SuggestionChip(
 @Composable
 private fun SuggestionChipPreview() {
     PaquitoTheme {
-        SuggestionChip(text = "Que vence esta semana?", onClick = {})
+        SuggestionChip(text = "Que cursos tengo este ciclo?", onClick = {})
     }
 }
