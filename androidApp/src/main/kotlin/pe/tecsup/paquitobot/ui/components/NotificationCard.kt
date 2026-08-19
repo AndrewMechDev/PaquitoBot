@@ -10,9 +10,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
+import pe.tecsup.paquitobot.ui.theme.PaquitoFont
 import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
@@ -87,15 +88,22 @@ private fun NotificationCardCompact(
     modifier: Modifier,
 ) {
     val bg = if (enabled) {
-        PaquitoColors.BrandPrimary.copy(alpha = 0.10f)
+        PaquitoColors.BrandPrimary.copy(alpha = 0.18f)
     } else {
-        PaquitoColors.SurfaceOverlay
+        PaquitoColors.SurfaceElevated
     }
     val borderColor = if (enabled) PaquitoColors.BrandPrimary else Color.Transparent
     Column(
         modifier = modifier
-            .width(180.dp)
-            .height(140.dp)
+            .fillMaxWidth()
+            // 2026-08-13 (bug real, reportado por el usuario con captura):
+            // `.height(140.dp)` fijo recortaba la 2da linea de titulos
+            // largos ("Laboratorios Calificados", "Plazos de Entrega") -
+            // icono + gap + 2 lineas de texto a 22sp no entraban en 140dp.
+            // `heightIn(min = ...)` respeta el alto de Figma para titulos
+            // cortos mientras crece si el contenido real lo necesita, en
+            // vez de recortarlo.
+            .heightIn(min = 140.dp)
             .clip(PaquitoShapes.large)
             .background(bg)
             .border(
@@ -117,6 +125,7 @@ private fun NotificationCardCompact(
         Text(
             text = type.title,
             fontSize = 22.sp,
+            fontFamily = PaquitoFont.DMSans,
             fontWeight = FontWeight.SemiBold,
             color = PaquitoColors.TextPrimary.copy(alpha = 0.75f),
             maxLines = 2,
@@ -132,9 +141,9 @@ private fun NotificationCardFull(
     modifier: Modifier,
 ) {
     val bg = if (enabled) {
-        PaquitoColors.BrandPrimary.copy(alpha = 0.10f)
+        PaquitoColors.BrandPrimary.copy(alpha = 0.18f)
     } else {
-        PaquitoColors.SurfaceOverlay
+        PaquitoColors.SurfaceElevated
     }
     val borderColor = if (enabled) PaquitoColors.BrandPrimary else Color.Transparent
     Row(
@@ -156,6 +165,7 @@ private fun NotificationCardFull(
         Text(
             text = type.title,
             fontSize = 22.sp,
+            fontFamily = PaquitoFont.DMSans,
             fontWeight = FontWeight.SemiBold,
             color = PaquitoColors.TextPrimary.copy(alpha = 0.75f),
         )

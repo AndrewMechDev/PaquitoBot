@@ -25,6 +25,7 @@ Estructura real del archivo (validada contra `get_metadata`/`get_design_context`
 - Antes de `get_variable_defs` o `get_screenshot`, el usuario **debe tener el nodo seleccionado en la app de Figma**; estas herramientas devuelven error "nothing selected" si se llaman sin selección activa, aunque se les pase `nodeId`.
 - Las URLs de assets devueltas por `get_screenshot` expiran en segundos: no se pueden descargar después ni pasar a WebFetch. Si se necesita referencia visual, pedir inline con `enableBase64Response=true` o capturar en el mismo turno.
 - Nunca hardcodear hex (`#FFAA33` o `0xFFFF0000`) dentro de una pantalla. Todo color/tipografía/espaciado debe pasar por `Theme.kt` (Compose) o `Color/Typography` (SwiftUI).
+- **Welcome `112:3` tiene dos assets de Paquito** (`112:133` icono 100px y `366:86` mascota). En dispositivo se superponen. Implementar SOLO la mascota (`paquito_personaje`); no apilar el icono cuadrado encima. No copiar coordenadas absolutas de Figma (`top: 350/555`) como padding: usar `systemBarsPadding` + Column.
 - Nomenclatura: Figma snake_case `/Component Name` → Kotlin `PascalCase` → SwiftUI `PascalCase`. Documentar el mapeo en `references/ui-integration-map.md`.
 - Un commit por cambio lógico. Mensajes en español siguiendo la skill `conventional-commits-es`.
 

@@ -29,16 +29,29 @@ import pe.tecsup.paquitobot.ui.canvas.CanvasConnectViewModel
 import pe.tecsup.paquitobot.ui.chat.ChatScreen
 import pe.tecsup.paquitobot.ui.chat.ChatViewModel
 import pe.tecsup.paquitobot.ui.components.NavTab
+import pe.tecsup.paquitobot.ui.courses.CourseCardData
+import pe.tecsup.paquitobot.ui.courses.CourseDetailData
+import pe.tecsup.paquitobot.ui.courses.CourseDetailScreen
+import pe.tecsup.paquitobot.ui.courses.CoursesScreen
+import pe.tecsup.paquitobot.ui.courses.CoursesScreenData
 import pe.tecsup.paquitobot.ui.home.HomeScreen
+import pe.tecsup.paquitobot.ui.home.HomeScreenData
+import pe.tecsup.paquitobot.ui.notifications.NotificationsInboxScreen
+import pe.tecsup.paquitobot.ui.onboarding.OnboardingNotificationsScreen
+import pe.tecsup.paquitobot.ui.onboarding.OnboardingTourScreen
+import pe.tecsup.paquitobot.ui.onboarding.WelcomeScreen
+import pe.tecsup.paquitobot.ui.schedule.ScheduleScreen
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
 /**
  * Mientras no haya navegacion real (Compose Navigation), el boton Paquito
- * del Navbar se usa como toggle entre Home (vista principal) y Chat (vista
- * conversacional, con su propia flecha de "volver" para regresar a Home).
+ * del Navbar se usa como toggle hacia Chat; Cursos y Horarios son pestañas
+ * reales. El detalle de curso usa flecha atras como el chat.
  */
-private enum class RootScreen { Home, Chat }
+private enum class RootScreen { Tabs, Chat, CourseDetail, Notifications }
+
+private enum class OnboardingStep { Welcome, Notifications, Tour }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,8 +102,21 @@ private fun AppRoot() {
         },
     )
     val sessionUiState by sessionViewModel.uiState.collectAsStateWithLifecycle()
+    var onboardingStep by remember { mutableStateOf(OnboardingStep.Welcome) }
 
     when {
+        !sessionUiState.isOnboardingComplete -> when (onboardingStep) {
+            OnboardingStep.Welcome -> WelcomeScreen(
+                onContinueClick = { onboardingStep = OnboardingStep.Notifications },
+            )
+            OnboardingStep.Notifications -> OnboardingNotificationsScreen(
+                onContinue = { _ -> onboardingStep = OnboardingStep.Tour },
+            )
+            OnboardingStep.Tour -> OnboardingTourScreen(
+                onContinue = { sessionViewModel.completeOnboarding() },
+            )
+        }
+
         !sessionUiState.isAuthenticated -> AuthGateScreen(
             isSigningIn = sessionUiState.isSigningIn,
             errorMessage = sessionUiState.authError,
@@ -98,7 +124,9 @@ private fun AppRoot() {
                 sessionViewModel.prepareSignIn()
                 coroutineScope.launch {
                     googleAuthClient.signIn()
-                        .onSuccess { idToken -> sessionViewModel.completeSignIn(idToken) }
+                        .onSuccess { result ->
+                            sessionViewModel.completeSignIn(result.idToken, result.firstName())
+                        }
                         .onFailure { error -> sessionViewModel.signInFailed(error) }
                 }
             },
@@ -122,14 +150,36 @@ private fun AppRoot() {
 
         else -> {
             var currentTab by remember { mutableStateOf(NavTab.Inicio) }
-            var rootScreen by remember { mutableStateOf(RootScreen.Home) }
+            var rootScreen by remember { mutableStateOf(RootScreen.Tabs) }
+            var selectedCourse by remember { mutableStateOf<CourseCardData?>(null) }
+            val userFirstName = sessionUiState.userFirstName ?: "estudiante"
 
             when (rootScreen) {
-                RootScreen.Home -> HomeScreen(
-                    currentTab = currentTab,
-                    onTabSelected = { currentTab = it },
-                    onPaquitoClick = { rootScreen = RootScreen.Chat },
-                )
+                RootScreen.Tabs -> when (currentTab) {
+                    NavTab.Inicio -> HomeScreen(
+                        data = HomeScreenData.default().copy(
+                            greeting = "¡Bienvenido, $userFirstName!",
+                        ),
+                        currentTab = currentTab,
+                        onTabSelected = { currentTab = it },
+                        onPaquitoClick = { rootScreen = RootScreen.Chat },
+                        onNotificationsClick = { rootScreen = RootScreen.Notifications },
+                    )
+                    NavTab.Cursos -> CoursesScreen(
+                        currentTab = currentTab,
+                        onTabSelected = { currentTab = it },
+                        onPaquitoClick = { rootScreen = RootScreen.Chat },
+                        onCourseClick = { course ->
+                            selectedCourse = course
+                            rootScreen = RootScreen.CourseDetail
+                        },
+                    )
+                    NavTab.Horarios -> ScheduleScreen(
+                        currentTab = currentTab,
+                        onTabSelected = { currentTab = it },
+                        onPaquitoClick = { rootScreen = RootScreen.Chat },
+                    )
+                }
                 RootScreen.Chat -> {
                     val chatViewModel: ChatViewModel = viewModel(
                         factory = remember {
@@ -142,9 +192,19 @@ private fun AppRoot() {
                     ChatScreen(
                         uiState = chatUiState,
                         onSendMessage = chatViewModel::sendMessage,
-                        onBackClick = { rootScreen = RootScreen.Home },
+                        userName = userFirstName,
+                        onBackClick = { rootScreen = RootScreen.Tabs },
                     )
                 }
+                RootScreen.CourseDetail -> CourseDetailScreen(
+                    data = CourseDetailData.forCourse(
+                        selectedCourse ?: CoursesScreenData.default().courses.first(),
+                    ),
+                    onBackClick = { rootScreen = RootScreen.Tabs },
+                )
+                RootScreen.Notifications -> NotificationsInboxScreen(
+                    onBackClick = { rootScreen = RootScreen.Tabs },
+                )
             }
         }
     }

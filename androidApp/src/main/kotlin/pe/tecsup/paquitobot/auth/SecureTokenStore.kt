@@ -47,13 +47,18 @@ class SecureTokenStore(context: Context) : TokenProvider {
     }
 
     /** Persiste la sesion tras un login exitoso. [expiresInSeconds] viene de `LoginResponse.expires_in`. */
-    fun saveSession(accessToken: String, expiresInSeconds: Int) {
+    fun saveSession(accessToken: String, expiresInSeconds: Int, firstName: String? = null) {
         val expiresAtEpochMillis = System.currentTimeMillis() + expiresInSeconds * 1000L
-        prefs.edit()
+        val editor = prefs.edit()
             .putString(KEY_ACCESS_TOKEN, accessToken)
             .putLong(KEY_EXPIRES_AT, expiresAtEpochMillis)
-            .apply()
+        if (!firstName.isNullOrBlank()) {
+            editor.putString(KEY_DISPLAY_FIRST_NAME, firstName.trim())
+        }
+        editor.apply()
     }
+
+    fun displayFirstName(): String? = prefs.getString(KEY_DISPLAY_FIRST_NAME, null)?.takeIf { it.isNotBlank() }
 
     fun clearSession() {
         prefs.edit().clear().apply()
@@ -72,10 +77,18 @@ class SecureTokenStore(context: Context) : TokenProvider {
 
     fun hasCanvasConnected(): Boolean = prefs.getBoolean(KEY_CANVAS_CONNECTED, false)
 
+    fun markOnboardingComplete() {
+        prefs.edit().putBoolean(KEY_ONBOARDING_COMPLETE, true).apply()
+    }
+
+    fun hasCompletedOnboarding(): Boolean = prefs.getBoolean(KEY_ONBOARDING_COMPLETE, false)
+
     private companion object {
         const val PREFS_FILE_NAME = "paquitobot_session"
         const val KEY_ACCESS_TOKEN = "access_token"
         const val KEY_EXPIRES_AT = "expires_at_epoch_millis"
         const val KEY_CANVAS_CONNECTED = "canvas_connected"
+        const val KEY_ONBOARDING_COMPLETE = "onboarding_complete"
+        const val KEY_DISPLAY_FIRST_NAME = "display_first_name"
     }
 }

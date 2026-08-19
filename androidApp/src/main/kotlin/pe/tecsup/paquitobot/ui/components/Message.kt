@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
+import pe.tecsup.paquitobot.ui.theme.PaquitoFont
 import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
@@ -114,6 +115,7 @@ private fun BotBubble(message: ChatMessage, modifier: Modifier) {
             Text(
                 text = message.body,
                 fontSize = 15.sp,
+                fontFamily = PaquitoFont.DMSans,
                 color = Color.Black,
                 lineHeight = 20.sp,
             )
@@ -144,6 +146,7 @@ private fun UserBubble(message: ChatMessage, modifier: Modifier) {
             Text(
                 text = message.body,
                 fontSize = 15.sp,
+                fontFamily = PaquitoFont.DMSans,
                 color = PaquitoColors.TextOnWhite,
                 lineHeight = 20.sp,
             )
@@ -171,12 +174,14 @@ private fun MessageMeta(timestamp: String, status: MessageStatus?, onLightBubble
         Text(
             text = timestamp,
             fontSize = 11.sp,
+            fontFamily = PaquitoFont.DMSans,
             color = textColor,
         )
         if (status != null) {
             Text(
                 text = if (status == MessageStatus.Sent) " ✓" else " ✓✓",
                 fontSize = 11.sp,
+                fontFamily = PaquitoFont.DMSans,
                 color = if (status == MessageStatus.Read) PaquitoColors.StateInfo else textColor,
             )
         }
@@ -196,6 +201,7 @@ private fun SystemNotice(message: ChatMessage, modifier: Modifier) {
         Text(
             text = message.body,
             fontSize = 12.sp,
+            fontFamily = PaquitoFont.DMSans,
             color = PaquitoColors.TextOnCardMuted,
             modifier = Modifier
                 .clip(RoundedCornerShape(10.dp))
@@ -210,6 +216,7 @@ private fun BubbleFootnote(text: String) {
     Text(
         text = text,
         fontSize = 11.sp,
+        fontFamily = PaquitoFont.DMSans,
         color = PaquitoColors.TextOnCardMuted,
         lineHeight = 16.sp,
     )

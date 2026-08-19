@@ -7,6 +7,7 @@ import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.timeout
 import io.ktor.client.request.get
+import io.ktor.client.request.head
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -21,7 +22,7 @@ import pe.tecsup.paquitobot.data.remote.dto.QueryRequestDto
 import pe.tecsup.paquitobot.data.remote.dto.QueryResponseDto
 
 /**
- * Cliente delgado del backend `paquitobot-rag`: `GET /healthz` (wake-up),
+ * Cliente delgado del backend `paquitobot-rag`: `HEAD /healthz` (wake-up),
  * `POST /auth/login`, `POST /auth/canvas/connect`, `POST /sync` y
  * `POST /query`.
  */
@@ -31,12 +32,13 @@ class PaquitoBotApi(
     private val baseUrl: String = PAQUITOBOT_BACKEND_BASE_URL,
 ) {
     /**
-     * `GET /healthz` sin auth. Sirve para despertar el servicio en Render
-     * antes del login. Cualquier respuesta HTTP cuenta como "esta despierto";
-     * solo timeout/red se reportan como fallo.
+     * `HEAD /healthz` sin auth. Despierta Render antes del login sin
+     * descargar el JSON de probes. Cualquier respuesta HTTP (incluso 405
+     * si el deploy aun no acepta HEAD) cuenta como despierto; solo
+     * timeout/red se reportan como fallo.
      */
     suspend fun wakeUp(): Result<Unit> = runCatchingTransport {
-        httpClient.get("$baseUrl/healthz") {
+        httpClient.head("$baseUrl/healthz") {
             timeout {
                 requestTimeoutMillis = HEALTHZ_REQUEST_TIMEOUT_MILLIS
                 socketTimeoutMillis = HEALTHZ_REQUEST_TIMEOUT_MILLIS

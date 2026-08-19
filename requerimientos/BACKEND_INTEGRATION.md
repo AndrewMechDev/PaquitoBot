@@ -14,7 +14,7 @@
 | `/auth/canvas/connect` | POST | JWT backend | Header `X-Canvas-Token` (sin body) | `204 No Content` |
 | `/sync` | POST | JWT backend + Canvas conectado | sin body | `202 {status, last_successful_at, last_status, last_error_class, correlation_id}` |
 | `/query` | POST | JWT backend + Canvas conectado | `{question: string, language?: string}` | `200 {answer, lang, route, correlation_id}` |
-| `/healthz` | GET | — | — | estado del servicio (Ollama/DB/scheduler) |
+| `/healthz` | GET, HEAD | — | — | GET: estado (Ollama/DB/scheduler). HEAD: mismo liveness, sin body (wake-up móvil). |
 
 `QueryRequest` usa `extra="forbid"` del lado del backend: cualquier campo fuera de `question`/`language` hace que rechace con 422. El `tenant_id` sale del JWT, nunca del body — por diseño, para que un cliente no pueda leer datos de otro tenant.
 
@@ -75,15 +75,28 @@ Auditando un logcat real de 30 minutos de uso (compartido por el usuario) para d
 
 **Timeouts (2026-08-14, Fase 1 cliente)**: el default de 20s cortaba el login contra Render dormido y `/query` RAG. Ahora cada operación fija su propio timeout: login/healthz/sync 90s, query 120s, canvas connect 30s. Timeout ya no se mapea como "sin conexión" ni como "Google rechazó".
 
-**Wake-up**: al mostrar el gate de Google (y otra vez al tocar el botón) el cliente llama `GET /healthz` para despertar Render antes de `POST /auth/login`. Best-effort, sin auth.
+**Wake-up**: al mostrar el gate de Google (y otra vez al tocar el botón) el cliente llama `HEAD /healthz` para despertar Render antes de `POST /auth/login`. Best-effort, sin auth. Cualquier status HTTP cuenta (si el deploy aún no acepta HEAD, un 405 igual indica que el servicio despertó).
 
 **HttpClient único**: Auth/Canvas/Chat comparten `sharedPaquitoBotHttpClient()` — ya no se crea un CIO por factory.
 
 ## Recomendación pendiente de coordinar con el compañero de backend
 
-No hay ningún endpoint que devuelva el nombre del estudiante (ninguno de los 4 endpoints expone perfil). Recomendación: agregar algo tipo `GET /me` que devuelva el nombre ya sincronizado desde Canvas, en vez de que la app hable directo con la API de Canvas. Mantiene el token de Canvas 100% server-side, coherente con cómo está diseñado el resto del backend (el token nunca debería vivir más tiempo del necesario fuera de la DB cifrada).
+Las pestañas Inicio / Cursos / Horarios (2026-08-17) son **UI mock**. El chat sigue siendo el único consumidor de datos reales (`POST /query`). Para cablear las pantallas hace falta REST (no tools del LLM):
 
-Mientras tanto, `ChatScreen` sigue mostrando `"{nombre}"` como placeholder (sin regresión — nunca mostró un nombre real).
+| Dolor | Pantalla | Endpoint propuesto | Por qué no alcanza `/query` |
+|---|---|---|---|
+| Cómo voy | Cursos + detalle | `GET /courses` (ciclo actual) y `GET /courses/{id}/grades` (prácticas, labs, pesos, notas) | El agente responde texto; la UI necesita filas estructuradas. El SQL ya existe en tools `get_user_courses_current_term` / submissions. |
+| Faltas (límite 5, por confirmar) | Horarios + detalle | `GET /courses/{id}/attendance` (`used`, `limit`, sesiones) | Canvas sync hoy no persiste inasistencias. Hay que confirmar si el LMS de TECSUP expone attendance y el límite institucional. |
+| Entregas desordenadas | Home lista | `GET /assignments?due=upcoming` con `source` (`lab` / `practice` / `forum`) | Assignments sí se sincronizan; falta clasificar tipo y un inbox, no un párrafo del RAG. |
+| Saludo + flag Canvas | Home / gates | `GET /me` (`short_name`, `canvas_connected`, `current_term`) | El nombre de Canvas está en `users` post-sync; el flag Canvas sigue siendo local. |
+
+**Mientras tanto**: Home/Cursos/Horarios usan `*ScreenData.default()`. Chat usa Google `givenName`.
+
+## Primer uso — cómo visualizarlo
+
+En dispositivo: Welcome → Notificaciones → Tour → Google → Canvas → pestañas. Para repetir: Ajustes → Apps → PaquitoBot → Borrar datos.
+
+En Android Studio: `androidApp/.../ui/FirstRunFlowPreviews.kt` (previews 1–10).
 
 ## Manejo de errores (mapeo código HTTP → UX)
 

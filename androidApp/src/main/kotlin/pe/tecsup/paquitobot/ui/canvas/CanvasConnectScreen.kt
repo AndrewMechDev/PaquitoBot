@@ -1,18 +1,17 @@
 package pe.tecsup.paquitobot.ui.canvas
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -25,22 +24,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import pe.tecsup.paquitobot.ui.components.PaquitoPrimaryButton
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
-import pe.tecsup.paquitobot.ui.theme.PaquitoFont
+import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
+import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
+import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
+import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
 
 /**
- * Segundo gate de la app (2026-08-13): pide el token de Canvas del
- * estudiante y lo manda a `POST /auth/canvas/connect`. Solo se muestra una
- * vez por sesion - tras un connect exitoso, [SessionViewModel] marca
- * `isCanvasConnected = true` y `MainActivity` deja de mostrar esta
- * pantalla (ni Home ni Chat vuelven a pedirlo).
- *
- * ⚠️ El token se escribe DIRECTO en este campo, nunca se pega en el chat
- * del asistente ni se comparte con Claude - es una credencial real del
- * estudiante (ver `requerimientos/BACKEND_INTEGRATION.md`).
+ * Gate de Canvas. Sin frame Figma: mismo ritmo que Welcome (titulo + CTA
+ * visible sobre system bars), sin el icono 100px que se superponia.
  */
 @Composable
 fun CanvasConnectScreen(
@@ -55,31 +50,35 @@ fun CanvasConnectScreen(
         modifier = modifier
             .fillMaxSize()
             .background(PaquitoColors.Background)
-            .padding(horizontal = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+            .systemBarsPadding()
+            .padding(horizontal = PaquitoSpacing.lg)
+            .padding(top = 32.dp, bottom = PaquitoSpacing.lg),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        Spacer(modifier = Modifier.weight(1f))
+
         Text(
-            text = "Conectá tu cuenta de Canvas",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            fontFamily = PaquitoFont.DMSans,
-            color = PaquitoColors.TextOnCardStrong,
+            text = "PaquitoBot",
+            style = PaquitoTypography.DisplayLarge,
+            color = PaquitoColors.TextPrimary,
         )
         Text(
-            text = "Por ahora, pegá tu token de acceso de Canvas para que Paquito pueda responder con tus datos reales.",
-            fontSize = 14.sp,
-            fontFamily = PaquitoFont.DMSans,
+            text = "Conectá tu cuenta de Canvas",
+            style = PaquitoTypography.HeadlineSmall,
+            color = PaquitoColors.TextSecondary,
+        )
+        Text(
+            text = "Pegá tu token de acceso para que Paquito responda con tus datos reales.",
+            style = PaquitoTypography.BodySmall,
             color = PaquitoColors.TextHomeMuted,
-            modifier = Modifier.padding(top = 8.dp, bottom = 24.dp),
         )
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(47.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(PaquitoColors.TextInputPlaceholder.copy(alpha = 0.08f))
+                .height(56.dp)
+                .clip(PaquitoShapes.large)
+                .background(PaquitoColors.SurfaceElevated)
                 .padding(horizontal = 17.dp),
             contentAlignment = Alignment.CenterStart,
         ) {
@@ -87,13 +86,16 @@ fun CanvasConnectScreen(
                 value = canvasToken,
                 onValueChange = { canvasToken = it },
                 modifier = Modifier.fillMaxWidth(),
-                textStyle = TextStyle(fontSize = 14.sp, color = PaquitoColors.TextOnCardStrong),
+                textStyle = TextStyle(
+                    fontSize = PaquitoTypography.BodyLarge.fontSize,
+                    color = PaquitoColors.TextOnCardStrong,
+                ),
                 cursorBrush = SolidColor(PaquitoColors.BrandPrimary),
                 decorationBox = { inner ->
                     if (canvasToken.isEmpty()) {
                         Text(
                             text = "Token de Canvas",
-                            fontSize = 14.sp,
+                            style = PaquitoTypography.BodyLarge,
                             color = PaquitoColors.TextInputPlaceholder,
                         )
                     }
@@ -102,37 +104,17 @@ fun CanvasConnectScreen(
             )
         }
 
-        Box(
-            modifier = Modifier
-                .padding(top = 20.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(if (uiState.isConnecting) PaquitoColors.TextHomeMuted else PaquitoColors.BrandPrimary)
-                .clickable(enabled = !uiState.isConnecting) { onConnectClick(canvasToken) }
-                .padding(horizontal = 24.dp, vertical = 14.dp),
-        ) {
-            if (uiState.isConnecting) {
-                CircularProgressIndicator(
-                    modifier = Modifier.padding(2.dp),
-                    color = PaquitoColors.TextOnWhite,
-                )
-            } else {
-                Text(
-                    text = "Conectar",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = PaquitoFont.DMSans,
-                    color = PaquitoColors.TextOnWhite,
-                )
-            }
-        }
+        PaquitoPrimaryButton(
+            text = "Conectar",
+            onClick = { onConnectClick(canvasToken) },
+            isLoading = uiState.isConnecting,
+        )
 
         if (uiState.errorMessage != null) {
             Text(
                 text = uiState.errorMessage,
-                fontSize = 13.sp,
-                fontFamily = PaquitoFont.DMSans,
-                color = PaquitoColors.TextHomeMuted,
-                modifier = Modifier.padding(top = 16.dp),
+                style = PaquitoTypography.BodySmall,
+                color = PaquitoColors.StateDanger,
             )
         }
     }
@@ -152,6 +134,18 @@ fun CanvasConnectScreen(
                         ?: "Tu cuenta de Canvas se conectó y sincronizó correctamente.",
                 )
             },
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "4. Canvas")
+@Composable
+private fun CanvasConnectScreenPreview() {
+    PaquitoTheme {
+        CanvasConnectScreen(
+            uiState = CanvasConnectUiState(),
+            onConnectClick = {},
+            onContinueClick = {},
         )
     }
 }

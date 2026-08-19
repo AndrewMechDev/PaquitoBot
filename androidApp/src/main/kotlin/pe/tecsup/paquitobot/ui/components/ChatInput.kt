@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
+import pe.tecsup.paquitobot.ui.theme.PaquitoFont
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
 /**
@@ -118,6 +119,7 @@ private fun BasicTextField(
         modifier = modifier,
         textStyle = TextStyle(
             fontSize = 15.sp,
+            fontFamily = PaquitoFont.DMSans,
             color = PaquitoColors.TextOnCardStrong,
         ),
         cursorBrush = androidx.compose.ui.graphics.SolidColor(PaquitoColors.BrandPrimary),
@@ -127,6 +129,7 @@ private fun BasicTextField(
                     Text(
                         text = placeholder,
                         fontSize = 15.sp,
+                        fontFamily = PaquitoFont.DMSans,
                         color = PaquitoColors.TextInputPlaceholder,
                     )
                 }

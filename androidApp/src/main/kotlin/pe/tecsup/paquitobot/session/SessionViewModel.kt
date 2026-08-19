@@ -21,10 +21,12 @@ import pe.tecsup.paquitobot.domain.canvas.CanvasRepository
  * llegar a Home (login con Google, despues conexion con Canvas).
  */
 data class SessionUiState(
+    val isOnboardingComplete: Boolean = false,
     val isAuthenticated: Boolean = false,
     val isSigningIn: Boolean = false,
     val authError: String? = null,
     val isCanvasConnected: Boolean = false,
+    val userFirstName: String? = null,
 )
 
 class SessionViewModel(
@@ -35,8 +37,10 @@ class SessionViewModel(
 
     private val _uiState = MutableStateFlow(
         SessionUiState(
+            isOnboardingComplete = tokenStore.hasCompletedOnboarding(),
             isAuthenticated = tokenStore.hasValidSession(),
             isCanvasConnected = tokenStore.hasCanvasConnected(),
+            userFirstName = tokenStore.displayFirstName(),
         ),
     )
     val uiState: StateFlow<SessionUiState> = _uiState.asStateFlow()
@@ -67,15 +71,25 @@ class SessionViewModel(
     }
 
     /** Completa el login: [idToken] ya se obtuvo de Google en Compose. */
-    fun completeSignIn(idToken: String) {
+    fun completeSignIn(idToken: String, firstName: String? = null) {
         if (loginJob?.isActive == true) return
         _uiState.update { it.copy(isSigningIn = true, authError = null) }
 
         loginJob = viewModelScope.launch {
             authRepository.loginWithGoogle(idToken)
                 .onSuccess { session ->
-                    tokenStore.saveSession(session.accessToken, session.expiresInSeconds)
-                    _uiState.update { it.copy(isAuthenticated = true, isSigningIn = false) }
+                    tokenStore.saveSession(
+                        accessToken = session.accessToken,
+                        expiresInSeconds = session.expiresInSeconds,
+                        firstName = firstName,
+                    )
+                    _uiState.update {
+                        it.copy(
+                            isAuthenticated = true,
+                            isSigningIn = false,
+                            userFirstName = tokenStore.displayFirstName(),
+                        )
+                    }
                 }
                 .onFailure { error ->
                     _uiState.update {
@@ -89,6 +103,11 @@ class SessionViewModel(
         _uiState.update {
             it.copy(isSigningIn = false, authError = googleSheetMessage(error))
         }
+    }
+
+    fun completeOnboarding() {
+        tokenStore.markOnboardingComplete()
+        _uiState.update { it.copy(isOnboardingComplete = true) }
     }
 
     fun markCanvasConnected() {

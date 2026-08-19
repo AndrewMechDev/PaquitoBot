@@ -11,6 +11,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
+import pe.tecsup.paquitobot.ui.theme.PaquitoFont
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
 /**
@@ -21,10 +22,10 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  * (burbujas e input tambien planos, ver `Message.kt`/`ChatInput.kt`).
  *
  * Ejemplos:
- *   "Que vence esta semana?"
- *   "Como voy?"
+ *   "Que cursos tengo este ciclo?"
+ *   "Que vence este ciclo?"
  *   "Mis laboratorios"
- *   "Proximo examen"
+ *   "Como voy?"
  *
  * Si hay overflow horizontal, los chips quedan en un Row scrolleable.
  */
@@ -37,6 +38,7 @@ fun SuggestionChip(
     Text(
         text = text,
         fontSize = 13.sp,
+        fontFamily = PaquitoFont.DMSans,
         color = PaquitoColors.TextOnCardStrong,
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
@@ -50,6 +52,6 @@ fun SuggestionChip(
 @Composable
 private fun SuggestionChipPreview() {
     PaquitoTheme {
-        SuggestionChip(text = "Que vence esta semana?", onClick = {})
+        SuggestionChip(text = "Que cursos tengo este ciclo?", onClick = {})
     }
 }

@@ -99,31 +99,40 @@ object PaquitoColors {
 /**
  * Escala tipográfica de PaquitoBot.
  *
- * El archivo Figma usa DM Sans, DM Mono, Instrument Sans y Bricolage Grotesque
- * mezcladas. Mientras no descarguemos las fuentes reales, todo cae a
- * FontFamily.Default (Roboto en Android). Mantenemos nombres y pesos para
- * cuando se haga la migración real.
+ * Decision de UX (2026-08-19, auditoria de consistencia pedida por el
+ * usuario): UNA SOLA familia tipografica en todo el proyecto - DM Sans,
+ * la que definio el Figma original para titulos/cuerpo y la que ya
+ * domina el resto de la app. El Figma tenia 4 familias mezcladas (DM
+ * Sans, DM Mono, Instrument Sans, Bricolage Grotesque) para roles
+ * distintos, pero mezclar tipografias entre pantallas rompe la
+ * consistencia visual mas de lo que suma variedad - se descarta la
+ * mezcla, se mantienen los pesos/tamaños originales de cada token (solo
+ * cambia la familia). `PaquitoFont.DMMono`/`InstrumentSans`/
+ * `BricolageGrotesque` quedan declaradas en `PaquitoFont.kt` sin uso -
+ * no se borran por si hace falta una excepcion puntual mas adelante,
+ * pero NINGUN token de esta tabla debe volver a usarlas.
  */
 object PaquitoTypography {
     val DisplayLarge   = TextStyle(fontSize = 34.sp, fontWeight = FontWeight.SemiBold, fontFamily = PaquitoFont.DMSans)
     val HeadlineSmall  = TextStyle(fontSize = 23.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
     val BodyLarge      = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
-    val BodyMedium     = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.InstrumentSans)
-    val Caption        = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMMono)
+    val BodySmall      = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
+    val BodyMedium     = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
+    val Caption        = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
     val LabelSmall     = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium,   fontFamily = PaquitoFont.DMSans)
 
     // Nuevos (Home B)
-    val Greeting       = TextStyle(fontSize = 30.sp, fontWeight = FontWeight.Bold,     fontFamily = PaquitoFont.BricolageGrotesque)
-    val TaskTitle      = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = PaquitoFont.InstrumentSans)
-    val TaskSubtitle   = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.InstrumentSans)
-    val DayOfWeek      = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMMono)
-    val DayNumber      = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = PaquitoFont.InstrumentSans)
-    val BadgeInitials  = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold,     fontFamily = PaquitoFont.DMMono)
-    val ChipLabel      = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium,   fontFamily = PaquitoFont.DMMono)
-    val Timestamp      = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMMono)
-    val AlertCardTitle = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = PaquitoFont.BricolageGrotesque)
-    val AlertCardSubtitle = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Normal, fontFamily = PaquitoFont.InstrumentSans)
-    val ButtonLabel    = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = PaquitoFont.InstrumentSans)
+    val Greeting       = TextStyle(fontSize = 30.sp, fontWeight = FontWeight.Bold,     fontFamily = PaquitoFont.DMSans)
+    val TaskTitle      = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = PaquitoFont.DMSans)
+    val TaskSubtitle   = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
+    val DayOfWeek      = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
+    val DayNumber      = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = PaquitoFont.DMSans)
+    val BadgeInitials  = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold,     fontFamily = PaquitoFont.DMSans)
+    val ChipLabel      = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium,   fontFamily = PaquitoFont.DMSans)
+    val Timestamp      = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
+    val AlertCardTitle = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = PaquitoFont.DMSans)
+    val AlertCardSubtitle = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Normal, fontFamily = PaquitoFont.DMSans)
+    val ButtonLabel    = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = PaquitoFont.DMSans)
 }
 
 /**
