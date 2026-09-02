@@ -4,5 +4,27 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>GIDServerClientID</key>
+	<string>475675958107-cs5m1jvelm6gvvoov45g4tvebie426pi.apps.googleusercontent.com</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>192.168.82.74</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Resources/Fonts/dm_sans_regular.ttf</string>
+		<string>Resources/Fonts/dm_sans_medium.ttf</string>
+		<string>Resources/Fonts/dm_sans_semibold.ttf</string>
+		<string>Resources/Fonts/dm_sans_bold.ttf</string>
+	</array>
 </dict>
 </plist>
