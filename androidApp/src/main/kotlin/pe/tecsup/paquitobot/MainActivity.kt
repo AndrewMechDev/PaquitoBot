@@ -12,6 +12,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -58,6 +60,42 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 private enum class RootScreen { Tabs, Chat, CourseDetail, Notifications }
 
 private enum class OnboardingStep { Welcome, Notifications, Tour }
+
+/** [CourseCardData] no es Parcelable: se guarda como lista de primitivos para sobrevivir a la rotacion. */
+private val SelectedCourseSaver = listSaver<CourseCardData?, Any>(
+    save = { course ->
+        if (course == null) {
+            emptyList()
+        } else {
+            listOf(
+                course.id,
+                course.code,
+                course.name,
+                course.projectedGrade,
+                course.trackHint,
+                course.absences,
+                course.absenceLimit,
+                course.nextDueLabel,
+            )
+        }
+    },
+    restore = { saved ->
+        if (saved.isEmpty()) {
+            null
+        } else {
+            CourseCardData(
+                id = saved[0] as String,
+                code = saved[1] as String,
+                name = saved[2] as String,
+                projectedGrade = saved[3] as String,
+                trackHint = saved[4] as String,
+                absences = saved[5] as Int,
+                absenceLimit = saved[6] as Int,
+                nextDueLabel = saved[7] as String,
+            )
+        }
+    },
+)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -113,7 +151,7 @@ private fun AppRoot() {
         },
     )
     val sessionUiState by sessionViewModel.uiState.collectAsStateWithLifecycle()
-    var onboardingStep by remember { mutableStateOf(OnboardingStep.Welcome) }
+    var onboardingStep by rememberSaveable { mutableStateOf(OnboardingStep.Welcome) }
 
     when {
         !sessionUiState.isOnboardingComplete -> when (onboardingStep) {
@@ -179,9 +217,13 @@ private fun AppRoot() {
         }
 
         else -> {
-            var currentTab by remember { mutableStateOf(NavTab.Inicio) }
-            var rootScreen by remember { mutableStateOf(RootScreen.Tabs) }
-            var selectedCourse by remember { mutableStateOf<CourseCardData?>(null) }
+            // rememberSaveable: sobrevive a la rotacion (Android recrea la Activity)
+            // - con remember simple, girar el telefono mandaba siempre a Inicio.
+            var currentTab by rememberSaveable { mutableStateOf(NavTab.Inicio) }
+            var rootScreen by rememberSaveable { mutableStateOf(RootScreen.Tabs) }
+            var selectedCourse by rememberSaveable(stateSaver = SelectedCourseSaver) {
+                mutableStateOf<CourseCardData?>(null)
+            }
             val userFirstName = sessionUiState.userFirstName ?: "estudiante"
 
             when (rootScreen) {
