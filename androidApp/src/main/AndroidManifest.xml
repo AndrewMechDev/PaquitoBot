@@ -18,8 +18,15 @@
       es mas amplio (cleartext en toda la app, no solo hacia canvas-mock)
       pero no activa esa logica por-dominio y no rompe nada.
     -->
+    <!--
+      allowBackup=false: la app guarda credenciales en EncryptedSharedPreferences
+      (JWT de Google, key de canvas-mock) atadas a una clave del Android
+      Keystore que NO viaja en el backup. Con allowBackup=true, restaurar un
+      backup o migrar de telefono deja el archivo cifrado sin su clave y la
+      app deja de poder abrirlo.
+    -->
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"

@@ -1,9 +1,12 @@
 package pe.tecsup.paquitobot.auth
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import pe.tecsup.paquitobot.data.remote.TokenProvider
+import java.io.IOException
+import java.security.GeneralSecurityException
 
 /**
  * Guarda la API key mock de `canvas-mock` (`stu_001`, etc. - ver skill
@@ -16,17 +19,12 @@ import pe.tecsup.paquitobot.data.remote.TokenProvider
  */
 class CanvasMockKeyStore(context: Context) : TokenProvider {
 
-    private val prefs = run {
-        val masterKey = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
-        EncryptedSharedPreferences.create(
-            context,
-            PREFS_FILE_NAME,
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-        )
+    private val prefs = try {
+        createPrefs(context)
+    } catch (e: GeneralSecurityException) {
+        recreatePrefs(context)
+    } catch (e: IOException) {
+        recreatePrefs(context)
     }
 
     override suspend fun getToken(): String? = prefs.getString(KEY_API_KEY, null)
@@ -47,6 +45,28 @@ class CanvasMockKeyStore(context: Context) : TokenProvider {
     }
 
     fun isSkipped(): Boolean = prefs.getBoolean(KEY_SKIPPED, false)
+
+    private fun createPrefs(context: Context) = EncryptedSharedPreferences.create(
+        context,
+        PREFS_FILE_NAME,
+        MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build(),
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+    )
+
+    /**
+     * El archivo cifrado ya no se puede abrir (la clave del Keystore no
+     * coincide: restore de backup, borrado de credenciales de pantalla, etc.).
+     * Solo se descarta ESTE archivo - la clave maestra es compartida con
+     * [SecureTokenStore], asi que no se toca. El estudiante vuelve a ver el
+     * gate de canvas-mock en vez de un crash en cada arranque.
+     */
+    private fun recreatePrefs(context: Context): SharedPreferences {
+        context.deleteSharedPreferences(PREFS_FILE_NAME)
+        return createPrefs(context)
+    }
 
     private companion object {
         const val PREFS_FILE_NAME = "canvas_mock_session"
