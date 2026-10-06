@@ -1,13 +1,16 @@
 package pe.tecsup.paquitobot.data.remote
 
 import io.ktor.client.HttpClient
+import io.ktor.client.call.NoTransformationFoundException
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
+import io.ktor.serialization.ContentConvertException
 import kotlinx.io.IOException
+import kotlinx.serialization.SerializationException
 import pe.tecsup.paquitobot.data.remote.dto.AssignmentDto
 import pe.tecsup.paquitobot.data.remote.dto.AttendanceRecordDto
 import pe.tecsup.paquitobot.data.remote.dto.ClassSessionDto
@@ -66,6 +69,12 @@ class CanvasMockApi(
             Result.failure(CanvasMockApiError.NetworkFailure(exc))
         } catch (exc: IOException) {
             Result.failure(CanvasMockApiError.NetworkFailure(exc))
+        } catch (exc: SerializationException) {
+            Result.failure(CanvasMockApiError.InvalidResponse(exc))
+        } catch (exc: ContentConvertException) {
+            Result.failure(CanvasMockApiError.InvalidResponse(exc))
+        } catch (exc: NoTransformationFoundException) {
+            Result.failure(CanvasMockApiError.InvalidResponse(exc))
         }
     }
 

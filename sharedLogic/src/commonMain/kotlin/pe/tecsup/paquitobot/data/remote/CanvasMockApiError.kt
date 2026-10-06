@@ -7,7 +7,7 @@ package pe.tecsup.paquitobot.data.remote
  * dos backends distintos con dos modelos de auth distintos (X-Api-Key vs
  * JWT de Google) - no comparten semantica de error.
  */
-sealed class CanvasMockApiError(message: String) : Exception(message) {
+sealed class CanvasMockApiError(message: String, cause: Throwable? = null) : Exception(message, cause) {
     /** No hay API key guardada ([pe.tecsup.paquitobot.data.remote.TokenProvider] devolvio `null`). */
     data object NotConnected : CanvasMockApiError("No hay una cuenta mock conectada")
 
@@ -22,6 +22,13 @@ sealed class CanvasMockApiError(message: String) : Exception(message) {
 
     /** Sin conexion de red (timeout, servidor local no corriendo, etc.). */
     data class NetworkFailure(val cause2: Throwable) : CanvasMockApiError("Sin conexion con canvas-mock")
+
+    /**
+     * 200 con un cuerpo que no se puede leer como el DTO esperado (HTML de un
+     * portal cautivo, otro host en la misma IP, cambio de esquema del backend).
+     */
+    class InvalidResponse(cause: Throwable) :
+        CanvasMockApiError("Respuesta inesperada de canvas-mock", cause)
 
     /** Cualquier otro codigo/forma de respuesta no contemplada arriba. */
     data class Unknown(val statusCode: Int?, val detail: String?) :
