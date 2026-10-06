@@ -1,6 +1,7 @@
 package pe.tecsup.paquitobot.auth
 
 import android.content.Context
+import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
@@ -110,11 +111,24 @@ class GoogleAuthClient(
                 ),
             )
         } catch (exc: GetCredentialException) {
+            // Play Services devuelve "cancelacion" tambien cuando el cliente OAuth
+            // (package + SHA-1) no esta registrado, asi que el mensaje de UI puede
+            // esconder la causa real. Se loguea el tipo/mensaje original (sin tokens).
+            Log.w(
+                TAG,
+                "getCredential fallo con ${optionLabel(request)}: " +
+                    "${exc::class.java.simpleName} type=${exc.type} msg=${exc.errorMessage}",
+                exc,
+            )
             Result.failure(exc)
         } catch (exc: GoogleIdTokenParsingException) {
+            Log.w(TAG, "No se pudo leer el id_token de ${optionLabel(request)}", exc)
             Result.failure(exc)
         }
     }
+
+    private fun optionLabel(request: GetCredentialRequest): String =
+        request.credentialOptions.firstOrNull()?.let { it::class.java.simpleName } ?: "sin opcion"
 
     private fun mapCredentialError(error: Throwable): GoogleSignInFailure = when (error) {
         is GoogleSignInFailure -> error
@@ -127,5 +141,9 @@ class GoogleAuthClient(
         val raw = UUID.randomUUID().toString()
         val digest = MessageDigest.getInstance("SHA-256").digest(raw.toByteArray())
         return digest.joinToString("") { byte -> "%02x".format(byte) }
+    }
+
+    private companion object {
+        const val TAG = "GoogleAuth"
     }
 }

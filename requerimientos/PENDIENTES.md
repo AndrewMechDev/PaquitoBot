@@ -11,6 +11,11 @@
 - [ ] **Sacar la IP LAN hardcodeada** de `CanvasMockHttpClient.kt` (`CANVAS_MOCK_BASE_URL`). Debería venir de `BuildConfig` o `local.properties`, o de un campo editable en el gate de conexión.
 - [ ] **Retirar código muerto del gate de Canvas real.** `CanvasConnectScreen` y `CanvasConnectViewModel` quedaron sin uso en el flujo; se conservan solo para cuando haya integración real.
 
+## Funcionalidad que todavía es maqueta
+
+- [ ] **Notificaciones no son funcionales.** Los toggles del onboarding (`OnboardingNotificationsScreen`) solo cambian estado local y `MainActivity` descarta el resultado (`onContinue = { _ -> ... }`). No se persiste, no hay OneSignal ni permiso `POST_NOTIFICATIONS`, y la bandeja (`NotificationsInboxScreen`) muestra datos de ejemplo. Falta: guardar preferencias, integrar el servicio de push y conectar la bandeja a datos reales.
+- [ ] **Login con Google en debug muestra "cancelaste el inicio de sesión"** (2026-10-06). Hipótesis: el package debug (`pe.tecsup.paquitobot.debug`) no está registrado como cliente OAuth Android. `GoogleAuthClient` ahora loguea el error original con el tag `GoogleAuth` (`adb logcat -s GoogleAuth`) para confirmar la causa real.
+
 ## Hallazgos de revisión de código sin arreglar (2026-10-06)
 
 Revisión de `develop..HEAD`. Los tres hallazgos críticos ya están corregidos; quedan estos:
