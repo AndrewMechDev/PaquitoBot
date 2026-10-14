@@ -1,4 +1,10 @@
+import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -7,11 +13,14 @@ plugins {
 
 kotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_11
+        jvmTarget = JvmTarget.JVM_17
     }
 }
 dependencies {
     implementation(project(":sharedLogic"))
+
+    implementation(libs.clerk.android.api)
+    implementation(libs.clerk.android.ui)
 
     implementation(libs.androidx.activity.compose)
 
@@ -24,11 +33,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.kotlinx.coroutines.core)
 
-    // Google Sign-In (Credential Manager - API moderna recomendada, reemplaza
-    // GoogleSignInClient) + almacenamiento cifrado del JWT del backend.
-    implementation(libs.androidx.credentials)
-    implementation(libs.androidx.credentials.playServicesAuth)
-    implementation(libs.googleid)
+    // Almacenamiento cifrado de flags locales (onboarding, Canvas).
     implementation(libs.androidx.security.crypto)
 
     // Glassmorphism real (blur de fondo) para el Navbar flotante - reemplaza
@@ -50,6 +55,12 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField(
+            "String",
+            "CLERK_PUBLISHABLE_KEY",
+            "\"${localProperties.getProperty("clerk.publishableKey", "")}\""
+        )
     }
     packaging {
         resources {
@@ -66,10 +77,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }

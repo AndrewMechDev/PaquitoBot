@@ -2,7 +2,6 @@ package pe.tecsup.paquitobot.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import pe.tecsup.paquitobot.ui.auth.AuthGateScreen
 import pe.tecsup.paquitobot.ui.canvas.CanvasConnectScreen
 import pe.tecsup.paquitobot.ui.canvas.CanvasConnectUiState
 import pe.tecsup.paquitobot.ui.chat.ChatScreen
@@ -21,7 +20,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  * Previews del primer uso (sin reinstalar). En Android Studio: Split /
  * Design sobre este archivo y recorre los previews 1–8.
  *
- * Flujo real en dispositivo: Welcome → Notificaciones → Tour → Google → Canvas → pestañas.
+ * Flujo real en dispositivo: Welcome → Notificaciones → Tour → Clerk → Canvas → pestañas.
  * Para repetirlo: Ajustes del sistema → Apps → PaquitoBot → Borrar datos.
  */
 @Preview(showBackground = true, name = "1 Welcome")
@@ -40,14 +39,6 @@ private fun Preview02Notifications() {
 @Composable
 private fun Preview02bTour() {
     PaquitoTheme { OnboardingTourScreen(onContinue = {}) }
-}
-
-@Preview(showBackground = true, name = "3 Google")
-@Composable
-private fun Preview03Google() {
-    PaquitoTheme {
-        AuthGateScreen(isSigningIn = false, errorMessage = null, onSignInClick = {})
-    }
 }
 
 @Preview(showBackground = true, name = "4 Canvas")

@@ -4,13 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.Alignment
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -19,11 +21,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import kotlinx.coroutines.launch
-import pe.tecsup.paquitobot.auth.GoogleAuthClient
 import pe.tecsup.paquitobot.auth.SecureTokenStore
 import pe.tecsup.paquitobot.session.SessionViewModel
-import pe.tecsup.paquitobot.ui.auth.AuthGateScreen
+import pe.tecsup.paquitobot.ui.auth.ClerkAuthGate
 import pe.tecsup.paquitobot.ui.canvas.CanvasConnectScreen
 import pe.tecsup.paquitobot.ui.canvas.CanvasConnectViewModel
 import pe.tecsup.paquitobot.ui.chat.ChatScreen
@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
  * Iteracion 2026-08-13 (flujo de gates): antes de mostrar Home o Chat, la
  * app pasa por dos gates secuenciales evaluados con [SessionViewModel]:
  *
- *   1. Sin sesion de Google -> [AuthGateScreen].
+ *   1. Sin sesion de Clerk -> [ClerkAuthGate] (providers desde el Dashboard).
  *   2. Con sesion pero sin Canvas conectado -> [CanvasConnectScreen].
  *   3. Con ambos -> Home/Chat normal, sin volver a pedir nada.
  *
@@ -85,14 +85,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun AppRoot() {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
     val tokenStore = remember { SecureTokenStore(context.applicationContext) }
-    val googleAuthClient = remember {
-        GoogleAuthClient(
-            context = context,
-            webClientId = context.getString(R.string.google_web_client_id),
-        )
-    }
 
     val sessionViewModel: SessionViewModel = viewModel(
         factory = remember {
@@ -117,20 +110,11 @@ private fun AppRoot() {
             )
         }
 
-        !sessionUiState.isAuthenticated -> AuthGateScreen(
-            isSigningIn = sessionUiState.isSigningIn,
-            errorMessage = sessionUiState.authError,
-            onSignInClick = {
-                sessionViewModel.prepareSignIn()
-                coroutineScope.launch {
-                    googleAuthClient.signIn()
-                        .onSuccess { result ->
-                            sessionViewModel.completeSignIn(result.idToken, result.firstName())
-                        }
-                        .onFailure { error -> sessionViewModel.signInFailed(error) }
-                }
-            },
-        )
+        sessionUiState.isAuthLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+            CircularProgressIndicator()
+        }
+
+        !sessionUiState.isAuthenticated -> ClerkAuthGate()
 
         !sessionUiState.isCanvasConnected -> {
             val canvasViewModel: CanvasConnectViewModel = viewModel(
