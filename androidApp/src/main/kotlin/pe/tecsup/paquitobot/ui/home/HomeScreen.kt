@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -16,6 +17,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -79,6 +83,9 @@ fun HomeScreen(
     onTrackClick: () -> Unit = { onTabSelected(NavTab.Cursos) },
     onAbsencesClick: () -> Unit = { onTabSelected(NavTab.Horarios) },
     onNotificationsClick: () -> Unit = {},
+    onSignOutClick: () -> Unit = {},
+    isSigningOut: Boolean = false,
+    signOutError: String? = null,
     modifier: Modifier = Modifier,
 ) {
     // Iteracion 2026-08-13 (filtro por dia): que dia esta seleccionado en el
@@ -102,6 +109,9 @@ fun HomeScreen(
             dateLabel = data.dateLabel,
             unreadNotificationsCount = data.unreadNotificationsCount,
             onNotificationsClick = onNotificationsClick,
+            onSignOutClick = onSignOutClick,
+            isSigningOut = isSigningOut,
+            signOutError = signOutError,
         )
         PainSnapshotRow(
             trackValue = data.trackValue,
@@ -229,34 +239,53 @@ private fun HomeMessage(
     dateLabel: String,
     unreadNotificationsCount: Int,
     onNotificationsClick: () -> Unit,
+    onSignOutClick: () -> Unit,
+    isSigningOut: Boolean,
+    signOutError: String?,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalAlignment = Alignment.Start, // <-- antes Center; ahora Start segun Figma
-            modifier = Modifier.weight(1f),
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = greeting,
-                style = PaquitoTypography.DisplayLarge,
-                color = PaquitoColors.TextHomeStrong,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
+            Spacer(Modifier.weight(1f))
+            NotificationBellButton(
+                unreadCount = unreadNotificationsCount,
+                onClick = onNotificationsClick,
             )
+            Button(
+                onClick = onSignOutClick,
+                enabled = !isSigningOut,
+                colors = ButtonDefaults.buttonColors(containerColor = PaquitoColors.StateDanger),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.padding(start = 8.dp),
+            ) {
+                Text(
+                    text = if (isSigningOut) "Cerrando…" else "Cerrar sesión",
+                    style = PaquitoTypography.BodySmall,
+                    color = Color.White,
+                )
+            }
+        }
+        Text(
+            text = greeting,
+            style = PaquitoTypography.DisplayLarge,
+            color = PaquitoColors.TextHomeStrong,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = dateLabel,
+            style = PaquitoTypography.HeadlineSmall,
+            color = PaquitoColors.TextHomeMuted,
+        )
+        if (signOutError != null) {
             Text(
-                text = dateLabel,
-                style = PaquitoTypography.HeadlineSmall,
-                color = PaquitoColors.TextHomeMuted,
+                text = signOutError,
+                style = PaquitoTypography.BodySmall,
+                color = PaquitoColors.StateDanger,
             )
         }
-        NotificationBellButton(
-            unreadCount = unreadNotificationsCount,
-            onClick = onNotificationsClick,
-        )
     }
 }
 

@@ -5,6 +5,11 @@ val localProperties = Properties().apply {
     val file = rootProject.file("local.properties")
     if (file.exists()) file.inputStream().use { load(it) }
 }
+val clerkPublishableKey = localProperties.getProperty("clerk.publishableKey", "").trim()
+val miniMaxApiKey = localProperties.getProperty("minimax.apiKey", "").trim()
+require(clerkPublishableKey.startsWith("pk_test_") || clerkPublishableKey.startsWith("pk_live_")) {
+    "Falta clerk.publishableKey en local.properties. Agrega la publishable key de Clerk (pk_test_... o pk_live_...)."
+}
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -33,9 +38,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.kotlinx.coroutines.core)
 
-    // Almacenamiento cifrado de flags locales (onboarding, Canvas).
-    implementation(libs.androidx.security.crypto)
-
     // Glassmorphism real (blur de fondo) para el Navbar flotante - reemplaza
     // la opacidad simulada sin blur que habia antes.
     implementation(libs.haze)
@@ -59,7 +61,7 @@ android {
         buildConfigField(
             "String",
             "CLERK_PUBLISHABLE_KEY",
-            "\"${localProperties.getProperty("clerk.publishableKey", "")}\""
+            "\"$clerkPublishableKey\""
         )
     }
     packaging {
@@ -68,7 +70,12 @@ android {
         }
     }
     buildTypes {
+        debug {
+            // Solo para prototipos locales: la clave queda dentro del APK debug.
+            buildConfigField("String", "MINIMAX_API_KEY", "\"${miniMaxApiKey.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
+        }
         release {
+            buildConfigField("String", "MINIMAX_API_KEY", "\"\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -100,6 +101,7 @@ private val UserBubbleShape = RoundedCornerShape(
 
 @Composable
 private fun BotBubble(message: ChatMessage, modifier: Modifier) {
+    val formattedBody = remember(message.body) { formatChatMarkdown(message.body) }
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Start,
@@ -113,11 +115,11 @@ private fun BotBubble(message: ChatMessage, modifier: Modifier) {
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Text(
-                text = message.body,
+                text = formattedBody,
                 fontSize = 15.sp,
                 fontFamily = PaquitoFont.DMSans,
                 color = Color.Black,
-                lineHeight = 20.sp,
+                lineHeight = 22.sp,
             )
             if (message.footnote != null) {
                 BubbleFootnote(text = message.footnote)
@@ -242,7 +244,7 @@ private fun MessagePreview() {
             Message(
                 ChatMessage(
                     role = MessageRole.Bot,
-                    body = "Lo más urgente:\nLaboratorio 4 — Cálculo II\nHoy 23:59 · 15% de la nota final",
+                    body = "**Lo más urgente:**\n- Laboratorio 4 — Cálculo II\n- Hoy 23:59 · 15% de la nota final",
                     footnote = "Te aviso otra vez a las 20:00",
                     timestamp = "14:30",
                 ),
