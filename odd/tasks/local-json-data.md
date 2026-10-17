@@ -20,7 +20,7 @@ The project no longer uses a backend; all data is custom JSON. canvas-mock (HTTP
 
 ## Tasks
 - [x] T1 Port domain: `AcademicRepository` + models, `AcademicDateUtils`. Route: inline (2 mechanical files, comments de-canvas-mocked). Commit: see git log `feat(sharedLogic): portar dominio academico`.
-- [ ] T2 `LocalJsonAcademicRepository` + JSON asset + unit test. Route: delegated writer.
+- [x] T2 `LocalJsonAcademicRepository` + JSON asset + unit test. Route: delegated writer (4 new files + build file). RED: test failed to compile before the class existed; GREEN: `./gradlew --configure-on-demand :sharedLogic:allTests` passes (12 new tests), re-run by parent. Gradle needs `--configure-on-demand` because `clerk.publishableKey` is missing in `local.properties`. Build file declares serialization plugin/libs directly (catalog has no entry): swap to catalog aliases if the catalog gains them. iOS compile not checked (needs macOS).
 - [ ] T3 Port Academic ViewModels and wire Home/Courses/CourseDetail/Schedule, resolving overlaps. Route: delegated writer.
 - [ ] T4 Verify: `assembleDebug`, pre-commit audit, senior review (no duplicated screens/dead code).
 - [ ] T5 Ask user to confirm merge to `develop`.
@@ -33,4 +33,4 @@ The project no longer uses a backend; all data is custom JSON. canvas-mock (HTTP
 - Branch created. Uncommitted `.atl/skill-registry.md` change kept in stash on canvas-mock-data.
 
 ## Next step
-T1.
+T3: wire Android (`readJson` from `assets/academic.json`) and port Academic ViewModels + screens. The JSON demo "today" is the week of 2026-08-03, so `isToday` must come from the device date, not from the JSON.
