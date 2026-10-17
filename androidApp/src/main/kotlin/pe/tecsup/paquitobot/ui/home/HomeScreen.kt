@@ -37,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pe.tecsup.paquitobot.R
+import pe.tecsup.paquitobot.ui.components.AcademicErrorBanner
 import pe.tecsup.paquitobot.ui.components.AppTabScaffold
 import pe.tecsup.paquitobot.ui.components.NavTab
 import pe.tecsup.paquitobot.ui.components.NotificationBellButton
@@ -51,7 +52,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
  *
  * Estructura (de arriba hacia abajo):
  *   1. Header / saludo     ("¡Bienvenido, {nombre}!" + fecha completa) — alineado a izquierda
- *   2. Snapshot de los 3 dolores (promedio / faltas / entregas)
+ *   2. Snapshot academico de 3 cards (ranking general / ranking por ciclo / carrera)
  *   3. Calendario semanal  ("Semana 10" + card oscura con 7 dias en 1 sola fila)
  *   4. Tareas pendientes   (lista unificada: foros, labs, practicas)
  *   5. Navbar inferior     (3 tabs + boton Paquito + badge)
@@ -80,12 +81,12 @@ fun HomeScreen(
     currentTab: NavTab = NavTab.Inicio,
     onTabSelected: (NavTab) -> Unit = {},
     onPaquitoClick: () -> Unit = {},
-    onTrackClick: () -> Unit = { onTabSelected(NavTab.Cursos) },
-    onAbsencesClick: () -> Unit = { onTabSelected(NavTab.Horarios) },
     onNotificationsClick: () -> Unit = {},
     onSignOutClick: () -> Unit = {},
     isSigningOut: Boolean = false,
     signOutError: String? = null,
+    errorMessage: String? = null,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     // Iteracion 2026-08-13 (filtro por dia): que dia esta seleccionado en el
@@ -97,6 +98,13 @@ fun HomeScreen(
     val selectedDay = data.days.firstOrNull { it.dayNumber == selectedDayNumber }
     val tasksForSelectedDay = data.tasks.filter { it.dayNumber == selectedDayNumber }
 
+    // Iteracion 2026-08-19 (card de ranking por ciclo, funcional): que ciclo
+    // se esta mostrando en la card verde vive como estado de UI, arranca en
+    // el ciclo completado MAS RECIENTE (el anterior al actual - el JSON
+    // academico local no tiene el concepto de "ciclo" en absoluto, ver
+    // comentario en `PainSnapshotRow`).
+    var selectedCycleIndex by remember(data) { mutableStateOf(data.cycleRankings.lastIndex) }
+
     AppTabScaffold(
         currentTab = currentTab,
         onTabSelected = onTabSelected,
@@ -104,6 +112,9 @@ fun HomeScreen(
         notificationCount = data.pendingCount,
         modifier = modifier,
     ) {
+        if (errorMessage != null) {
+            AcademicErrorBanner(message = errorMessage, onRetry = onRetry)
+        }
         HomeMessage(
             greeting = data.greeting,
             dateLabel = data.dateLabel,
@@ -114,12 +125,18 @@ fun HomeScreen(
             signOutError = signOutError,
         )
         PainSnapshotRow(
-            trackValue = data.trackValue,
-            absencesUsed = data.absencesUsed,
-            absencesLimit = data.absencesLimit,
-            dueThisWeek = data.dueThisWeek,
-            onTrackClick = onTrackClick,
-            onAbsencesClick = onAbsencesClick,
+            overallRanking = data.overallRanking,
+            careerCode = data.careerCode,
+            currentCycle = data.currentCycle,
+            cycleRankings = data.cycleRankings,
+            selectedCycleIndex = selectedCycleIndex,
+            onCycleClick = {
+                if (data.cycleRankings.isNotEmpty()) {
+                    selectedCycleIndex = (selectedCycleIndex - 1).let {
+                        if (it < 0) data.cycleRankings.lastIndex else it
+                    }
+                }
+            },
         )
         HomeWeekSection(
             title = data.weekTitle,
@@ -135,42 +152,52 @@ fun HomeScreen(
     }
 }
 
+/**
+ * Iteracion 2026-08-19 (repensado, pedido explicito del usuario): las 3
+ * cards ya NO muestran promedio/faltas/entregas (esos viven en Cursos y
+ * Horarios) sino informacion academica de "ranking": ranking general
+ * acumulado (todos los ciclos antes del actual), ranking del ciclo anterior
+ * al que cursas (seleccionable entre los ciclos ya finalizados, 1° a 6°), y
+ * codigo de carrera + ciclo actual.
+ *
+ * ⚠️ DATO DEMO, no viene del JSON academico local: ese archivo no tiene
+ * NINGUN concepto de "ranking", "ciclo" ni "codigo de carrera" (tampoco lo
+ * tenia el backend anterior). Se mantienen datos fijos de demo, documentados
+ * como tal, mismo criterio que `ASSUMED_ABSENCE_LIMIT` en los ViewModels
+ * academicos.
+ */
 @Composable
 private fun PainSnapshotRow(
-    trackValue: String,
-    absencesUsed: Int,
-    absencesLimit: Int,
-    dueThisWeek: Int,
-    onTrackClick: () -> Unit,
-    onAbsencesClick: () -> Unit,
+    overallRanking: Double,
+    careerCode: String,
+    currentCycle: Int,
+    cycleRankings: List<CycleRanking>,
+    selectedCycleIndex: Int,
+    onCycleClick: () -> Unit,
 ) {
+    val selectedCycle = cycleRankings.getOrNull(selectedCycleIndex)
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         SnapshotChip(
-            label = "Como vas",
-            value = trackValue,
+            label = "Ranking",
+            value = "%.1f".format(overallRanking),
             hint = "de 20",
-            onClick = onTrackClick,
+            onClick = null,
             modifier = Modifier.weight(1f),
         )
         SnapshotChip(
-            label = "Faltas",
-            value = "$absencesUsed/$absencesLimit",
-            hint = "limite",
-            onClick = onAbsencesClick,
+            label = "Ranking ciclo",
+            value = selectedCycle?.let { "%.1f".format(it.ranking) } ?: "—",
+            hint = selectedCycle?.let { "${it.cycle}° ciclo · toca para cambiar" } ?: "sin ciclos previos",
+            onClick = if (cycleRankings.isNotEmpty()) onCycleClick else null,
             modifier = Modifier.weight(1f),
-            valueColor = if (absencesUsed >= absencesLimit - 1) {
-                PaquitoColors.StateDanger
-            } else {
-                PaquitoColors.StateWarning
-            },
         )
         SnapshotChip(
-            label = "Entregas",
-            value = "$dueThisWeek",
-            hint = "esta semana",
+            label = "Carrera",
+            value = careerCode,
+            hint = "${currentCycle}° ciclo actual",
             onClick = null,
             modifier = Modifier.weight(1f),
         )
@@ -198,7 +225,7 @@ private fun SnapshotChip(
     ) {
         Text(
             text = label,
-            fontSize = 11.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             fontFamily = PaquitoFont.DMSans,
             color = PaquitoColors.TextHomeTaskLabel,
@@ -206,7 +233,7 @@ private fun SnapshotChip(
         )
         Text(
             text = value,
-            fontSize = 20.sp,
+            fontSize = 21.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
             color = valueColor,
@@ -214,10 +241,11 @@ private fun SnapshotChip(
         )
         Text(
             text = hint,
-            fontSize = 10.sp,
+            fontSize = 11.sp,
+            lineHeight = 13.sp,
             fontFamily = PaquitoFont.DMSans,
             color = PaquitoColors.TextOnCardMuted,
-            maxLines = 1,
+            maxLines = 2,
         )
     }
 }
@@ -612,7 +640,17 @@ data class TaskEntry(
     @androidx.annotation.DrawableRes val iconRes: Int,
 )
 
-/** Snapshot de la pantalla Home. Vendra del Repository cuando este listo. */
+/**
+ * Ranking de un ciclo YA FINALIZADO (1° al 6°, nunca el ciclo en curso -
+ * ver comentario de `PainSnapshotRow`). `ranking` va de 0 a 20 con
+ * decimales, igual que las notas.
+ */
+data class CycleRanking(
+    val cycle: Int,
+    val ranking: Double,
+)
+
+/** Snapshot de la pantalla Home, armado por `AcademicHomeViewModel` desde el JSON academico local. */
 data class HomeScreenData(
     val greeting: String,
     val dateLabel: String,
@@ -621,16 +659,27 @@ data class HomeScreenData(
     val tasksHeader: String,
     val tasks: List<TaskEntry>,
     val pendingCount: Int,
-    val trackValue: String,
-    val absencesUsed: Int,
-    val absencesLimit: Int,
-    val dueThisWeek: Int,
+    // Ranking academico general (acumulado, todos los ciclos antes del
+    // actual) y ranking por ciclo (seleccionable, ver `PainSnapshotRow`) -
+    // dato de DEMO, el JSON local no tiene este concepto.
+    val overallRanking: Double,
+    val careerCode: String,
+    val currentCycle: Int,
+    val cycleRankings: List<CycleRanking>,
     // `pendingCount` de arriba es el badge del FAB de Paquito (tareas
     // pendientes) - este es un contador DISTINTO para la campana del header
-    // (avisos generales: vencimientos, notas nuevas, sync de Canvas). Se
+    // (avisos generales: vencimientos, notas nuevas, sync de datos). Se
     // muestran juntos en pantalla, pero no deberian ser el mismo numero:
     // implicaria que son el mismo concepto y no lo son.
     val unreadNotificationsCount: Int = 0,
+    // LEGADO: las cards de promedio/faltas/entregas ya no se dibujan en Home
+    // (las reemplazo el ranking), pero `MockAcademicContext` (contexto del
+    // chat, que sigue con datos demo) todavia los lee desde `default()`.
+    // Borrar junto con ese uso cuando el chat lea el JSON local.
+    val trackValue: String = "—",
+    val absencesUsed: Int = 0,
+    val absencesLimit: Int = 0,
+    val dueThisWeek: Int = 0,
 ) {
     companion object {
         fun default(): HomeScreenData = HomeScreenData(
@@ -684,11 +733,21 @@ data class HomeScreenData(
                 ),
             ),
             pendingCount = 3,
+            overallRanking = 15.0,
+            careerCode = "C-24",
+            currentCycle = 6,
+            cycleRankings = listOf(
+                CycleRanking(cycle = 1, ranking = 14.2),
+                CycleRanking(cycle = 2, ranking = 15.6),
+                CycleRanking(cycle = 3, ranking = 13.8),
+                CycleRanking(cycle = 4, ranking = 16.4),
+                CycleRanking(cycle = 5, ranking = 15.1),
+            ),
+            unreadNotificationsCount = 2,
             trackValue = "14.8",
             absencesUsed = 2,
             absencesLimit = 5,
             dueThisWeek = 3,
-            unreadNotificationsCount = 2,
         )
     }
 }
