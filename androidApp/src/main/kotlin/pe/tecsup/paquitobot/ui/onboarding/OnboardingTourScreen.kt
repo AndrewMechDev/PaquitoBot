@@ -83,7 +83,7 @@ fun OnboardingTourScreen(
             )
         }
         PaquitoPrimaryButton(
-            text = "Continuar",
+            text = "Iniciar sesión con Clerk",
             onClick = onContinue,
             modifier = Modifier.padding(top = 16.dp),
         )

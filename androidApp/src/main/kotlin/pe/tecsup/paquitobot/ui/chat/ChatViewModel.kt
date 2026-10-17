@@ -7,9 +7,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import pe.tecsup.paquitobot.auth.SecureTokenStore
-import pe.tecsup.paquitobot.data.remote.PaquitoBotApiError
-import pe.tecsup.paquitobot.data.repository.createDefaultChatRepository
 import pe.tecsup.paquitobot.domain.chat.ChatRepository
 import pe.tecsup.paquitobot.ui.components.ChatMessage
 import pe.tecsup.paquitobot.ui.components.MessageRole
@@ -21,24 +18,11 @@ data class ChatUiState(
 )
 
 /**
- * ViewModel de la pantalla de Chat - primer ViewModel real del proyecto
- * (hasta ahora toda pantalla era UI con datos hardcoded, siguiendo la
- * skill `architecture-paquitobot`: "ViewModel se introduce cuando se
- * conecte el backend"). Justo ese momento es este.
- *
- * Alcance confirmado con el usuario (2026-08-11): SOLO esta pantalla
- * consume datos reales por ahora; Home sigue con mocks.
- *
- * Iteracion 2026-08-13 (gates a nivel app): el login con Google y la
- * conexion con Canvas se movieron a `SessionViewModel`/`CanvasConnectViewModel`,
- * evaluados ANTES de que `MainActivity` siquiera muestre esta pantalla -
- * `ChatScreen` ya no necesita manejar `isAuthenticated`. [tokenStore] se
- * sigue pasando por constructor porque `chatRepository` lo necesita para
- * autenticar cada request (`Authorization: Bearer <jwt>`).
+ * Clerk protege la app; MiniMax responde con los mismos datos mock que
+ * muestran las pantallas.
  */
 class ChatViewModel(
-    private val tokenStore: SecureTokenStore,
-    private val chatRepository: ChatRepository = createDefaultChatRepository(tokenStore),
+    private val chatRepository: ChatRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -58,7 +42,10 @@ class ChatViewModel(
                 }
                 .onFailure { error ->
                     appendMessage(
-                        ChatMessage(role = MessageRole.System, body = systemMessageFor(error)),
+                        ChatMessage(
+                            role = MessageRole.System,
+                            body = error.message ?: "No pude responder. Inténtalo de nuevo.",
+                        ),
                     )
                 }
             _uiState.update { it.copy(isSending = false) }
@@ -69,27 +56,4 @@ class ChatViewModel(
         _uiState.update { it.copy(messages = it.messages + message) }
     }
 
-    /** Traduce el error tipado del backend a un aviso de chat entendible. */
-    private fun systemMessageFor(error: Throwable): String = when (error) {
-        is PaquitoBotApiError.NotAuthenticated,
-        is PaquitoBotApiError.InvalidSession,
-        -> "Tu sesión expiró. Volvé a conectar con Google."
-
-        is PaquitoBotApiError.CanvasNotConnected ->
-            "Conectá tu cuenta de Canvas para que pueda responder con tus datos."
-
-        is PaquitoBotApiError.RateLimited ->
-            "Estoy respondiendo muchas preguntas, esperá un momento y volvé a intentar."
-
-        is PaquitoBotApiError.ServiceUnavailable ->
-            "El servicio no está disponible en este momento. Probá de nuevo en un rato."
-
-        is PaquitoBotApiError.RequestTimeout ->
-            "Paquito tardó más de lo normal en responder. El servidor puede estar ocupado; intentá de nuevo."
-
-        is PaquitoBotApiError.NetworkFailure ->
-            "Sin conexión. Revisá tu internet e intentá de nuevo."
-
-        else -> "Algo salió mal. Intentá de nuevo."
-    }
 }

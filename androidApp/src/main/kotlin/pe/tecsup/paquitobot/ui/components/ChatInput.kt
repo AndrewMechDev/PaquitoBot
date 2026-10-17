@@ -48,6 +48,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 fun ChatInput(
     modifier: Modifier = Modifier,
     placeholder: String = "Escribe tu mensaje...",
+    enabled: Boolean = true,
     onSend: (String) -> Unit = {},
 ) {
     var text by remember { mutableStateOf("") }
@@ -77,7 +78,7 @@ fun ChatInput(
 
         // Boton enviar.
         SendButton(onClick = {
-            if (text.isNotBlank()) {
+            if (enabled && text.isNotBlank()) {
                 onSend(text.trim())
                 text = ""
             }

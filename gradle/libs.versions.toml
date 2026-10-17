@@ -1,27 +1,25 @@
 [versions]
 agp = "9.3.1"
-android-compileSdk = "36"
+android-compileSdk = "37"
 android-minSdk = "24"
 android-targetSdk = "36"
 androidx-activity = "1.13.0"
 androidx-appcompat = "1.7.1"
 androidx-core = "1.19.0"
-androidx-credentials = "1.5.0"
 androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.11.0-beta01"
-androidx-security-crypto = "1.1.0"
 androidx-testExt = "1.3.0"
+clerk = "1.2.0"
 composeMultiplatform = "1.11.1"
-googleid = "1.1.1"
 haze = "1.7.2"
 junit = "4.13.2"
 kotlin = "2.4.10"
 kotlinx-coroutines = "1.9.0"
-kotlinx-serialization = "1.7.3"
-ktor = "3.0.3"
 material3 = "1.11.0-alpha07"
 
 [libraries]
+clerk-android-api = { module = "com.clerk:clerk-android-api", version.ref = "clerk" }
+clerk-android-ui = { module = "com.clerk:clerk-android-ui", version.ref = "clerk" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -40,16 +38,6 @@ compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMul
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
-ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
-ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
-ktor-client-contentNegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
-ktor-serialization-kotlinxJson = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
-androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "androidx-credentials" }
-androidx-credentials-playServicesAuth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "androidx-credentials" }
-googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
-androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "androidx-security-crypto" }
 haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 haze-materials = { module = "dev.chrisbanes.haze:haze-materials", version.ref = "haze" }
 
@@ -59,4 +47,3 @@ androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library",
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

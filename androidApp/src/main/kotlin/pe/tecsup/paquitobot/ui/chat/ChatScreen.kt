@@ -13,7 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,6 +29,7 @@ import pe.tecsup.paquitobot.ui.components.MessageStatus
 import pe.tecsup.paquitobot.ui.components.SuggestionChip
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
+import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
 
 /**
  * Pantalla completa del chat con Paquito, fiel al frame Figma `438:662`.
@@ -52,17 +56,13 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  * estado de conexion se comunica como un mensaje mas en el flujo via
  * `MessageRole.System` (ver `Message.kt`).
  *
- * Iteracion 2026-08-11 (backend real): la pantalla dejo de manejar su
+ * La pantalla dejo de manejar su
  * propia lista de mensajes con `remember` - ahora recibe [uiState] +
  * [onSendMessage] desde [ChatViewModel] (MVVM, stateless composable).
  * Las sugerencias tambien pasan por [onSendMessage] en vez de mutar
  * estado local directamente, para que toda pregunta (escrita o por chip)
- * pase por el mismo camino hacia el backend.
- *
- * Iteracion 2026-08-13 (gates a nivel app): el login con Google y la
- * conexion con Canvas ahora bloquean TODA la app desde `MainActivity`
- * (`AuthGateScreen` / `CanvasConnectScreen`), antes de que esta pantalla
- * siquiera se muestre - ya no maneja `isAuthenticated` ni gate propio.
+ * pase por el mismo repositorio mock. Clerk controla el acceso desde
+ * `MainActivity`; esta pantalla solo presenta la conversación.
  */
 @Composable
 fun ChatScreen(
@@ -74,6 +74,9 @@ fun ChatScreen(
 ) {
     val messages = uiState.messages
     val scrollState = rememberScrollState()
+    LaunchedEffect(messages.size, uiState.isSending) {
+        scrollState.animateScrollTo(scrollState.maxValue)
+    }
 
     Box(modifier = modifier.fillMaxSize().background(PaquitoColors.Background)) {
         // Iteracion 2026-08-06 (feedback "muy separado del teclado"): el
@@ -108,6 +111,16 @@ fun ChatScreen(
                 messages.forEach { msg ->
                     Message(message = msg)
                 }
+                if (uiState.isSending) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        CircularProgressIndicator()
+                        Text(
+                            text = "Paquito está pensando…",
+                            style = PaquitoTypography.BodySmall,
+                            color = PaquitoColors.TextHomeMuted,
+                        )
+                    }
+                }
             }
 
             // Chips de sugerencia (scrollable horizontal).
@@ -131,6 +144,7 @@ fun ChatScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 12.dp),
+                enabled = !uiState.isSending,
                 onSend = onSendMessage,
             )
         }
@@ -138,9 +152,7 @@ fun ChatScreen(
 }
 
 /**
- * Prompts alineados al tool `get_user_courses_current_term` del backend
- * (ciclo TECSUP: ago-dic = periodo 2). No hay REST de cursos; el chip
- * dispara el mismo `POST /query` que una pregunta escrita.
+ * Los chips envían preguntas al mismo repositorio MiniMax que el campo de texto.
  */
 private val ChatSuggestionPrompts = listOf(
     "Que cursos tengo este ciclo?",
