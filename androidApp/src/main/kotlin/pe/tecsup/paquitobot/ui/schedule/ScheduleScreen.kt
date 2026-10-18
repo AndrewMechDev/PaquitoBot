@@ -186,32 +186,32 @@ data class ScheduleScreenData(
 ) {
     companion object {
         fun default(): ScheduleScreenData = ScheduleScreenData(
-            weekLabel = "Semana 10 · 3 al 9 ago",
+            weekLabel = "Semana de muestra · 2 al 8 nov",
             pendingCount = 3,
             days = listOf(
                 ScheduleDay(
-                    label = "Lunes 3",
+                    label = "Lunes 2",
                     events = listOf(
                         ScheduleEvent("08:00", "Calculo II", "Aula 302", ScheduleKind.Clase),
                         ScheduleEvent("23:59", "Lab 4 — Calculo II", "Aula virtual", ScheduleKind.Entrega),
                     ),
                 ),
                 ScheduleDay(
-                    label = "Martes 4",
+                    label = "Martes 3",
                     events = listOf(
                         ScheduleEvent("10:00", "Fisica I", "Lab B", ScheduleKind.Clase),
                         ScheduleEvent("10:00", "Fisica I", "No marcaste asistencia", ScheduleKind.Falta),
                     ),
                 ),
                 ScheduleDay(
-                    label = "Jueves 6",
+                    label = "Jueves 5",
                     events = listOf(
                         ScheduleEvent("14:00", "Algoritmos", "Aula 110", ScheduleKind.Clase),
                         ScheduleEvent("23:59", "Practica 3 — Fisica I", "Correo del docente", ScheduleKind.Entrega),
                     ),
                 ),
                 ScheduleDay(
-                    label = "Viernes 7",
+                    label = "Viernes 6",
                     events = listOf(
                         ScheduleEvent("18:00", "Foro 2 — Algoritmos", "Aula virtual", ScheduleKind.Entrega),
                     ),

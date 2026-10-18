@@ -765,19 +765,19 @@ data class HomeScreenData(
     companion object {
         fun default(): HomeScreenData = HomeScreenData(
             greeting = "¡Bienvenido, estudiante!",
-            dateLabel = "Lunes, 3 de agosto de 2026",
+            dateLabel = "Lunes, 2 de noviembre de 2026",
             weekTitle = "Semana 10",
             days = listOf(
-                WeekDayData("Lunes",     "03", "03/08/26", isToday = true,  isCritical = false, dateKey = "2026-08-03"),
-                WeekDayData("Martes",    "04", "04/08/26", isToday = false, isCritical = false, dateKey = "2026-08-04"),
-                WeekDayData("Miercoles", "05", "05/08/26", isToday = false, isCritical = false, dateKey = "2026-08-05"),
-                WeekDayData("Jueves",    "06", "06/08/26", isToday = false, isCritical = false, dateKey = "2026-08-06"),
-                WeekDayData("Viernes",   "07", "07/08/26", isToday = false, isCritical = false, dateKey = "2026-08-07"),
-                WeekDayData("Sabado",    "08", "08/08/26", isToday = false, isCritical = true, dateKey = "2026-08-08"),
-                WeekDayData("Domingo",   "09", "09/08/26", isToday = false, isCritical = false, dateKey = "2026-08-09"),
+                WeekDayData("Lunes", "02", "02/11/26", isToday = true,  isCritical = false, dateKey = "2026-11-02"),
+                WeekDayData("Martes", "03", "03/11/26", isToday = false, isCritical = false, dateKey = "2026-11-03"),
+                WeekDayData("Miercoles", "04", "04/11/26", isToday = false, isCritical = false, dateKey = "2026-11-04"),
+                WeekDayData("Jueves", "05", "05/11/26", isToday = false, isCritical = false, dateKey = "2026-11-05"),
+                WeekDayData("Viernes", "06", "06/11/26", isToday = false, isCritical = false, dateKey = "2026-11-06"),
+                WeekDayData("Sabado", "07", "07/11/26", isToday = false, isCritical = true, dateKey = "2026-11-07"),
+                WeekDayData("Domingo", "08", "08/11/26", isToday = false, isCritical = false, dateKey = "2026-11-08"),
             ),
             tasksHeader = "Tareas Pendientes",
-            // Domingo (09) queda a proposito sin ninguna tarea, para probar
+            // Domingo (08) queda a proposito sin ninguna tarea, para probar
             // el estado vacio "No hay tareas pendientes".
             tasks = listOf(
                 TaskEntry(
@@ -786,7 +786,7 @@ data class HomeScreenData(
                     timestamp = "12 h",
                     urgency = TaskUrgency.Urgent,
                     iconRes = R.drawable.ic_paquito_lab_profile,
-                    dateKey = "2026-08-03",
+                    dateKey = "2026-11-02",
                 ),
                 TaskEntry(
                     label = "Algoritmos · foro",
@@ -794,7 +794,7 @@ data class HomeScreenData(
                     timestamp = "2 d",
                     urgency = TaskUrgency.Urgent,
                     iconRes = R.drawable.ic_paquito_docs_default,
-                    dateKey = "2026-08-05",
+                    dateKey = "2026-11-04",
                 ),
                 TaskEntry(
                     label = "Fisica I · practica",
@@ -802,7 +802,7 @@ data class HomeScreenData(
                     timestamp = "3 d",
                     urgency = TaskUrgency.Normal,
                     iconRes = R.drawable.ic_paquito_docs_default,
-                    dateKey = "2026-08-06",
+                    dateKey = "2026-11-05",
                 ),
                 TaskEntry(
                     label = "Calculo II · practica",
@@ -810,7 +810,7 @@ data class HomeScreenData(
                     timestamp = "7 d",
                     urgency = TaskUrgency.Future,
                     iconRes = R.drawable.ic_paquito_docs_default,
-                    dateKey = "2026-08-08",
+                    dateKey = "2026-11-07",
                 ),
             ),
             pendingCount = 4,

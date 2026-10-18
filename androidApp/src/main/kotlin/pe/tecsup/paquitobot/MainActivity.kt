@@ -83,15 +83,6 @@ private enum class RootScreen { Tabs, Chat, CourseDetail, Notifications, Events,
 
 private enum class OnboardingStep { Welcome, Notifications, Tour }
 
-/**
- * Fecha "de hoy" que usan las pantallas academicas. El JSON de demo
- * (`assets/academic.json`) tiene sus eventos en la semana del 2026-08-03,
- * que casi nunca coincide con la fecha del dispositivo; se fija para que la
- * demo se vea con datos vigentes. Cuando haya datos reales, cambiar por
- * `::deviceToday` (es el valor por defecto de los ViewModels academicos).
- */
-private const val DEMO_TODAY = "2026-08-03"
-
 /** [CourseCardData] no es Parcelable: se guarda como lista de primitivos para sobrevivir a la rotacion. */
 private val SelectedCourseSaver = listSaver<CourseCardData?, Any>(
     save = { course ->
@@ -253,7 +244,7 @@ private fun AppRoot() {
                     NavTab.Inicio -> {
                         val homeViewModel: AcademicHomeViewModel = viewModel(
                             factory = remember {
-                                factoryOf { AcademicHomeViewModel(academicRepository, today = { DEMO_TODAY }) }
+                                factoryOf { AcademicHomeViewModel(academicRepository) }
                             },
                         )
                         val homeData by homeViewModel.uiState.collectAsStateWithLifecycle()
@@ -275,7 +266,7 @@ private fun AppRoot() {
                     NavTab.Cursos -> {
                         val coursesViewModel: AcademicViewModel = viewModel(
                             factory = remember {
-                                factoryOf { AcademicViewModel(academicRepository, today = { DEMO_TODAY }) }
+                                factoryOf { AcademicViewModel(academicRepository) }
                             },
                         )
                         val coursesData by coursesViewModel.uiState.collectAsStateWithLifecycle()
@@ -294,7 +285,7 @@ private fun AppRoot() {
                     NavTab.Horarios -> {
                         val scheduleViewModel: AcademicScheduleViewModel = viewModel(
                             factory = remember {
-                                factoryOf { AcademicScheduleViewModel(academicRepository, today = { DEMO_TODAY }) }
+                                factoryOf { AcademicScheduleViewModel(academicRepository) }
                             },
                         )
                         val scheduleData by scheduleViewModel.uiState.collectAsStateWithLifecycle()
@@ -338,7 +329,7 @@ private fun AppRoot() {
                             key = course.id,
                             factory = remember(course.id) {
                                 factoryOf {
-                                    AcademicCourseDetailViewModel(academicRepository, course, today = { DEMO_TODAY })
+                                    AcademicCourseDetailViewModel(academicRepository, course)
                                 }
                             },
                         )

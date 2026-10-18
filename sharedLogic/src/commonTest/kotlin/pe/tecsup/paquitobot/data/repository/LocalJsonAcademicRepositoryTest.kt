@@ -188,8 +188,8 @@ class LocalJsonAcademicRepositoryTest {
         val gradedIds = repo.grades().getOrThrow().map { it.assignmentId }.toSet()
         val assignments = repo.courses().getOrThrow().flatMap { repo.courseAssignments(it.id).getOrThrow() }
 
-        // Fecha "hoy" del demo: lunes 3 de agosto de 2026 (igual que HomeScreenData.default()).
-        val today = "2026-08-03T00:00:00"
+        // Referencia fija para verificar variedad del dataset: lunes 2 de noviembre de 2026.
+        val today = "2026-11-02T00:00:00"
         assertTrue(assignments.any { it.id in gradedIds }, "falta una asignacion calificada")
         assertTrue(
             assignments.any { it.id !in gradedIds && it.dueAt != null && it.dueAt >= today },
@@ -200,11 +200,11 @@ class LocalJsonAcademicRepositoryTest {
             "falta una asignacion vencida",
         )
 
-        // Sesiones repartidas en la semana del 3 al 9 de agosto.
+        // Sesiones repartidas en la semana del 2 al 8 de noviembre.
         val sessionDays = repo.courses().getOrThrow()
             .flatMap { repo.courseClassSessions(it.id).getOrThrow() }
             .mapNotNull { it.startAt?.take(10) }
-            .filter { it in "2026-08-03".."2026-08-09" }
+            .filter { it in "2026-11-02".."2026-11-08" }
             .toSet()
         assertTrue(sessionDays.size >= 4, "las sesiones de la semana cubren solo ${sessionDays.size} dias")
     }

@@ -408,3 +408,10 @@ Layout horizontal (de Figma 365:896):
 - Tokens solo en memoria; consentimiento y resolución oficial de Google, renovación y revocación de acceso. Estado visible para carga, conexión, envío y errores.
 - Datos de demostración conservan sus fechas originales; las vencidas requieren mostrarse y seleccionarse expresamente. Zona académica Perú.
 - Implementación local y pruebas de lógica; OAuth real y escrituras en Google pendientes de configurar Cloud y validar en dispositivo. Configuración y alcance: `GOOGLE_CALENDAR.md`.
+
+
+### Fechas de demostración octubre/noviembre (2026-10-18)
+
+- Se desplazan entregas y sesiones de academic.json 13 semanas (+91 días), conservando IDs, días de semana, horas y relaciones de notas/asistencia. Entregas y sesiones del 5 de octubre al 11 de noviembre de 2026. Se explicita offset de Perú (-05:00).
+- Inicio, Cursos, Horarios y detalle usan su reloj de dispositivo por defecto; se elimina el anclaje artificial al 3 de agosto. Los previews y contexto mock del chat se actualizan a noviembre.
+- La siguiente sincronización manual de las mismas tareas actualiza los eventos existentes por ID estable; los eventos de Google no cambian solo por instalar el APK. Conservar la misma cuenta y actualizar tareas antes de sincronizar.
