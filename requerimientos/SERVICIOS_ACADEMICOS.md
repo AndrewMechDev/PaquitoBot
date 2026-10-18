@@ -45,3 +45,25 @@ Este avance no solicita permisos ni envía notificaciones. No incorpora aún fre
 6. Cambiar la vista de la bandeja y verificar que se conserva al cerrar preferencias.
 
 Las instalaciones y pruebas conectadas permanecen pospuestas por indicación del usuario. No se introducen servicios de notificaciones ni nuevas dependencias para esta edición.
+
+## Reglas y permiso de notificaciones
+
+Reglas iniciales aceptadas por el usuario: recordar entregas 24 horas antes y resumen diario a las 08:00, según la zona horaria del dispositivo.
+
+- Configuración en onboarding y edición: anticipación de 1, 6, 12, 24 o 48 horas; activar/desactivar el resumen y elegir su hora/minuto.
+- `NotificationSchedule` vive en dominio compartido. Categorías y horario se guardan juntos mediante `NotificationPreferencesStore`; el borrador se descarta al cancelar o pulsar Atrás.
+- Instalaciones anteriores sin horario guardado reciben los valores 24 horas / 08:00. Valores numéricos fuera de rango se sustituyen por los predeterminados.
+- `NotificationPermissionSection` informa si Android permite notificaciones. Solicita permiso en Android 13+ únicamente al pulsar el botón, permite abrir ajustes y actualiza el estado al regresar.
+- La autorización de Android es independiente del borrador: cancelar no revoca un permiso que ya se concedió. Rechazarlo no impide guardar las preferencias.
+- Todas las categorías desactivadas deben impedir tanto recordatorios como resumen en el futuro programador.
+- No se garantiza ejecución al minuto: la estrategia de trabajo en segundo plano debe respetar las restricciones del sistema.
+
+### Dependencias de datos y siguiente avance
+
+La API ofrece fechas de entrega, notas, sesiones de clase y asistencias. No expone un tipo de asignación que identifique laboratorios ni un estado explícito de entrega del estudiante. No se deben clasificar laboratorios por palabras del título ni asumir que no tener nota equivale a no haber entregado. Las reglas específicas de laboratorio y asistencia requieren un contrato de datos/regla de negocio antes de implementarse.
+
+El siguiente avance es implementar el programador de recordatorios y resumen, con reprogramación al cambiar ajustes/datos y prevención de duplicados. Este commit todavía no publica notificaciones.
+
+### Verificación
+
+Compilación de la app y del APK de pruebas. Pruebas instrumentadas adicionales preparadas para migración de preferencias anteriores, persistencia de horario y recuperación de valores fuera de rango. Su ejecución, el permiso concedido/rechazado y el retorno desde ajustes quedan pendientes de prueba final en dispositivo por indicación del usuario.

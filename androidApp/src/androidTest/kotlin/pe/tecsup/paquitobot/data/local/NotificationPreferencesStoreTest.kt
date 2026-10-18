@@ -8,6 +8,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import pe.tecsup.paquitobot.domain.notifications.NotificationCategory
+import pe.tecsup.paquitobot.domain.notifications.NotificationSchedule
 
 @RunWith(AndroidJUnit4::class)
 class NotificationPreferencesStoreTest {
@@ -45,5 +46,33 @@ class NotificationPreferencesStoreTest {
         context.getSharedPreferences("paquitobot_notification_preferences", Context.MODE_PRIVATE)
             .edit().putStringSet("enabled_categories", setOf("attendance", "unknown_future_category")).commit()
         assertEquals(setOf(NotificationCategory.Attendance), NotificationPreferencesStore(context).enabledCategories())
+    }
+
+    @Test
+    fun oldCategorySelectionUsesDefaultSchedule() {
+        context.getSharedPreferences("paquitobot_notification_preferences", Context.MODE_PRIVATE)
+            .edit().putStringSet("enabled_categories", setOf("deadlines")).commit()
+        val store = NotificationPreferencesStore(context)
+        assertEquals(setOf(NotificationCategory.Deadlines), store.enabledCategories())
+        assertEquals(NotificationSchedule(), store.schedule())
+    }
+
+    @Test
+    fun scheduleSurvivesRecreationAndCategoryOnlyUpdates() {
+        val schedule = NotificationSchedule(reminderHours = 6, dailySummaryEnabled = false, summaryHour = 19, summaryMinute = 30)
+        NotificationPreferencesStore(context).savePreferences(setOf(NotificationCategory.Deadlines), schedule)
+        val recreated = NotificationPreferencesStore(context)
+        assertEquals(schedule, recreated.schedule())
+        assertEquals(setOf(NotificationCategory.Deadlines), recreated.enabledCategories())
+        recreated.saveEnabledCategories(emptySet())
+        assertEquals(schedule, NotificationPreferencesStore(context).schedule())
+        assertEquals(emptySet<NotificationCategory>(), NotificationPreferencesStore(context).enabledCategories())
+    }
+
+    @Test
+    fun invalidStoredTimesFallBackToDefaults() {
+        context.getSharedPreferences("paquitobot_notification_preferences", Context.MODE_PRIVATE)
+            .edit().putInt("reminder_hours", -1).putInt("summary_hour", 99).putInt("summary_minute", -2).commit()
+        assertEquals(NotificationSchedule(), NotificationPreferencesStore(context).schedule())
     }
 }

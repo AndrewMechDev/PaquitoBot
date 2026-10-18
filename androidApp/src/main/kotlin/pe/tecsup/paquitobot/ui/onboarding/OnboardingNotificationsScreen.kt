@@ -28,6 +28,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import pe.tecsup.paquitobot.domain.notifications.NotificationCategory
+import pe.tecsup.paquitobot.domain.notifications.NotificationSchedule
+import pe.tecsup.paquitobot.ui.notifications.NotificationScheduleOptions
 import pe.tecsup.paquitobot.ui.components.NotificationCard
 import pe.tecsup.paquitobot.ui.components.NotificationCardVariant
 import pe.tecsup.paquitobot.ui.components.NotificationType
@@ -49,9 +51,11 @@ fun OnboardingNotificationsScreen(
     initialEnabled: Set<NotificationType> = NotificationType.entries.filterTo(mutableSetOf()) {
         it.category in NotificationCategory.defaults
     },
-    onContinue: (Set<NotificationType>) -> Unit = {},
+    onContinue: (Set<NotificationType>, NotificationSchedule) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
     onCancel: (() -> Unit)? = null,
+    initialSchedule: NotificationSchedule = NotificationSchedule(),
+    permissionContent: @Composable () -> Unit = {},
 ) {
     var variant by rememberSaveable { mutableStateOf(NotificationCardVariant.Compact) }
     var enabled by rememberSaveable(
@@ -60,6 +64,12 @@ fun OnboardingNotificationsScreen(
             restore = { saved -> NotificationType.entries.filterTo(mutableSetOf()) { it.category.storageKey in saved } },
         ),
     ) { mutableStateOf(initialEnabled.toSet()) }
+    var schedule by rememberSaveable(
+        stateSaver = Saver<NotificationSchedule, ArrayList<Int>>(
+            save = { ArrayList(listOf(it.reminderHours, if (it.dailySummaryEnabled) 1 else 0, it.summaryHour, it.summaryMinute)) },
+            restore = { NotificationSchedule(it[0], it[1] != 0, it[2], it[3]) },
+        ),
+    ) { mutableStateOf(initialSchedule) }
 
     Column(
         modifier = modifier
@@ -103,11 +113,13 @@ fun OnboardingNotificationsScreen(
                     onToggle = { type -> toggleNotification(enabled, type) { enabled = it } },
                 )
             }
+            NotificationScheduleOptions(schedule = schedule, onChange = { schedule = it })
+            permissionContent()
         }
 
         PaquitoPrimaryButton(
             text = if (onCancel == null) "Continuar" else "Guardar cambios",
-            onClick = { onContinue(enabled) },
+            onClick = { onContinue(enabled, schedule) },
             modifier = Modifier.padding(top = 16.dp),
         )
         if (onCancel != null) {

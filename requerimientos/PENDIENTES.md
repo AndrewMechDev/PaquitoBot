@@ -13,7 +13,7 @@
 
 ## Funcionalidad que todavía es maqueta
 
-- [ ] **Notificaciones no son funcionales.** Los toggles del onboarding (`OnboardingNotificationsScreen`) solo cambian estado local y `MainActivity` descarta el resultado (`onContinue = { _ -> ... }`). No se persiste, no hay OneSignal ni permiso `POST_NOTIFICATIONS`, y la bandeja (`NotificationsInboxScreen`) muestra datos de ejemplo. Falta: guardar preferencias, integrar el servicio de push y conectar la bandeja a datos reales.
+- [ ] **Programación y entrega de notificaciones pendientes.** Ya se persisten categorías y horarios, existe edición desde la bandeja y gestión explícita de `POST_NOTIFICATIONS`. Falta implementar el programador, la actualización/cancelación de avisos y conectar la bandeja a datos reales. Ver `SERVICIOS_ACADEMICOS.md`; pruebas conectadas pospuestas por el usuario.
 - [ ] **Login con Google en debug muestra "cancelaste el inicio de sesión"** (2026-10-06). Hipótesis: el package debug (`pe.tecsup.paquitobot.debug`) no está registrado como cliente OAuth Android. `GoogleAuthClient` ahora loguea el error original con el tag `GoogleAuth` (`adb logcat -s GoogleAuth`) para confirmar la causa real.
 
 ## Hallazgos de revisión de código sin arreglar (2026-10-06)

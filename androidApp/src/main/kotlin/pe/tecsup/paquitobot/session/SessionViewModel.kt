@@ -17,6 +17,7 @@ import pe.tecsup.paquitobot.data.repository.createDefaultCanvasRepository
 import pe.tecsup.paquitobot.domain.auth.AuthRepository
 import pe.tecsup.paquitobot.domain.canvas.CanvasRepository
 import pe.tecsup.paquitobot.domain.notifications.NotificationCategory
+import pe.tecsup.paquitobot.domain.notifications.NotificationSchedule
 
 /**
  * Estado de sesion a nivel de toda la app: dos gates secuenciales antes de
@@ -30,6 +31,7 @@ data class SessionUiState(
     val isCanvasConnected: Boolean = false,
     val userFirstName: String? = null,
     val enabledNotifications: Set<NotificationCategory> = NotificationCategory.defaults,
+    val notificationSchedule: NotificationSchedule = NotificationSchedule(),
 )
 
 class SessionViewModel(
@@ -46,6 +48,7 @@ class SessionViewModel(
             isCanvasConnected = tokenStore.hasCanvasConnected(),
             userFirstName = tokenStore.displayFirstName(),
             enabledNotifications = notificationPreferences.enabledCategories(),
+            notificationSchedule = notificationPreferences.schedule(),
         ),
     )
     val uiState: StateFlow<SessionUiState> = _uiState.asStateFlow()
@@ -115,9 +118,9 @@ class SessionViewModel(
         _uiState.update { it.copy(isOnboardingComplete = true) }
     }
 
-    fun saveNotificationPreferences(categories: Set<NotificationCategory>) {
-        notificationPreferences.saveEnabledCategories(categories)
-        _uiState.update { it.copy(enabledNotifications = categories.toSet()) }
+    fun saveNotificationPreferences(categories: Set<NotificationCategory>, schedule: NotificationSchedule) {
+        notificationPreferences.savePreferences(categories, schedule)
+        _uiState.update { it.copy(enabledNotifications = categories.toSet(), notificationSchedule = schedule) }
     }
 
     fun markCanvasConnected() {

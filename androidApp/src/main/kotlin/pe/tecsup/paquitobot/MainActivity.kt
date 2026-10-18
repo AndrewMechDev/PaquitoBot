@@ -49,6 +49,7 @@ import pe.tecsup.paquitobot.ui.courses.CoursesScreenData
 import pe.tecsup.paquitobot.ui.home.HomeScreen
 import pe.tecsup.paquitobot.ui.home.HomeScreenData
 import pe.tecsup.paquitobot.ui.notifications.NotificationsInboxScreen
+import pe.tecsup.paquitobot.ui.notifications.NotificationPermissionSection
 import pe.tecsup.paquitobot.ui.onboarding.OnboardingNotificationsScreen
 import pe.tecsup.paquitobot.ui.onboarding.OnboardingTourScreen
 import pe.tecsup.paquitobot.ui.onboarding.WelcomeScreen
@@ -169,8 +170,10 @@ private fun AppRoot() {
                 initialEnabled = NotificationType.entries.filterTo(mutableSetOf()) {
                     it.category in sessionUiState.enabledNotifications
                 },
-                onContinue = { enabled ->
-                    sessionViewModel.saveNotificationPreferences(enabled.map { it.category }.toSet())
+                initialSchedule = sessionUiState.notificationSchedule,
+                permissionContent = { NotificationPermissionSection() },
+                onContinue = { enabled, schedule ->
+                    sessionViewModel.saveNotificationPreferences(enabled.map { it.category }.toSet(), schedule)
                     onboardingStep = OnboardingStep.Tour
                 },
             )
@@ -410,8 +413,10 @@ private fun AppRoot() {
                                     initialEnabled = NotificationType.entries.filterTo(mutableSetOf()) {
                                         it.category in sessionUiState.enabledNotifications
                                     },
-                                    onContinue = { enabled ->
-                                        sessionViewModel.saveNotificationPreferences(enabled.map { it.category }.toSet())
+                                    initialSchedule = sessionUiState.notificationSchedule,
+                                    permissionContent = { NotificationPermissionSection() },
+                                    onContinue = { enabled, schedule ->
+                                        sessionViewModel.saveNotificationPreferences(enabled.map { it.category }.toSet(), schedule)
                                         preferencesOpen = false
                                     },
                                     onCancel = { preferencesOpen = false },
