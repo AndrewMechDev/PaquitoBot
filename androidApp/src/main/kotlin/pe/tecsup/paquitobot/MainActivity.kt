@@ -254,15 +254,20 @@ private fun AppRoot() {
                             data = homeData.copy(greeting = "¡Bienvenido, $userFirstName!"),
                             onNotificationsClick = { rootScreen = RootScreen.Notifications },
                             onEventsClick = { rootScreen = RootScreen.Events },
-                            onProceduresClick = { rootScreen = RootScreen.Procedures },
-                            onEnrollmentClick = { rootScreen = RootScreen.Enrollment },
-                            onSignOutClick = sessionViewModel::signOut,
-                            isSigningOut = sessionUiState.isSigningOut,
-                            signOutError = sessionUiState.signOutError,
                             errorMessage = homeError,
                             onRetry = homeViewModel::load,
                         )
                     }
+                    NavTab.Perfil -> pe.tecsup.paquitobot.ui.profile.ProfileTabContent(
+                        name = sessionUiState.userFullName ?: "Estudiante",
+                        email = sessionUiState.userEmail.orEmpty(),
+                        isSigningOut = sessionUiState.isSigningOut,
+                        signOutError = sessionUiState.signOutError,
+                        onProceduresClick = { rootScreen = RootScreen.Procedures },
+                        onEnrollmentClick = { rootScreen = RootScreen.Enrollment },
+                        onNotificationsClick = { rootScreen = RootScreen.Notifications },
+                        onSignOutClick = sessionViewModel::signOut,
+                    )
                     NavTab.Cursos -> {
                         val coursesViewModel: AcademicViewModel = viewModel(
                             factory = remember {

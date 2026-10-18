@@ -20,8 +20,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,7 +37,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import pe.tecsup.paquitobot.ui.procedures.ProcedureEntryCard
 import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.ui.components.AcademicErrorBanner
 import pe.tecsup.paquitobot.ui.components.AppTabScaffold
@@ -90,13 +87,8 @@ fun HomeScreen(
     onPaquitoClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
     onEventsClick: () -> Unit = {},
-    onSignOutClick: () -> Unit = {},
-    isSigningOut: Boolean = false,
-    signOutError: String? = null,
     errorMessage: String? = null,
     onRetry: () -> Unit = {},
-    onProceduresClick: () -> Unit = {},
-    onEnrollmentClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     AppTabScaffold(
@@ -110,11 +102,6 @@ fun HomeScreen(
             data = data,
             onNotificationsClick = onNotificationsClick,
             onEventsClick = onEventsClick,
-            onProceduresClick = onProceduresClick,
-            onEnrollmentClick = onEnrollmentClick,
-            onSignOutClick = onSignOutClick,
-            isSigningOut = isSigningOut,
-            signOutError = signOutError,
             errorMessage = errorMessage,
             onRetry = onRetry,
         )
@@ -127,13 +114,8 @@ fun HomeTabContent(
     data: HomeScreenData,
     onNotificationsClick: () -> Unit,
     onEventsClick: () -> Unit,
-    onSignOutClick: () -> Unit,
-    isSigningOut: Boolean,
-    signOutError: String?,
     errorMessage: String?,
     onRetry: () -> Unit,
-    onProceduresClick: () -> Unit = {},
-    onEnrollmentClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var selectedDayNumber by remember(data) { mutableStateOf<String?>(null) }
@@ -155,10 +137,8 @@ fun HomeTabContent(
             dateLabel = data.dateLabel,
             unreadNotificationsCount = data.unreadNotificationsCount,
             onNotificationsClick = onNotificationsClick,
-            onSignOutClick = onSignOutClick,
-            isSigningOut = isSigningOut,
-            signOutError = signOutError,
         )
+        Text("Datos académicos de demostración", style = PaquitoTypography.Caption, color = PaquitoColors.StateInfoStrong)
         PainSnapshotRow(
             overallRanking = data.overallRanking,
             careerCode = data.careerCode,
@@ -173,8 +153,6 @@ fun HomeTabContent(
                 }
             },
         )
-        ProcedureEntryCard(onClick = onProceduresClick)
-        ProcedureEntryCard(onClick = onEnrollmentClick, title = "Guía de matrícula", subtitle = "Ingresantes y estudiantes · paso a paso")
         HomeHighlights(
             importantNotices = data.importantNotices,
             importantNoticeCount = data.importantNoticeCount,
@@ -397,9 +375,6 @@ private fun HomeMessage(
     dateLabel: String,
     unreadNotificationsCount: Int,
     onNotificationsClick: () -> Unit,
-    onSignOutClick: () -> Unit,
-    isSigningOut: Boolean,
-    signOutError: String?,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(
@@ -411,19 +386,7 @@ private fun HomeMessage(
                 unreadCount = unreadNotificationsCount,
                 onClick = onNotificationsClick,
             )
-            Button(
-                onClick = onSignOutClick,
-                enabled = !isSigningOut,
-                colors = ButtonDefaults.buttonColors(containerColor = PaquitoColors.StateDanger),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.padding(start = 8.dp),
-            ) {
-                Text(
-                    text = if (isSigningOut) "Cerrando…" else "Cerrar sesión",
-                    style = PaquitoTypography.BodySmall,
-                    color = Color.White,
-                )
-            }
+
         }
         Text(
             text = greeting,
@@ -437,13 +400,7 @@ private fun HomeMessage(
             style = PaquitoTypography.HeadlineSmall,
             color = PaquitoColors.TextHomeMuted,
         )
-        if (signOutError != null) {
-            Text(
-                text = signOutError,
-                style = PaquitoTypography.BodySmall,
-                color = PaquitoColors.StateDanger,
-            )
-        }
+
     }
 }
 

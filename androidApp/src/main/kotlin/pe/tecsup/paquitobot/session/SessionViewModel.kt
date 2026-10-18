@@ -28,6 +28,8 @@ data class SessionUiState(
     val isAuthenticated: Boolean = false,
     val isUnauthorizedSession: Boolean = false,
     val userFirstName: String? = null,
+    val userFullName: String? = null,
+    val userEmail: String? = null,
     val sessionRevision: Int = 0,
     val isSigningOut: Boolean = false,
     val signOutError: String? = null,
@@ -57,6 +59,8 @@ class SessionViewModel(
                     isUnauthorizedSession = user != null && !user.hasVerifiedTecsupEmail(),
                     isOnboardingComplete = if (user == null && it.isAuthenticated) false else it.isOnboardingComplete,
                     userFirstName = user?.firstName?.takeIf { name -> isAuthorized && name.isNotBlank() },
+                    userFullName = if (isAuthorized) listOfNotNull(user?.firstName, user?.lastName).filter { name -> name.isNotBlank() }.joinToString(" ").ifBlank { "Estudiante" } else null,
+                    userEmail = if (isAuthorized) user?.emailAddresses?.firstOrNull { address -> address.id == user.primaryEmailAddressId }?.emailAddress else null,
                     sessionRevision = if (it.isAuthenticated && !isAuthorized) it.sessionRevision + 1 else it.sessionRevision,
                     isSigningOut = if (user == null) false else it.isSigningOut,
                 )
@@ -89,6 +93,8 @@ class SessionViewModel(
                             isUnauthorizedSession = false,
                             isOnboardingComplete = false,
                             userFirstName = null,
+                            userFullName = null,
+                            userEmail = null,
                             sessionRevision = if (it.isAuthenticated) it.sessionRevision + 1 else it.sessionRevision,
                             isSigningOut = false,
                         )

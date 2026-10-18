@@ -415,3 +415,13 @@ Layout horizontal (de Figma 365:896):
 - Se desplazan entregas y sesiones de academic.json 13 semanas (+91 días), conservando IDs, días de semana, horas y relaciones de notas/asistencia. Entregas y sesiones del 5 de octubre al 11 de noviembre de 2026. Se explicita offset de Perú (-05:00).
 - Inicio, Cursos, Horarios y detalle usan su reloj de dispositivo por defecto; se elimina el anclaje artificial al 3 de agosto. Los previews y contexto mock del chat se actualizan a noviembre.
 - La siguiente sincronización manual de las mismas tareas actualiza los eventos existentes por ID estable; los eventos de Google no cambian solo por instalar el APK. Conservar la misma cuenta y actualizar tareas antes de sincronizar.
+
+
+## Perfil y servicios al estudiante · 18/10/2026
+
+- Nueva pestaña **Perfil** en la barra existente: Inicio, Cursos, Horarios, Perfil y acceso a Paquito. Áreas táctiles de 52dp y tipografía DM Sans; ancho total 318dp con márgenes. El contenido vuelve arriba al cambiar de pestaña.
+- `ui/profile/ProfileScreen.kt`: estado de identidad recibido desde `SessionUiState` y eventos de navegación/cierre. Nombre y correo principal provienen de la sesión autorizada de Clerk; las iniciales se calculan localmente. No se muestra el perfil del JSON como identidad de la cuenta conectada.
+- Secretaría y matrícula se trasladan de Inicio a **Perfil → Servicios al estudiante**. Regresar de las guías conserva Perfil como destino. Mis notificaciones mantiene acceso a preferencias.
+- Cerrar sesión se traslada de Inicio a Perfil, con confirmación, estado de progreso y error reintentable. Se reutiliza `SessionViewModel.signOut`; no se añade un segundo proveedor de autenticación.
+- Se reutilizan `ProcedureEntryCard`, superficies, colores y tipografía existentes. Perfil no añade scroll anidado: lo proporciona `AppTabScaffold`.
+- **Decisión del usuario:** cursos, notas, tareas y horarios continúan siendo datos locales de demostración hasta nuevo aviso. Inicio y Perfil lo indican; el título de los avisos del sistema incorpora «Demo».
