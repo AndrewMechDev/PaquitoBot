@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import pe.tecsup.paquitobot.auth.CanvasMockKeyStore
 import pe.tecsup.paquitobot.auth.GoogleAuthClient
 import pe.tecsup.paquitobot.auth.SecureTokenStore
+import pe.tecsup.paquitobot.data.local.NotificationPreferencesStore
 import pe.tecsup.paquitobot.session.SessionViewModel
 import pe.tecsup.paquitobot.ui.academic.AcademicConnectScreen
 import pe.tecsup.paquitobot.ui.academic.AcademicConnectViewModel
@@ -37,6 +38,7 @@ import pe.tecsup.paquitobot.ui.auth.AuthGateScreen
 import pe.tecsup.paquitobot.ui.chat.ChatScreen
 import pe.tecsup.paquitobot.ui.chat.ChatViewModel
 import pe.tecsup.paquitobot.ui.components.NavTab
+import pe.tecsup.paquitobot.ui.components.NotificationType
 import pe.tecsup.paquitobot.ui.courses.CourseCardData
 import pe.tecsup.paquitobot.ui.courses.CourseDetailData
 import pe.tecsup.paquitobot.ui.courses.CourseDetailScreen
@@ -132,6 +134,7 @@ private fun AppRoot() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val tokenStore = remember { SecureTokenStore(context.applicationContext) }
+    val notificationPreferences = remember { NotificationPreferencesStore(context.applicationContext) }
     val canvasMockKeyStore = remember { CanvasMockKeyStore(context.applicationContext) }
     var academicGatePassed by remember {
         mutableStateOf(canvasMockKeyStore.hasApiKey() || canvasMockKeyStore.isSkipped())
@@ -146,7 +149,9 @@ private fun AppRoot() {
     val sessionViewModel: SessionViewModel = viewModel(
         factory = remember {
             viewModelFactory {
-                initializer { SessionViewModel(tokenStore = tokenStore) }
+                initializer {
+                    SessionViewModel(tokenStore = tokenStore, notificationPreferences = notificationPreferences)
+                }
             }
         },
     )
@@ -159,7 +164,13 @@ private fun AppRoot() {
                 onContinueClick = { onboardingStep = OnboardingStep.Notifications },
             )
             OnboardingStep.Notifications -> OnboardingNotificationsScreen(
-                onContinue = { _ -> onboardingStep = OnboardingStep.Tour },
+                initialEnabled = NotificationType.entries.filterTo(mutableSetOf()) {
+                    it.category in sessionUiState.enabledNotifications
+                },
+                onContinue = { enabled ->
+                    sessionViewModel.saveNotificationPreferences(enabled.map { it.category }.toSet())
+                    onboardingStep = OnboardingStep.Tour
+                },
             )
             OnboardingStep.Tour -> OnboardingTourScreen(
                 onContinue = { sessionViewModel.completeOnboarding() },

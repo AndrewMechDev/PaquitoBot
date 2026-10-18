@@ -10,11 +10,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pe.tecsup.paquitobot.auth.GoogleSignInFailure
 import pe.tecsup.paquitobot.auth.SecureTokenStore
+import pe.tecsup.paquitobot.data.local.NotificationPreferencesStore
 import pe.tecsup.paquitobot.data.remote.PaquitoBotApiError
 import pe.tecsup.paquitobot.data.repository.createDefaultAuthRepository
 import pe.tecsup.paquitobot.data.repository.createDefaultCanvasRepository
 import pe.tecsup.paquitobot.domain.auth.AuthRepository
 import pe.tecsup.paquitobot.domain.canvas.CanvasRepository
+import pe.tecsup.paquitobot.domain.notifications.NotificationCategory
 
 /**
  * Estado de sesion a nivel de toda la app: dos gates secuenciales antes de
@@ -27,10 +29,12 @@ data class SessionUiState(
     val authError: String? = null,
     val isCanvasConnected: Boolean = false,
     val userFirstName: String? = null,
+    val enabledNotifications: Set<NotificationCategory> = NotificationCategory.defaults,
 )
 
 class SessionViewModel(
     private val tokenStore: SecureTokenStore,
+    private val notificationPreferences: NotificationPreferencesStore,
     private val authRepository: AuthRepository = createDefaultAuthRepository(),
     private val canvasRepository: CanvasRepository = createDefaultCanvasRepository(tokenStore),
 ) : ViewModel() {
@@ -41,6 +45,7 @@ class SessionViewModel(
             isAuthenticated = tokenStore.hasValidSession(),
             isCanvasConnected = tokenStore.hasCanvasConnected(),
             userFirstName = tokenStore.displayFirstName(),
+            enabledNotifications = notificationPreferences.enabledCategories(),
         ),
     )
     val uiState: StateFlow<SessionUiState> = _uiState.asStateFlow()
@@ -108,6 +113,11 @@ class SessionViewModel(
     fun completeOnboarding() {
         tokenStore.markOnboardingComplete()
         _uiState.update { it.copy(isOnboardingComplete = true) }
+    }
+
+    fun saveNotificationPreferences(categories: Set<NotificationCategory>) {
+        notificationPreferences.saveEnabledCategories(categories)
+        _uiState.update { it.copy(enabledNotifications = categories.toSet()) }
     }
 
     fun markCanvasConnected() {

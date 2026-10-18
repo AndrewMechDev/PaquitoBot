@@ -27,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pe.tecsup.paquitobot.R
+import pe.tecsup.paquitobot.domain.notifications.NotificationCategory
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoFont
 import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
@@ -38,10 +39,10 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  *
  * Cada tipo tiene su icono y titulo asociados.
  */
-enum class NotificationType(val title: String, val iconRes: Int) {
-    Laboratorios("Laboratorios Calificados", R.drawable.ic_paquito_lab_profile),
-    Plazos("Plazos de Entrega", R.drawable.ic_paquito_calendar_fill),
-    Asistencias("Asistencias", R.drawable.ic_paquito_frame_person),
+enum class NotificationType(val title: String, val iconRes: Int, val category: NotificationCategory) {
+    Laboratorios("Laboratorios Calificados", R.drawable.ic_paquito_lab_profile, NotificationCategory.Laboratories),
+    Plazos("Plazos de Entrega", R.drawable.ic_paquito_calendar_fill, NotificationCategory.Deadlines),
+    Asistencias("Asistencias", R.drawable.ic_paquito_frame_person, NotificationCategory.Attendance),
 }
 
 /**

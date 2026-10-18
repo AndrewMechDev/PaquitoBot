@@ -18,13 +18,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import pe.tecsup.paquitobot.domain.notifications.NotificationCategory
 import pe.tecsup.paquitobot.ui.components.NotificationCard
 import pe.tecsup.paquitobot.ui.components.NotificationCardVariant
 import pe.tecsup.paquitobot.ui.components.NotificationType
@@ -43,15 +45,19 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
  */
 @Composable
 fun OnboardingNotificationsScreen(
-    initialEnabled: Set<NotificationType> = setOf(
-        NotificationType.Laboratorios,
-        NotificationType.Plazos,
-    ),
+    initialEnabled: Set<NotificationType> = NotificationType.entries.filterTo(mutableSetOf()) {
+        it.category in NotificationCategory.defaults
+    },
     onContinue: (Set<NotificationType>) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var variant by remember { mutableStateOf(NotificationCardVariant.Compact) }
-    var enabled by remember { mutableStateOf(initialEnabled) }
+    var variant by rememberSaveable { mutableStateOf(NotificationCardVariant.Compact) }
+    var enabled by rememberSaveable(
+        stateSaver = Saver<Set<NotificationType>, ArrayList<String>>(
+            save = { selected -> ArrayList(selected.map { it.category.storageKey }) },
+            restore = { saved -> NotificationType.entries.filterTo(mutableSetOf()) { it.category.storageKey in saved } },
+        ),
+    ) { mutableStateOf(initialEnabled.toSet()) }
 
     Column(
         modifier = modifier
