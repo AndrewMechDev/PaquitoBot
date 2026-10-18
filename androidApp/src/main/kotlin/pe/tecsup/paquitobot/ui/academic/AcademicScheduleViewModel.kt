@@ -12,9 +12,8 @@ import pe.tecsup.paquitobot.util.AcademicDateUtils
  * sesiones de clase, entregas (assignments con fecha) y faltas (asistencia)
  * de TODOS los cursos del estudiante en una sola linea de tiempo por dia.
  *
- * El dia de [today] se marca con `isToday`; el contador de pendientes solo
- * cuenta entregas sin nota y con fecha >= hoy (ver `pendingAssignments`),
- * aunque la linea de tiempo muestre tambien las ya pasadas.
+ * El dia de [today] se marca con `isToday`; el contador de pendientes cuenta
+ * entregas sin nota con fecha de hoy o posterior.
  */
 class AcademicScheduleViewModel(
     private val repository: AcademicRepository,

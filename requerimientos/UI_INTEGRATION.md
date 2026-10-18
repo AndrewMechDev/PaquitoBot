@@ -374,3 +374,12 @@ Layout horizontal (de Figma 365:896):
 - Los avisos leen `PaquitoBotApp.academicRepository` (JSON local), sin dependencia de Canvas ni restricción de red. La planificación utiliza la fecha real del dispositivo, aunque las pantallas académicas usen una fecha fija de demostración.
 - WorkManager actualiza el trabajo periódico existente y lo cancela al perder autorización, permisos o selección de entregas. Se conserva la protección contra duplicados por usuario.
 - No se generan avisos para fechas de demostración vencidas. La bandeja sigue mostrando datos de ejemplo; laboratorio/asistencia, guías y Calendar siguen pendientes.
+
+## Estado de la interfaz — octubre de 2026
+
+- Inicio muestra todas las entregas pendientes sin nota, un calendario semanal que filtra por fecha, próximos eventos y avisos académicos. Los eventos de muestra tienen lista y detalle con enlaces de inscripción.
+- La navegación principal conserva la barra inferior mientras cambia el contenido con desplazamiento según la dirección; las vistas secundarias usan transición de zoom. El chat oculta el teclado al desplazar mensajes.
+- Las pantallas principales, detalles, notificaciones, chat y onboarding usan tarjetas claras con borde sutil (PaquitoColors.SurfaceGlassSoft, BorderDefault, PaquitoShapes.large/card) mediante Modifier.paquitoSurface(). El estado seleccionado usa StateInfoStrong; los estados urgentes conservan sus colores semánticos.
+- La integración local valida compilación y pruebas con JDK 21 y AGP 9.1.1. La comprobación visual y el acceso real a Clerk requieren ejecutar la app.
+
+- Validación de la integración (2026-10-18): APK debug y APK de pruebas generados; pruebas unitarias Android y sharedLogic aprobadas; lint sin errores. No se instalaron APKs ni se verificó el acceso a Clerk en dispositivo. Se conservaron el asistente de avisos y la edición de preferencias junto con eventos y transiciones del nuevo diseño.

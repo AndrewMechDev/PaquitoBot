@@ -16,8 +16,7 @@ import pe.tecsup.paquitobot.util.AcademicDateUtils
  * existe. Si un curso no tiene notas cargadas todavia, se muestra "—" en vez
  * de inventar un numero.
  *
- * [today] (`yyyy-MM-dd`) decide que entregas siguen "pendientes"; por
- * defecto es la fecha del dispositivo, y se inyecta para poder fijarla.
+ * [today] (`yyyy-MM-dd`) determina que entregas sin nota siguen vigentes.
  */
 class AcademicViewModel(
     private val repository: AcademicRepository,
@@ -37,7 +36,7 @@ class AcademicViewModel(
 internal fun buildCoursesData(all: List<CourseWithRecords>, today: String): CoursesScreenData =
     CoursesScreenData(
         termLabel = courseCountLabel(all.size),
-        // Solo entregas sin nota y con fecha >= hoy (ver `pendingAssignments`).
+        // Cuenta entregas sin nota con fecha de hoy o futura.
         pendingCount = all.sumOf { pendingAssignments(it.records.assignments, it.records.grades, today).size },
         courses = all.map { buildCourseCard(it, today) },
     )

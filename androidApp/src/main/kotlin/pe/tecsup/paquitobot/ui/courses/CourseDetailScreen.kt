@@ -39,6 +39,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
+import pe.tecsup.paquitobot.ui.theme.paquitoSurface
 
 /**
  * Detalle de un curso: promedio proyectado + asistencia + practicas/labs +
@@ -71,7 +72,7 @@ fun CourseDetailScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(PaquitoColors.SurfaceHomeCanvas)
+            .background(PaquitoColors.Background)
             .systemBarsPadding()
             .padding(horizontal = PaquitoSpacing.lg)
             .padding(top = 8.dp, bottom = PaquitoSpacing.lg),
@@ -128,20 +129,19 @@ private fun GradeHero(data: CourseDetailData) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(PaquitoShapes.large)
-            .background(PaquitoColors.SurfaceHomeWeekBg)
+            .paquitoSurface(PaquitoShapes.card)
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             text = data.course.projectedGrade,
             style = PaquitoTypography.Greeting,
-            color = PaquitoColors.TextOnWhite,
+            color = PaquitoColors.StateInfoStrong,
         )
         Text(
             text = data.projectionHint,
             style = PaquitoTypography.BodySmall,
-            color = PaquitoColors.TextOnDarkMuted,
+            color = PaquitoColors.TextOnCardMuted,
         )
     }
 }
@@ -202,8 +202,7 @@ private fun AttendanceSection(used: Int, limit: Int, entries: List<AttendanceEnt
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(PaquitoShapes.large)
-            .background(PaquitoColors.SurfaceElevated)
+            .paquitoSurface()
             .animateContentSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -273,8 +272,7 @@ private fun EvaluationSection(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(PaquitoShapes.medium)
-                        .background(PaquitoColors.SurfaceHomeTaskListBg)
+                        .paquitoSurface()
                         .clickable(onClick = { onItemClick(item) })
                         .padding(horizontal = 14.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,

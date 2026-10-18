@@ -295,12 +295,12 @@ fun Navbar(
  */
 @Composable
 private fun NavTabItem(tab: NavTab, selected: Boolean, onClick: () -> Unit) {
-    val contentColor = if (selected) PaquitoColors.BrandPrimary else PaquitoColors.TextOnSurface
+    val contentColor = if (selected) PaquitoColors.StateInfoStrong else PaquitoColors.TextOnSurface
     Column(
         modifier = Modifier
             .width(72.dp)
             .clip(RoundedCornerShape(if (selected) 50 else 35))
-            .background(if (selected) PaquitoColors.BrandPrimary.copy(alpha = 0.16f) else Color.Transparent)
+            .background(if (selected) PaquitoColors.OverlayInfoSubtle else Color.Transparent)
             .clickable(onClick = onClick)
             .padding(vertical = 6.dp, horizontal = 4.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
@@ -317,7 +317,7 @@ private fun NavTabItem(tab: NavTab, selected: Boolean, onClick: () -> Unit) {
             contentDescription = tab.label,
             modifier = Modifier.size(22.dp),
             contentScale = ContentScale.Fit,
-            colorFilter = if (selected) ColorFilter.tint(PaquitoColors.BrandPrimary) else null,
+            colorFilter = if (selected) ColorFilter.tint(PaquitoColors.StateInfoStrong) else null,
         )
         Text(
             text = tab.label,

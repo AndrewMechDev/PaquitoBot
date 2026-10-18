@@ -43,9 +43,8 @@ internal data class PendingAssignment(
 
 /**
  * Entregas pendientes = sin nota Y con fecha de entrega >= [today]
- * (`yyyy-MM-dd`, la comparacion de texto ISO equivale a la de fechas).
- * Las calificadas, las vencidas y las que no tienen fecha NO cuentan.
- * Ordenadas por fecha de entrega (estable: a igual fecha, orden original).
+ * (`yyyy-MM-dd`, la comparacion ISO equivale a la de fechas).
+ * Las calificadas, vencidas y sin fecha no cuentan. Orden estable por fecha.
  */
 internal fun pendingAssignments(
     assignments: List<AcademicAssignment>,

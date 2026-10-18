@@ -215,7 +215,7 @@ private fun VariantToggle(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(50))
-            .background(PaquitoColors.SurfaceElevated)
+            .background(PaquitoColors.SurfaceGlassSoft)
             .padding(4.dp),
     ) {
         ToggleSegment(
@@ -243,7 +243,7 @@ private fun ToggleSegment(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(50))
-            .background(if (selected) PaquitoColors.BrandPrimary else PaquitoColors.SurfaceElevated)
+            .background(if (selected) PaquitoColors.StateInfoStrong else PaquitoColors.SurfaceGlassSoft)
             .clickable(onClick = onClick)
             .padding(vertical = 10.dp),
         contentAlignment = Alignment.Center,
@@ -251,7 +251,7 @@ private fun ToggleSegment(
         Text(
             text = label,
             style = PaquitoTypography.BodyMedium,
-            color = if (selected) PaquitoColors.TextOnPrimary else PaquitoColors.TextSecondary,
+            color = if (selected) PaquitoColors.TextOnWhite else PaquitoColors.TextOnCardMuted,
         )
     }
 }

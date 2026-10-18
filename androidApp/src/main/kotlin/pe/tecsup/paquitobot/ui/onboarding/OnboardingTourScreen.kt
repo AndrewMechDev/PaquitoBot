@@ -16,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,10 +23,10 @@ import androidx.compose.ui.unit.dp
 import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.ui.components.PaquitoPrimaryButton
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
-import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
+import pe.tecsup.paquitobot.ui.theme.paquitoSurface
 
 /**
  * Paso de onboarding que ata los 3 dolores a las pestañas.
@@ -100,8 +99,7 @@ private fun TourCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(PaquitoShapes.large)
-            .background(PaquitoColors.SurfaceElevated)
+            .paquitoSurface()
             .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp),
         verticalAlignment = Alignment.Top,

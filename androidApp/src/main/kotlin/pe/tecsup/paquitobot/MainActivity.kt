@@ -10,11 +10,22 @@ import pe.tecsup.paquitobot.ui.notifications.NotificationPermissionSection
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.listSaver
@@ -38,11 +49,16 @@ import pe.tecsup.paquitobot.ui.academic.AcademicViewModel
 import pe.tecsup.paquitobot.ui.auth.ClerkAuthGate
 import pe.tecsup.paquitobot.ui.chat.ChatScreen
 import pe.tecsup.paquitobot.ui.chat.ChatViewModel
+import pe.tecsup.paquitobot.ui.components.AppTabScaffold
 import pe.tecsup.paquitobot.ui.components.NavTab
 import pe.tecsup.paquitobot.ui.courses.CourseCardData
 import pe.tecsup.paquitobot.ui.courses.CourseDetailScreen
-import pe.tecsup.paquitobot.ui.courses.CoursesScreen
-import pe.tecsup.paquitobot.ui.home.HomeScreen
+import pe.tecsup.paquitobot.ui.courses.CoursesTabContent
+import pe.tecsup.paquitobot.ui.events.EventDetailScreen
+import pe.tecsup.paquitobot.ui.events.EventMockData
+import pe.tecsup.paquitobot.ui.events.EventsScreen
+import pe.tecsup.paquitobot.ui.home.HomeTabContent
+import pe.tecsup.paquitobot.ui.schedule.ScheduleTabContent
 import pe.tecsup.paquitobot.ui.notifications.NotificationsInboxScreen
 import pe.tecsup.paquitobot.ui.onboarding.OnboardingNotificationsScreen
 import pe.tecsup.paquitobot.ui.onboarding.OnboardingTourScreen
@@ -56,7 +72,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  * del Navbar se usa como toggle hacia Chat; Cursos y Horarios son pestañas
  * reales. El detalle de curso usa flecha atras como el chat.
  */
-private enum class RootScreen { Tabs, Chat, CourseDetail, Notifications }
+private enum class RootScreen { Tabs, Chat, CourseDetail, Notifications, Events, EventDetail }
 
 private enum class OnboardingStep { Welcome, Notifications, Tour }
 
@@ -184,14 +200,44 @@ private fun AppRoot() {
             // - con remember simple, girar el telefono mandaba siempre a Inicio.
             var currentTab by rememberSaveable { mutableStateOf(NavTab.Inicio) }
             var rootScreen by rememberSaveable { mutableStateOf(RootScreen.Tabs) }
+            var pendingCount by remember { mutableIntStateOf(0) }
             var selectedCourse by rememberSaveable(stateSaver = SelectedCourseSaver) {
                 mutableStateOf<CourseCardData?>(null)
             }
+            var selectedEventId by rememberSaveable { mutableStateOf<String?>(null) }
             val userFirstName = sessionUiState.userFirstName ?: "estudiante"
             val academicRepository = (LocalContext.current.applicationContext as PaquitoBotApp).academicRepository
 
-            when (rootScreen) {
-                RootScreen.Tabs -> when (currentTab) {
+            AnimatedContent(
+                targetState = rootScreen,
+                transitionSpec = {
+                    (scaleIn(tween(240), initialScale = 0.94f) + fadeIn(tween(240))) togetherWith
+                        (scaleOut(tween(200), targetScale = 1.03f) + fadeOut(tween(200)))
+                },
+                label = "root-screen-transition",
+            ) { screen ->
+            when (screen) {
+                RootScreen.Tabs -> AppTabScaffold(
+                    currentTab = currentTab,
+                    onTabSelected = { currentTab = it },
+                    onPaquitoClick = { rootScreen = RootScreen.Chat },
+                    notificationCount = pendingCount,
+                ) {
+                    AnimatedContent(
+                        targetState = currentTab,
+                        transitionSpec = {
+                            val movingForward = targetState.ordinal > initialState.ordinal
+                            (slideInHorizontally(tween(260)) { fullWidth ->
+                                if (movingForward) fullWidth else -fullWidth
+                            } + fadeIn(tween(220))) togetherWith
+                                (slideOutHorizontally(tween(220)) { fullWidth ->
+                                    if (movingForward) -fullWidth else fullWidth
+                                } + fadeOut(tween(180)))
+                        },
+                        label = "main-tab-transition",
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { tab ->
+                    when (tab) {
                     NavTab.Inicio -> {
                         val homeViewModel: AcademicHomeViewModel = viewModel(
                             factory = remember {
@@ -200,12 +246,11 @@ private fun AppRoot() {
                         )
                         val homeData by homeViewModel.uiState.collectAsStateWithLifecycle()
                         val homeError by homeViewModel.errorMessage.collectAsStateWithLifecycle()
-                        HomeScreen(
+                        LaunchedEffect(homeData.pendingCount) { pendingCount = homeData.pendingCount }
+                        HomeTabContent(
                             data = homeData.copy(greeting = "¡Bienvenido, $userFirstName!"),
-                            currentTab = currentTab,
-                            onTabSelected = { currentTab = it },
-                            onPaquitoClick = { rootScreen = RootScreen.Chat },
                             onNotificationsClick = { rootScreen = RootScreen.Notifications },
+                            onEventsClick = { rootScreen = RootScreen.Events },
                             onSignOutClick = sessionViewModel::signOut,
                             isSigningOut = sessionUiState.isSigningOut,
                             signOutError = sessionUiState.signOutError,
@@ -221,11 +266,9 @@ private fun AppRoot() {
                         )
                         val coursesData by coursesViewModel.uiState.collectAsStateWithLifecycle()
                         val coursesError by coursesViewModel.errorMessage.collectAsStateWithLifecycle()
-                        CoursesScreen(
+                        LaunchedEffect(coursesData.pendingCount) { pendingCount = coursesData.pendingCount }
+                        CoursesTabContent(
                             data = coursesData,
-                            currentTab = currentTab,
-                            onTabSelected = { currentTab = it },
-                            onPaquitoClick = { rootScreen = RootScreen.Chat },
                             onCourseClick = { course ->
                                 selectedCourse = course
                                 rootScreen = RootScreen.CourseDetail
@@ -242,15 +285,15 @@ private fun AppRoot() {
                         )
                         val scheduleData by scheduleViewModel.uiState.collectAsStateWithLifecycle()
                         val scheduleError by scheduleViewModel.errorMessage.collectAsStateWithLifecycle()
-                        ScheduleScreen(
+                        LaunchedEffect(scheduleData.pendingCount) { pendingCount = scheduleData.pendingCount }
+                        ScheduleTabContent(
                             data = scheduleData,
-                            currentTab = currentTab,
-                            onTabSelected = { currentTab = it },
-                            onPaquitoClick = { rootScreen = RootScreen.Chat },
                             errorMessage = scheduleError,
                             onRetry = scheduleViewModel::load,
                         )
                     }
+                    }
+                }
                 }
                 RootScreen.Chat -> {
                     val chatViewModel: ChatViewModel = viewModel(
@@ -327,6 +370,25 @@ private fun AppRoot() {
                         }
                     }
                 }
+                RootScreen.Events -> EventsScreen(
+                    onBackClick = { rootScreen = RootScreen.Tabs },
+                    onEventClick = { event ->
+                        selectedEventId = event.id
+                        rootScreen = RootScreen.EventDetail
+                    },
+                )
+                RootScreen.EventDetail -> {
+                    val event = EventMockData.find(selectedEventId)
+                    if (event == null) {
+                        LaunchedEffect(Unit) { rootScreen = RootScreen.Events }
+                    } else {
+                        EventDetailScreen(
+                            event = event,
+                            onBackClick = { rootScreen = RootScreen.Events },
+                        )
+                    }
+                }
+            }
             }
         }
     }

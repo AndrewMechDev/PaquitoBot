@@ -22,6 +22,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoFont
 import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
+import pe.tecsup.paquitobot.ui.theme.paquitoSurface
 
 /**
  * Roles de un mensaje en el chat de Paquito.
@@ -68,12 +69,8 @@ data class ChatMessage(
 )
 
 /**
- * Renderiza un [ChatMessage] fiel al frame Figma `438:662` (instancia
- * "chat" `438:671`): burbujas planas sin sombra ni borde.
- * - Burbuja del bot: fondo `#F6F6F6`, texto negro, esquina superior
- *   izquierda con radio chico (2dp) formando la "cola".
- * - Burbuja del usuario: fondo `PaquitoColors.BrandPrimary` (`#00C9FB`),
- *   texto blanco, esquina superior derecha con radio chico (2dp).
+ * Renderiza mensajes con la misma superficie clara de las tarjetas de Inicio.
+ * La burbuja del usuario usa el azul de selección del calendario.
  */
 @Composable
 fun Message(
@@ -87,11 +84,7 @@ fun Message(
     }
 }
 
-// Radios de burbuja fieles al frame Figma 438:662 (instancia "chat"
-// 438:671): rounded 20dp en 3 esquinas, 2dp en la esquina que forma la
-// "cola" hacia el emisor. Antes eran burbujas glassmorphism (sombra +
-// borde + fondo translucido/gradiente); el frame actual las pide PLANAS,
-// sin sombra ni borde.
+// Tres esquinas redondeadas y una esquina corta señalan al emisor.
 private val BotBubbleShape = RoundedCornerShape(
     topStart = 2.dp, topEnd = 20.dp, bottomEnd = 20.dp, bottomStart = 20.dp,
 )
@@ -109,16 +102,15 @@ private fun BotBubble(message: ChatMessage, modifier: Modifier) {
         Column(
             modifier = Modifier
                 .widthIn(max = 290.dp)
-                .clip(BotBubbleShape)
-                .background(Color(0xFFF6F6F6))
+                .paquitoSurface(BotBubbleShape)
                 .padding(horizontal = 16.dp, vertical = 13.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Text(
                 text = formattedBody,
-                fontSize = 15.sp,
+                fontSize = 16.sp,
                 fontFamily = PaquitoFont.DMSans,
-                color = Color.Black,
+                color = PaquitoColors.TextOnCardStrong,
                 lineHeight = 22.sp,
             )
             if (message.footnote != null) {
@@ -141,13 +133,13 @@ private fun UserBubble(message: ChatMessage, modifier: Modifier) {
             modifier = Modifier
                 .widthIn(max = 290.dp)
                 .clip(UserBubbleShape)
-                .background(PaquitoColors.BrandPrimary)
+                .background(PaquitoColors.StateInfoStrong)
                 .padding(horizontal = 16.dp, vertical = 13.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Text(
                 text = message.body,
-                fontSize = 15.sp,
+                fontSize = 16.sp,
                 fontFamily = PaquitoFont.DMSans,
                 color = PaquitoColors.TextOnWhite,
                 lineHeight = 20.sp,
@@ -167,7 +159,7 @@ private fun UserBubble(message: ChatMessage, modifier: Modifier) {
  */
 @Composable
 private fun MessageMeta(timestamp: String, status: MessageStatus?, onLightBubble: Boolean) {
-    val textColor = if (onLightBubble) Color.White.copy(alpha = 0.85f) else PaquitoColors.TextOnCardMuted
+    val textColor = if (onLightBubble) PaquitoColors.TextOnWhite else PaquitoColors.TextOnCardMuted
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End,
@@ -175,7 +167,7 @@ private fun MessageMeta(timestamp: String, status: MessageStatus?, onLightBubble
     ) {
         Text(
             text = timestamp,
-            fontSize = 11.sp,
+            fontSize = 12.sp,
             fontFamily = PaquitoFont.DMSans,
             color = textColor,
         )
@@ -184,7 +176,7 @@ private fun MessageMeta(timestamp: String, status: MessageStatus?, onLightBubble
                 text = if (status == MessageStatus.Sent) " ✓" else " ✓✓",
                 fontSize = 11.sp,
                 fontFamily = PaquitoFont.DMSans,
-                color = if (status == MessageStatus.Read) PaquitoColors.StateInfo else textColor,
+                color = if (status == MessageStatus.Read && !onLightBubble) PaquitoColors.StateInfoStrong else textColor,
             )
         }
     }
@@ -202,7 +194,7 @@ private fun SystemNotice(message: ChatMessage, modifier: Modifier) {
     ) {
         Text(
             text = message.body,
-            fontSize = 12.sp,
+            fontSize = 13.sp,
             fontFamily = PaquitoFont.DMSans,
             color = PaquitoColors.TextOnCardMuted,
             modifier = Modifier
@@ -217,7 +209,7 @@ private fun SystemNotice(message: ChatMessage, modifier: Modifier) {
 private fun BubbleFootnote(text: String) {
     Text(
         text = text,
-        fontSize = 11.sp,
+        fontSize = 12.sp,
         fontFamily = PaquitoFont.DMSans,
         color = PaquitoColors.TextOnCardMuted,
         lineHeight = 16.sp,

@@ -13,13 +13,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -58,14 +56,8 @@ enum class NotificationCardVariant { Compact, Full }
 /**
  * Card de activacion de notificacion.
  *
- * Extraida de los frames 112:135 (variant Compact) y 156:124 (variant Full)
- * del Figma canvas Main. Token comun: fondo surface/overlay
- * rgba(0,0,0,0.02) y texto color rgba(0,0,0,0.75).
- *
- * Estado visual:
- * - [enabled] = true: fondo con brand/primary en alpha bajo (pendiente de
- *   definir cuando se confirme paleta del estado seleccionado).
- * - [enabled] = false: fondo surface/overlay, sin borde.
+ * Conserva las variantes Compact y Full del onboarding y comparte la
+ * superficie clara de Inicio. El estado activo usa un tinte azul sutil.
  */
 @Composable
 fun NotificationCard(
@@ -88,12 +80,8 @@ private fun NotificationCardCompact(
     onToggle: () -> Unit,
     modifier: Modifier,
 ) {
-    val bg = if (enabled) {
-        PaquitoColors.BrandPrimary.copy(alpha = 0.18f)
-    } else {
-        PaquitoColors.SurfaceElevated
-    }
-    val borderColor = if (enabled) PaquitoColors.BrandPrimary else Color.Transparent
+    val bg = if (enabled) PaquitoColors.OverlayInfoSubtle else PaquitoColors.SurfaceGlassSoft
+    val borderColor = if (enabled) PaquitoColors.BorderInfo else PaquitoColors.BorderDefault
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -108,7 +96,7 @@ private fun NotificationCardCompact(
             .clip(PaquitoShapes.large)
             .background(bg)
             .border(
-                width = if (enabled) 2.dp else 0.dp,
+                width = 1.dp,
                 color = borderColor,
                 shape = PaquitoShapes.large,
             )
@@ -125,10 +113,10 @@ private fun NotificationCardCompact(
         )
         Text(
             text = type.title,
-            fontSize = 18.sp,
+            fontSize = 16.sp,
             fontFamily = PaquitoFont.DMSans,
             fontWeight = FontWeight.SemiBold,
-            color = PaquitoColors.TextPrimary.copy(alpha = 0.75f),
+            color = PaquitoColors.TextOnCardStrong,
             maxLines = 2,
         )
     }
@@ -141,22 +129,18 @@ private fun NotificationCardFull(
     onToggle: () -> Unit,
     modifier: Modifier,
 ) {
-    val bg = if (enabled) {
-        PaquitoColors.BrandPrimary.copy(alpha = 0.18f)
-    } else {
-        PaquitoColors.SurfaceElevated
-    }
-    val borderColor = if (enabled) PaquitoColors.BrandPrimary else Color.Transparent
+    val bg = if (enabled) PaquitoColors.OverlayInfoSubtle else PaquitoColors.SurfaceGlassSoft
+    val borderColor = if (enabled) PaquitoColors.BorderInfo else PaquitoColors.BorderDefault
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(62.dp)
-            .clip(RoundedCornerShape(25.dp))
+            .clip(PaquitoShapes.large)
             .background(bg)
             .border(
-                width = if (enabled) 2.dp else 0.dp,
+                width = 1.dp,
                 color = borderColor,
-                shape = RoundedCornerShape(25.dp),
+                shape = PaquitoShapes.large,
             )
             .clickable(onClick = onToggle)
             .padding(horizontal = 15.dp),
@@ -165,10 +149,12 @@ private fun NotificationCardFull(
     ) {
         Text(
             text = type.title,
-            fontSize = 22.sp,
+            fontSize = 16.sp,
             fontFamily = PaquitoFont.DMSans,
             fontWeight = FontWeight.SemiBold,
-            color = PaquitoColors.TextPrimary.copy(alpha = 0.75f),
+            color = PaquitoColors.TextOnCardStrong,
+            modifier = Modifier.weight(1f),
+            maxLines = 2,
         )
         Image(
             painter = painterResource(id = type.iconRes),

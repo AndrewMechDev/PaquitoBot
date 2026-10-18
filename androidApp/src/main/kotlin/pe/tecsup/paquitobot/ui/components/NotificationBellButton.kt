@@ -49,7 +49,7 @@ fun NotificationBellButton(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(PaquitoColors.SurfaceElevated)
+                .background(PaquitoColors.OverlayInfoSubtle)
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {

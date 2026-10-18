@@ -1,6 +1,5 @@
 package pe.tecsup.paquitobot.ui.courses
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,16 +10,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import pe.tecsup.paquitobot.ui.components.AcademicErrorBanner
 import pe.tecsup.paquitobot.ui.components.AppTabScaffold
 import pe.tecsup.paquitobot.ui.components.NavTab
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
-import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
+import pe.tecsup.paquitobot.ui.theme.paquitoSurface
 
 /**
  * Pestaña Cursos. Frame Figma `351:697` solo tiene navbar.
@@ -50,6 +48,23 @@ fun CoursesScreen(
         onPaquitoClick = onPaquitoClick,
         notificationCount = data.pendingCount,
         modifier = modifier,
+    ) {
+        CoursesTabContent(data, onCourseClick, errorMessage, onRetry)
+    }
+}
+
+/** Contenido de Cursos sin su scaffold para compartir la navbar persistente. */
+@Composable
+fun CoursesTabContent(
+    data: CoursesScreenData,
+    onCourseClick: (CourseCardData) -> Unit,
+    errorMessage: String?,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         if (errorMessage != null) {
             AcademicErrorBanner(message = errorMessage, onRetry = onRetry)
@@ -90,8 +105,7 @@ private fun CourseSummaryCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(PaquitoShapes.large)
-            .background(PaquitoColors.SurfaceElevated)
+            .paquitoSurface()
             .clickable(onClick = onClick)
             .padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -103,7 +117,7 @@ private fun CourseSummaryCard(
         )
         Text(
             text = course.name,
-            style = PaquitoTypography.TaskTitle,
+            style = PaquitoTypography.BodyLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold),
             color = PaquitoColors.TextOnCardStrong,
         )
         Row(
@@ -132,7 +146,7 @@ private fun CourseSummaryCard(
                 Text(
                     text = course.nextDueLabel,
                     style = PaquitoTypography.Caption,
-                    color = PaquitoColors.TextTimestampLarge,
+                    color = PaquitoColors.TextOnCardMuted,
                 )
             }
         }

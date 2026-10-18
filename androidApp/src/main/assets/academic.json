@@ -5,7 +5,8 @@
     {"id": 1, "code": "CALC-II", "name": "Calculo II", "enrollment_count": 32},
     {"id": 2, "code": "FIS-I", "name": "Fisica I", "enrollment_count": 28},
     {"id": 3, "code": "ALG-I", "name": "Algoritmos", "enrollment_count": 30},
-    {"id": 4, "code": "EST-I", "name": "Estadistica", "enrollment_count": 26}
+    {"id": 4, "code": "EST-I", "name": "Estadistica", "enrollment_count": 26},
+    {"id": 5, "code": "RED-I", "name": "Redes y Comunicaciones", "enrollment_count": 24}
   ],
   "assignments": [
     {"id": 101, "course_id": 1, "name": "Practica 1", "points_possible": 20.0, "due_at": "2026-07-13T23:59:00"},
@@ -29,7 +30,12 @@
     {"id": 305, "course_id": 3, "name": "Foro 2", "points_possible": 20.0, "due_at": "2026-08-05T23:59:00"},
     {"id": 401, "course_id": 4, "name": "Practica 1", "points_possible": 20.0, "due_at": "2026-07-16T23:59:00"},
     {"id": 402, "course_id": 4, "name": "Laboratorio 1", "points_possible": 20.0, "due_at": "2026-07-23T23:59:00"},
-    {"id": 403, "course_id": 4, "name": "Practica 2", "points_possible": 20.0, "due_at": "2026-08-10T23:59:00"}
+    {"id": 403, "course_id": 4, "name": "Practica 2", "points_possible": 20.0, "due_at": "2026-08-10T23:59:00"},
+    {"id": 501, "course_id": 5, "name": "Laboratorio 1", "points_possible": 20.0, "due_at": "2026-07-30T23:59:00"},
+    {"id": 502, "course_id": 5, "name": "Practica 1", "points_possible": 20.0, "due_at": "2026-08-04T23:59:00"},
+    {"id": 503, "course_id": 5, "name": "Diseño de red", "points_possible": 20.0, "due_at": "2026-08-06T23:59:00"},
+    {"id": 504, "course_id": 5, "name": "Cuestionario de protocolos", "points_possible": 20.0, "due_at": "2026-08-09T23:59:00"},
+    {"id": 505, "course_id": 5, "name": "Proyecto de topología", "points_possible": 20.0, "due_at": "2026-08-12T23:59:00"}
   ],
   "grades": [
     {"assignment_id": 101, "score": 16.0},
@@ -46,7 +52,8 @@
     {"assignment_id": 302, "score": 13.0},
     {"assignment_id": 303, "score": 10.0},
     {"assignment_id": 401, "score": 18.0},
-    {"assignment_id": 402, "score": 15.0}
+    {"assignment_id": 402, "score": 15.0},
+    {"assignment_id": 501, "score": 9.0}
   ],
   "class_sessions": [
     {"id": 1001, "course_id": 1, "start_at": "2026-07-06T08:00:00", "end_at": "2026-07-06T10:00:00"},
@@ -88,7 +95,10 @@
     {"id": 3009, "course_id": 3, "start_at": "2026-08-04T14:00:00", "end_at": "2026-08-04T16:00:00"},
     {"id": 3010, "course_id": 3, "start_at": "2026-08-06T14:00:00", "end_at": "2026-08-06T16:00:00"},
     {"id": 4009, "course_id": 4, "start_at": "2026-08-05T14:00:00", "end_at": "2026-08-05T16:00:00"},
-    {"id": 4010, "course_id": 4, "start_at": "2026-08-07T08:00:00", "end_at": "2026-08-07T10:00:00"}
+    {"id": 4010, "course_id": 4, "start_at": "2026-08-07T08:00:00", "end_at": "2026-08-07T10:00:00"},
+    {"id": 5001, "course_id": 5, "start_at": "2026-08-03T16:00:00", "end_at": "2026-08-03T18:00:00"},
+    {"id": 5002, "course_id": 5, "start_at": "2026-08-05T16:00:00", "end_at": "2026-08-05T18:00:00"},
+    {"id": 5003, "course_id": 5, "start_at": "2026-08-07T16:00:00", "end_at": "2026-08-07T18:00:00"}
   ],
   "attendance": [
     {"class_session_id": 1001, "status": "present"},
@@ -122,6 +132,9 @@
     {"class_session_id": 3007, "status": "absent"},
     {"class_session_id": 3008, "status": "present"},
     {"class_session_id": 4007, "status": "present"},
-    {"class_session_id": 4008, "status": "present"}
+    {"class_session_id": 4008, "status": "present"},
+    {"class_session_id": 5001, "status": "absent"},
+    {"class_session_id": 5002, "status": "absent"},
+    {"class_session_id": 5003, "status": "absent"}
   ]
 }
