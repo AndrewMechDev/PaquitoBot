@@ -21,7 +21,7 @@ import pe.tecsup.paquitobot.domain.notifications.NotificationCategory
 import pe.tecsup.paquitobot.domain.notifications.NotificationSchedule
 
 /**
- * Estado de Clerk y avance del onboarding durante esta apertura de la app.
+ * Estado de Clerk y configuración inicial persistida en esta instalación.
  */
 data class SessionUiState(
     val isOnboardingComplete: Boolean = false,
@@ -43,6 +43,7 @@ class SessionViewModel(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SessionUiState(
+        isOnboardingComplete = notificationPreferences.hasCompletedSetup(),
         enabledNotifications = notificationPreferences.enabledCategories(),
         notificationSchedule = notificationPreferences.schedule(),
     ))
@@ -57,7 +58,6 @@ class SessionViewModel(
                 it.copy(
                     isAuthenticated = isAuthorized,
                     isUnauthorizedSession = user != null && !user.hasVerifiedTecsupEmail(),
-                    isOnboardingComplete = if (user == null && it.isAuthenticated) false else it.isOnboardingComplete,
                     userFirstName = user?.firstName?.takeIf { name -> isAuthorized && name.isNotBlank() },
                     userFullName = if (isAuthorized) listOfNotNull(user?.firstName, user?.lastName).filter { name -> name.isNotBlank() }.joinToString(" ").ifBlank { "Estudiante" } else null,
                     userEmail = if (isAuthorized) user?.emailAddresses?.firstOrNull { address -> address.id == user.primaryEmailAddressId }?.emailAddress else null,
@@ -91,7 +91,6 @@ class SessionViewModel(
                         it.copy(
                             isAuthenticated = false,
                             isUnauthorizedSession = false,
-                            isOnboardingComplete = false,
                             userFirstName = null,
                             userFullName = null,
                             userEmail = null,

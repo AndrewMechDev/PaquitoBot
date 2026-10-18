@@ -22,7 +22,6 @@ fun ProfileTabContent(
     signOutError: String?,
     onProceduresClick: () -> Unit,
     onEnrollmentClick: () -> Unit,
-    onNotificationsClick: () -> Unit,
     onSignOutClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -43,7 +42,6 @@ fun ProfileTabContent(
         Text("Servicios al estudiante", style = PaquitoTypography.HeadlineSmall, color = PaquitoColors.TextHomeStrong)
         ProcedureEntryCard(onClick = onProceduresClick)
         ProcedureEntryCard(onClick = onEnrollmentClick, title = "Guía de matrícula", subtitle = "Requisitos y pasos para tu matrícula")
-        ProcedureEntryCard(onClick = onNotificationsClick, title = "Mis notificaciones", subtitle = "Consulta tus avisos y configura tus preferencias")
         Text("Los cursos, notas, horarios y tareas son datos de demostración. No corresponden a tu cuenta institucional.",
             style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextOnCardMuted)
         OutlinedButton(onClick = { confirmSignOut = true }, enabled = !isSigningOut,
@@ -70,5 +68,5 @@ fun ProfileTabContent(
 @Preview(showBackground = true, widthDp = 360, heightDp = 1000)
 @Composable
 private fun ProfilePreview() {
-    PaquitoTheme { ProfileTabContent("Estudiante de ejemplo", "estudiante@tecsup.edu.pe", false, null, {}, {}, {}, {}) }
+    PaquitoTheme { ProfileTabContent("Estudiante de ejemplo", "estudiante@tecsup.edu.pe", false, null, {}, {}, {}) }
 }

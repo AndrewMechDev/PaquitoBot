@@ -158,7 +158,7 @@ class MainActivity : ComponentActivity() {
 
 /**
  * Iteracion 2026-08-13 (flujo de gates): antes de mostrar Home o Chat, la
- * app presenta el onboarding en cada apertura y después evalúa Clerk:
+ * app presenta el onboarding solo si falta completar la configuración inicial:
  *
  *   1. Bienvenida, notificaciones y recorrido.
  *   2. Sin sesion de Clerk -> [ClerkAuthGate].
@@ -173,12 +173,6 @@ private fun AppRoot(notificationRequest: Int = 0) {
         factoryOf { SessionViewModel(notificationPreferences, notificationScheduler) }
     })
     val sessionUiState by sessionViewModel.uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(notificationRequest, sessionUiState.isAuthenticated) {
-        // Un aviso puede restaurar una configuración existente, nunca omitir autenticación.
-        if (notificationRequest > 0 && sessionUiState.isAuthenticated && notificationPreferences.hasCompletedSetup()) {
-            sessionViewModel.completeOnboarding()
-        }
-    }
     var onboardingStep by remember(sessionUiState.sessionRevision) {
         mutableStateOf(OnboardingStep.Welcome)
     }
@@ -284,7 +278,6 @@ private fun AppRoot(notificationRequest: Int = 0) {
                         signOutError = sessionUiState.signOutError,
                         onProceduresClick = { rootScreen = RootScreen.Procedures },
                         onEnrollmentClick = { rootScreen = RootScreen.Enrollment },
-                        onNotificationsClick = { rootScreen = RootScreen.Notifications },
                         onSignOutClick = sessionViewModel::signOut,
                     )
                     NavTab.Cursos -> {

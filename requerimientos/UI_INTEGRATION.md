@@ -434,3 +434,10 @@ Referencia proporcionada por el usuario: centro de notificaciones con filas lige
 Filtros: Todos, Hoy, Semana (lunes hasta hoy) y Anteriores (antes del lunes), calculados con la fecha real de recepción y zona local del celular. El historial persiste por cuenta, con borrado y Deshacer; no se modifica el registro que evita repetir entregas. Los avisos del sistema abren esta bandeja con sesión válida y configuración completada. Preferencias permite enviar un aviso explícito de prueba en 30 segundos, sujeto a la programación de Android.
 
 Pruebas anteriores de esta sesión: 74 pruebas JVM y 11 comprobaciones instrumentadas aprobadas en el celular Android 16; incluyen envío en segundo plano, deduplicación, historial separado por cuenta, preferencias y presentación nativa privada. El último cambio visual se verifica mediante compilación; el usuario realiza la revisión manual del diseño. No se ejecutan más pruebas físicas por su indicación.
+
+
+### Correcciones de reapertura y Perfil · 18/10/2026
+
+La configuración inicial se restaura desde `NotificationPreferencesStore.hasCompletedSetup()` al crear SessionViewModel. Salir de la app o cerrar/perder la sesión no borra ese avance: una sesión ausente sigue mostrando ClerkAuthGate, sin repetir el selector de preferencias. Se elimina la excepción anterior limitada a aperturas desde notificaciones, pues la persistencia aplica a toda reapertura.
+
+Se retira Mis notificaciones de Perfil; la bandeja y sus preferencias siguen accesibles desde la campana de Inicio. Los iconos de la lista de avisos se centran verticalmente respecto al contenido de cada fila. Los avisos actuales siguen siendo de demostración; abrirlos lleva a la bandeja. No se afirma que exista sincronización con una fuente académica real.
