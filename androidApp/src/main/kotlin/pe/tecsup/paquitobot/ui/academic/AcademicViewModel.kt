@@ -1,104 +1,60 @@
 package pe.tecsup.paquitobot.ui.academic
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import pe.tecsup.paquitobot.auth.CanvasMockKeyStore
-import pe.tecsup.paquitobot.data.repository.createDefaultAcademicRepository
 import pe.tecsup.paquitobot.domain.academic.AcademicRepository
 import pe.tecsup.paquitobot.ui.courses.CourseCardData
 import pe.tecsup.paquitobot.ui.courses.CoursesScreenData
+import pe.tecsup.paquitobot.util.AcademicDateUtils
 
 /**
- * Trae cursos/notas/asistencia REALES de `canvas-mock` y los mapea al
- * modelo que ya consume `CoursesScreen` (`CourseCardData`) - ver skill
- * `canvas-mock-backend`.
+ * Trae cursos/notas/asistencia del [AcademicRepository] y los mapea al
+ * modelo que ya consume `CoursesScreen` (`CourseCardData`).
  *
- * Nota honesta sobre el mapeo: canvas-mock no modela "limite de faltas"
- * ni "promedio ponderado" como conceptos de negocio (son ideas del
- * frontend, no del backend mock) - se derivan de datos reales donde se
- * puede (nota promedio real, faltas reales contadas) y se usa un limite
- * fijo razonable donde el backend no tiene ese dato. Si un curso no tiene
- * notas cargadas todavia (la seed de canvas-mock no trae notas por
- * default), se muestra "—" en vez de inventar un numero.
+ * Nota honesta sobre el mapeo: el JSON academico no modela "limite de
+ * faltas" ni "promedio ponderado" como conceptos de negocio - se derivan de
+ * datos reales donde se puede (nota promedio real, faltas reales contadas) y
+ * se usa un limite fijo razonable ([ASSUMED_ABSENCE_LIMIT]) donde el dato no
+ * existe. Si un curso no tiene notas cargadas todavia, se muestra "—" en vez
+ * de inventar un numero.
+ *
+ * [today] (`yyyy-MM-dd`) decide que entregas siguen "pendientes"; por
+ * defecto es la fecha del dispositivo, y se inyecta para poder fijarla.
  */
 class AcademicViewModel(
-    keyStore: CanvasMockKeyStore,
-    private val repository: AcademicRepository = createDefaultAcademicRepository(keyStore),
-) : ViewModel() {
-
-    private val _uiState = MutableStateFlow(CoursesScreenData(termLabel = "Cargando...", pendingCount = 0, courses = emptyList()))
-    val uiState: StateFlow<CoursesScreenData> = _uiState.asStateFlow()
-
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+    private val repository: AcademicRepository,
+    private val today: () -> String = ::deviceToday,
+) : AcademicLoadingViewModel<CoursesScreenData>(
+    CoursesScreenData(termLabel = "Cargando...", pendingCount = 0, courses = emptyList()),
+) {
 
     init {
         load()
     }
 
-    fun load() {
-        viewModelScope.launch {
-            repository.courses()
-                .onSuccess { courses ->
-                    val cards = courses.map { course -> loadCourseCard(course.id, course.code, course.name) }
-                    _uiState.update {
-                        CoursesScreenData(
-                            termLabel = "canvas-mock · ${courses.size} curso(s)",
-                            pendingCount = cards.count { it.nextDueLabel != NO_DUE_LABEL },
-                            courses = cards,
-                        )
-                    }
-                    _errorMessage.update { null }
-                }
-                .onFailure { error ->
-                    _errorMessage.update { errorMessageFor(error) }
-                }
-        }
-    }
+    override suspend fun fetch(current: CoursesScreenData): Result<CoursesScreenData> =
+        repository.loadAllCourseRecords().map { buildCoursesData(it, today()) }
+}
 
-    private suspend fun loadCourseCard(courseId: Int, code: String, name: String): CourseCardData {
-        val grades = repository.courseGrades(courseId).getOrDefault(emptyList())
-        val attendance = repository.courseAttendance(courseId).getOrDefault(emptyList())
-        val assignments = repository.courseAssignments(courseId).getOrDefault(emptyList())
+internal fun buildCoursesData(all: List<CourseWithRecords>, today: String): CoursesScreenData =
+    CoursesScreenData(
+        termLabel = courseCountLabel(all.size),
+        // Solo entregas sin nota y con fecha >= hoy (ver `pendingAssignments`).
+        pendingCount = all.sumOf { pendingAssignments(it.records.assignments, it.records.grades, today).size },
+        courses = all.map { buildCourseCard(it, today) },
+    )
 
-        val projectedGrade = if (grades.isEmpty()) {
-            "—"
-        } else {
-            val avg = grades.map { it.score }.average()
-            "%.1f".format(avg)
-        }
-        val absences = attendance.count { !it.isPresent }
-        val nextDue = assignments
-            .filter { it.dueAt != null }
-            .minByOrNull { it.dueAt!! }
-            ?.let { "${it.name} · ${it.dueAt?.take(10)}" }
-            ?: NO_DUE_LABEL
-
-        return CourseCardData(
-            id = courseId.toString(),
-            code = code,
-            name = name,
-            projectedGrade = projectedGrade,
-            trackHint = if (grades.isEmpty()) "Sin notas registradas todavía" else "Promedio real de canvas-mock",
-            absences = absences,
-            absenceLimit = ASSUMED_ABSENCE_LIMIT,
-            nextDueLabel = nextDue,
-        )
-    }
-
-    private fun errorMessageFor(error: Throwable): String =
-        "No se pudo cargar canvas-mock: ${error.message ?: "error desconocido"}"
-
-    private companion object {
-        const val NO_DUE_LABEL = "Sin pendientes"
-        // canvas-mock no modela un limite de faltas por curso (es una regla
-        // de negocio del frontend/institucion, no del backend mock) - 8 es
-        // un valor de referencia razonable, no un dato real del backend.
-        const val ASSUMED_ABSENCE_LIMIT = 8
-    }
+private fun buildCourseCard(item: CourseWithRecords, today: String): CourseCardData {
+    val (course, records) = item
+    val nextDue = pendingAssignments(records.assignments, records.grades, today).firstOrNull()
+    return CourseCardData(
+        id = course.id.toString(),
+        code = course.code,
+        name = course.name,
+        projectedGrade = averageScoreLabel(records.grades),
+        trackHint = if (records.grades.isEmpty()) "Sin notas registradas todavía" else "Promedio de tus notas registradas",
+        absences = absenceCount(records.attendance),
+        absenceLimit = ASSUMED_ABSENCE_LIMIT,
+        nextDueLabel = nextDue
+            ?.let { "${it.assignment.name} · ${AcademicDateUtils.shortDateLabel(it.dueDate)}" }
+            ?: NO_DUE_LABEL,
+    )
 }

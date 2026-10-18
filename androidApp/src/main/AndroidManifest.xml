@@ -4,15 +4,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!--
-      allowBackup=false: la app guarda credenciales en EncryptedSharedPreferences
-      (JWT de Google, key de canvas-mock) atadas a una clave del Android
-      Keystore que NO viaja en el backup. Con allowBackup=true, restaurar un
-      backup o migrar de telefono deja el archivo cifrado sin su clave y la
-      app deja de poder abrirlo. El cleartext para canvas-mock vive en
-      src/debug/AndroidManifest.xml.
-    -->
     <application
+        android:name=".PaquitoBotApp"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"

@@ -16,15 +16,13 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
 
 /**
- * Aviso de error uniforme cuando falla una llamada a `canvas-mock` (key
- * invalida, red caida, IP vieja, etc.) - antes las pantallas de datos
- * reales (Cursos/Horarios/Home) exponian `errorMessage` en su ViewModel
- * pero nadie lo mostraba: si canvas-mock se caia despues de conectar, la
- * pantalla se quedaba en "Cargando..." para siempre, sin aviso ni forma de
- * reintentar (bug real, encontrado en auditoria 2026-08-19).
+ * Aviso de error uniforme cuando falla la carga de datos academicos (Cursos,
+ * Horarios, Home y detalle de curso). Cada ViewModel academico expone un
+ * `errorMessage`; sin este banner una carga fallida se quedaba en
+ * "Cargando..." sin aviso ni forma de reintentar.
  */
 @Composable
-fun CanvasMockErrorBanner(
+fun AcademicErrorBanner(
     message: String,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,

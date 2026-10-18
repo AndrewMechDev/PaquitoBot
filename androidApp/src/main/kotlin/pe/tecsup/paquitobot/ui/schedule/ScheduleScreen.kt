@@ -15,8 +15,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import pe.tecsup.paquitobot.ui.components.AcademicErrorBanner
 import pe.tecsup.paquitobot.ui.components.AppTabScaffold
-import pe.tecsup.paquitobot.ui.components.CanvasMockErrorBanner
 import pe.tecsup.paquitobot.ui.components.NavTab
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
@@ -59,7 +59,7 @@ fun ScheduleScreen(
         modifier = modifier,
     ) {
         if (errorMessage != null) {
-            CanvasMockErrorBanner(message = errorMessage, onRetry = onRetry)
+            AcademicErrorBanner(message = errorMessage, onRetry = onRetry)
         }
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
@@ -85,7 +85,7 @@ fun ScheduleScreen(
 private fun DayBlock(day: ScheduleDay) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = day.label,
+            text = if (day.isToday) "${day.label} · Hoy" else day.label,
             style = PaquitoTypography.TaskTitle,
             color = PaquitoColors.TextHomeStrong,
         )
@@ -149,6 +149,8 @@ data class ScheduleEvent(
 data class ScheduleDay(
     val label: String,
     val events: List<ScheduleEvent>,
+    /** Dia de hoy segun la fecha de referencia del ViewModel (se resalta con "Hoy"). */
+    val isToday: Boolean = false,
 )
 
 data class ScheduleScreenData(

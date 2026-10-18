@@ -1,14 +1,7 @@
 package pe.tecsup.paquitobot.ui.academic
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import pe.tecsup.paquitobot.auth.CanvasMockKeyStore
-import pe.tecsup.paquitobot.data.repository.createDefaultAcademicRepository
+import pe.tecsup.paquitobot.domain.academic.AcademicAssignment
+import pe.tecsup.paquitobot.domain.academic.AcademicGrade
 import pe.tecsup.paquitobot.domain.academic.AcademicRepository
 import pe.tecsup.paquitobot.ui.courses.AttendanceEntry
 import pe.tecsup.paquitobot.ui.courses.CourseCardData
@@ -18,115 +11,95 @@ import pe.tecsup.paquitobot.ui.courses.EvaluationState
 import pe.tecsup.paquitobot.util.AcademicDateUtils
 
 /**
- * Arma [CourseDetailData] REAL a partir de `canvas-mock` para UN curso
- * especifico (ver skill `canvas-mock-backend`).
+ * Arma [CourseDetailData] a partir del [AcademicRepository] para UN curso
+ * especifico.
  *
- * Nota honesta sobre "Practicas"/"Laboratorios" vs "Pendientes": canvas-mock
- * NO categoriza sus assignments (confirmado leyendo el seed: nombres como
- * "Variables and Types", "Limits" - temas academicos, no "Practica N"/
- * "Lab N"). Adivinar la categoria por el nombre seria inventar una
- * estructura que el backend no tiene. Por eso con datos reales las 2
+ * Nota honesta sobre "Practicas"/"Laboratorios" vs "Pendientes": el JSON
+ * academico NO categoriza sus entregas, y adivinar la categoria por el
+ * nombre seria inventar una estructura que el dato no tiene. Por eso las 2
  * secciones categorizadas quedan vacias (y no se muestran) y TODAS las
- * entregas del curso van en una sola seccion ([pendingTitle] = "Entregas",
- * no "Pendientes" - incluye tanto calificadas como sin calificar).
+ * entregas del curso van en una sola seccion ([CourseDetailData.pendingTitle]
+ * = "Entregas", no "Pendientes" - incluye tanto calificadas como sin
+ * calificar).
  */
 class AcademicCourseDetailViewModel(
-    keyStore: CanvasMockKeyStore,
+    private val repository: AcademicRepository,
     private val course: CourseCardData,
-    private val repository: AcademicRepository = createDefaultAcademicRepository(keyStore),
-) : ViewModel() {
+    private val today: () -> String = ::deviceToday,
+) : AcademicLoadingViewModel<CourseDetailData>(initialDetail(course)) {
 
     private val courseId: Int? = course.id.toIntOrNull()
-
-    private val _uiState = MutableStateFlow(
-        CourseDetailData(
-            course = course,
-            headline = "Cargando...",
-            projectionHint = "",
-            attendance = emptyList(),
-            practices = emptyList(),
-            labs = emptyList(),
-            pending = emptyList(),
-            pendingTitle = "Entregas",
-        ),
-    )
-    val uiState: StateFlow<CourseDetailData> = _uiState.asStateFlow()
-
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
     init {
         load()
     }
 
-    fun load() {
-        val id = courseId ?: return
-        viewModelScope.launch {
-            val sessions = repository.courseClassSessions(id).getOrDefault(emptyList())
-            val attendance = repository.courseAttendance(id).getOrDefault(emptyList())
-            val assignments = repository.courseAssignments(id)
-                .onSuccess { _errorMessage.update { null } }
-                .onFailure { error -> _errorMessage.update { errorMessageFor(error) } }
-                .getOrDefault(emptyList())
-            val grades = repository.courseGrades(id).getOrDefault(emptyList())
-            val gradeByAssignment = grades.associateBy { it.assignmentId }
+    override suspend fun fetch(current: CourseDetailData): Result<CourseDetailData> {
+        val id = courseId ?: return Result.failure(IllegalArgumentException("Curso sin id numerico: ${course.id}"))
+        return repository.loadCourseRecords(id).map { buildCourseDetail(course, it, today()) }
+    }
+}
 
-            val sessionDateById = sessions.associate { it.id to it.startAt?.take(10) }
-            val attendanceEntries = attendance
-                .mapNotNull { record ->
-                    val dateKey = sessionDateById[record.classSessionId] ?: return@mapNotNull null
-                    dateKey to record.isPresent
-                }
-                .sortedBy { it.first }
-                .map { (dateKey, isPresent) -> AttendanceEntry(AcademicDateUtils.shortDateLabel(dateKey), isPresent) }
+private fun initialDetail(course: CourseCardData) = CourseDetailData(
+    course = course,
+    headline = "Cargando...",
+    projectionHint = "",
+    attendance = emptyList(),
+    practices = emptyList(),
+    labs = emptyList(),
+    pending = emptyList(),
+    pendingTitle = "Entregas",
+)
 
-            val entregas = assignments.map { assignment ->
-                val grade = gradeByAssignment[assignment.id]
-                val dueAt = assignment.dueAt
-                val scoresLabel = when {
-                    grade != null -> "${"%.0f".format(grade.score)} / ${"%.0f".format(assignment.pointsPossible)}"
-                    dueAt != null -> "Vence ${AcademicDateUtils.shortDateLabel(dueAt.take(10))}"
-                    else -> "Sin fecha"
-                }
-                EvaluationItem(
-                    name = assignment.name,
-                    weightLabel = "${assignment.pointsPossible.toInt()} pts",
-                    scoresLabel = scoresLabel,
-                    state = if (grade != null) EvaluationState.Graded else EvaluationState.Pending,
-                    detail = assignment.dueAt
-                        ?.let { "Vence: ${AcademicDateUtils.shortDateLabel(it.take(10))}" }
-                        ?: "Sin fecha de entrega definida en canvas-mock.",
-                )
-            }
+internal fun buildCourseDetail(course: CourseCardData, records: CourseRecords, today: String): CourseDetailData {
+    val gradeByAssignment = records.grades.associateBy { it.assignmentId }
+    val sessionDateById = records.sessions.associate { it.id to it.startAt?.let(::dateKeyOf) }
 
-            val used = attendanceEntries.count { !it.isPresent }
-            val pendingCount = entregas.count { it.state == EvaluationState.Pending }
-
-            _uiState.update {
-                CourseDetailData(
-                    course = course.copy(absences = used, absenceLimit = ASSUMED_ABSENCE_LIMIT),
-                    headline = "${assignments.size} entrega(s) · canvas-mock",
-                    projectionHint = if (pendingCount > 0) {
-                        "Tenés $pendingCount entrega(s) sin calificar en este curso."
-                    } else {
-                        "Todas las entregas de este curso están calificadas."
-                    },
-                    attendance = attendanceEntries,
-                    practices = emptyList(),
-                    labs = emptyList(),
-                    pending = entregas,
-                    pendingTitle = "Entregas",
-                )
-            }
+    val attendanceEntries = records.attendance
+        .mapNotNull { record ->
+            val dateKey = sessionDateById[record.classSessionId] ?: return@mapNotNull null
+            dateKey to record.isPresent
         }
-    }
+        .sortedBy { it.first }
+        .map { (dateKey, isPresent) -> AttendanceEntry(AcademicDateUtils.shortDateLabel(dateKey), isPresent) }
 
-    private fun errorMessageFor(error: Throwable): String =
-        "No se pudo cargar canvas-mock: ${error.message ?: "error desconocido"}"
+    val pendingCount = pendingAssignments(records.assignments, records.grades, today).size
 
-    private companion object {
-        // canvas-mock no modela "limite de faltas" - mismo valor de
-        // referencia usado en AcademicViewModel/AcademicHomeViewModel.
-        const val ASSUMED_ABSENCE_LIMIT = 8
+    return CourseDetailData(
+        course = course.copy(absences = absenceCount(records.attendance), absenceLimit = ASSUMED_ABSENCE_LIMIT),
+        headline = "${records.assignments.size} entrega(s)",
+        projectionHint = if (pendingCount > 0) {
+            "Tienes $pendingCount entrega(s) pendiente(s) en este curso."
+        } else {
+            "No tienes entregas pendientes en este curso."
+        },
+        attendance = attendanceEntries,
+        practices = emptyList(),
+        labs = emptyList(),
+        pending = records.assignments.map { evaluationItemOf(it, gradeByAssignment[it.id], today) },
+        pendingTitle = "Entregas",
+    )
+}
+
+private fun evaluationItemOf(assignment: AcademicAssignment, grade: AcademicGrade?, today: String): EvaluationItem {
+    val dueDate = assignment.dueAt?.let(::dateKeyOf)
+    val dueLabel = dueDate?.let { AcademicDateUtils.shortDateLabel(it) }
+    val isOverdue = dueDate != null && dueDate < today
+    val scoresLabel = when {
+        grade != null -> "${"%.0f".format(grade.score)} / ${"%.0f".format(assignment.pointsPossible)}"
+        dueLabel == null -> "Sin fecha"
+        isOverdue -> "Venció $dueLabel"
+        else -> "Vence $dueLabel"
     }
+    return EvaluationItem(
+        name = assignment.name,
+        weightLabel = "${assignment.pointsPossible.toInt()} pts",
+        scoresLabel = scoresLabel,
+        state = if (grade != null) EvaluationState.Graded else EvaluationState.Pending,
+        detail = when {
+            dueLabel == null -> "Sin fecha de entrega definida."
+            isOverdue -> "Venció: $dueLabel"
+            else -> "Vence: $dueLabel"
+        },
+    )
 }

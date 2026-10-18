@@ -40,9 +40,9 @@ data class AcademicClassSession(
 )
 
 /**
- * Puerto de dominio para datos academicos - hoy implementado por
- * `canvas-mock` (ver skill `canvas-mock-backend`), a futuro por la API
- * real de Canvas sin cambiar este contrato.
+ * Puerto de dominio para datos academicos - hoy implementado leyendo un
+ * JSON propio incluido en la app, sin backend. Otra fuente (por ejemplo
+ * una API) puede reemplazarlo sin cambiar este contrato.
  */
 interface AcademicRepository {
     suspend fun profile(): Result<AcademicProfile>

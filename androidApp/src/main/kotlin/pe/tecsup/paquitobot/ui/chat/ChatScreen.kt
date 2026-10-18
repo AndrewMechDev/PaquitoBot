@@ -13,22 +13,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import pe.tecsup.paquitobot.ui.chat.components.ChatGreeting
 import pe.tecsup.paquitobot.ui.chat.components.ChatTopBar
+import pe.tecsup.paquitobot.ui.chat.components.ChatGreeting
 import pe.tecsup.paquitobot.ui.components.ChatInput
 import pe.tecsup.paquitobot.ui.components.ChatMessage
 import pe.tecsup.paquitobot.ui.components.Message
 import pe.tecsup.paquitobot.ui.components.MessageRole
 import pe.tecsup.paquitobot.ui.components.MessageStatus
 import pe.tecsup.paquitobot.ui.components.SuggestionChip
-import pe.tecsup.paquitobot.ui.components.TypingIndicatorBubble
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
+import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
 
 /**
  * Pantalla completa del chat con Paquito, fiel al frame Figma `438:662`.
@@ -55,32 +57,13 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  * estado de conexion se comunica como un mensaje mas en el flujo via
  * `MessageRole.System` (ver `Message.kt`).
  *
- * Iteracion 2026-08-11 (backend real): la pantalla dejo de manejar su
+ * La pantalla dejo de manejar su
  * propia lista de mensajes con `remember` - ahora recibe [uiState] +
  * [onSendMessage] desde [ChatViewModel] (MVVM, stateless composable).
  * Las sugerencias tambien pasan por [onSendMessage] en vez de mutar
  * estado local directamente, para que toda pregunta (escrita o por chip)
- * pase por el mismo camino hacia el backend.
- *
- * Iteracion 2026-08-13 (gates a nivel app): el login con Google y la
- * conexion con Canvas ahora bloquean TODA la app desde `MainActivity`
- * (`AuthGateScreen` / `CanvasConnectScreen`), antes de que esta pantalla
- * siquiera se muestre - ya no maneja `isAuthenticated` ni gate propio.
- *
- * Iteracion 2026-08-19 (bugs reales, captura del usuario):
- * - El header completo (flecha + saludo + subtitulo) vivia FIJO fuera del
- *   scroll, consumiendo espacio permanente de la vista en pantallas
- *   chicas. Se separa: [ChatTopBar] (solo la flecha) queda fija arriba -
- *   el usuario siempre necesita poder volver -; el saludo (`ChatGreeting`)
- *   pasa a ser el primer item DENTRO de la lista scrolleable de mensajes,
- *   asi se va con el scroll al leer el historial.
- * - Los chips de sugerencia tambien consumian espacio fijo permanente del
- *   footer. Ahora solo se muestran cuando todavia no hay mensajes (inicio
- *   de la conversacion) - mismo criterio que apps de chat con IA (las
- *   sugerencias son para arrancar, no para acompañar toda la charla).
- * - El scroll no bajaba solo al enviar/recibir un mensaje: el mensaje mas
- *   reciente quedaba tapado por el footer fijo. Se agrega auto-scroll al
- *   final de la lista cada vez que cambia la cantidad de mensajes.
+ * pase por el mismo repositorio mock. Clerk controla el acceso desde
+ * `MainActivity`; esta pantalla solo presenta la conversación.
  */
 @Composable
 fun ChatScreen(
@@ -92,15 +75,8 @@ fun ChatScreen(
 ) {
     val messages = uiState.messages
     val scrollState = rememberScrollState()
-
-    // Auto-scroll al ultimo mensaje: sin esto, al enviar o recibir una
-    // respuesta el scroll se quedaba en la posicion anterior y el mensaje
-    // nuevo quedaba tapado por el footer fijo (bug real, captura del
-    // usuario 2026-08-19).
     LaunchedEffect(messages.size, uiState.isSending) {
-        if (messages.isNotEmpty() || uiState.isSending) {
-            scrollState.animateScrollTo(scrollState.maxValue)
-        }
+        scrollState.animateScrollTo(scrollState.maxValue)
     }
 
     Box(modifier = modifier.fillMaxSize().background(PaquitoColors.Background)) {
@@ -118,13 +94,10 @@ fun ChatScreen(
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 8.dp),
         ) {
-            // Fija arriba: SOLO la flecha atras (chica) - el saludo se movio
-            // adentro del scroll, ver comentario de la clase.
+            // Header: flecha atras + saludo.
             ChatTopBar(onBackClick = onBackClick)
 
-            // Lista de mensajes scrolleable. El saludo es el primer item -
-            // se va con el scroll al leer el historial, en vez de quedar
-            // fijo consumiendo espacio permanente.
+            // Lista de mensajes scrolleable.
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -138,32 +111,34 @@ fun ChatScreen(
                     Message(message = msg)
                 }
                 if (uiState.isSending) {
-                    TypingIndicatorBubble()
-                }
-            }
-
-            // Chips de sugerencia: solo antes del primer mensaje (arranque
-            // de la conversacion) - despues dejan de ocupar espacio fijo
-            // permanente en el footer.
-            if (messages.isEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
-                        .padding(vertical = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    ChatSuggestionPrompts.forEach { suggestion ->
-                        SuggestionChip(
-                            text = suggestion,
-                            onClick = { onSendMessage(suggestion) },
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        CircularProgressIndicator()
+                        Text(
+                            text = "Paquito está pensando…",
+                            style = PaquitoTypography.BodySmall,
+                            color = PaquitoColors.TextHomeMuted,
                         )
                     }
                 }
             }
 
-            // Input - deshabilitado mientras se espera respuesta (evita
-            // mandar una segunda pregunta antes de que llegue la primera).
+            // Chips de sugerencia (scrollable horizontal).
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                ChatSuggestionPrompts.forEach { suggestion ->
+                    SuggestionChip(
+                        text = suggestion,
+                        onClick = { onSendMessage(suggestion) },
+                    )
+                }
+            }
+
+            // Input.
             ChatInput(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -176,9 +151,7 @@ fun ChatScreen(
 }
 
 /**
- * Prompts alineados al tool `get_user_courses_current_term` del backend
- * (ciclo TECSUP: ago-dic = periodo 2). No hay REST de cursos; el chip
- * dispara el mismo `POST /query` que una pregunta escrita.
+ * Los chips envían preguntas al mismo repositorio MiniMax que el campo de texto.
  */
 private val ChatSuggestionPrompts = listOf(
     "Que cursos tengo este ciclo?",

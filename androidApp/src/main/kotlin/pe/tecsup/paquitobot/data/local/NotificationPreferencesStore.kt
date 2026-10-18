@@ -21,6 +21,12 @@ class NotificationPreferencesStore(context: Context) {
         savePreferences(categories, schedule())
     }
 
+    fun hasCompletedSetup(): Boolean = prefs.getBoolean("setup_completed", false)
+
+    fun markSetupCompleted() {
+        prefs.edit().putBoolean("setup_completed", true).apply()
+    }
+
     fun schedule(): NotificationSchedule = NotificationSchedule(
         reminderHours = prefs.getInt("reminder_hours", 24)
             .takeIf { it in NotificationSchedule.reminderOptions } ?: 24,

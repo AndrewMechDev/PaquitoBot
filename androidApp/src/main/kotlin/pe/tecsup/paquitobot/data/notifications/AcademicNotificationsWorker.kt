@@ -11,18 +11,19 @@ import android.os.Build
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.clerk.api.Clerk
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.flow.first
 import pe.tecsup.paquitobot.MainActivity
 import pe.tecsup.paquitobot.R
-import pe.tecsup.paquitobot.auth.CanvasMockKeyStore
+import pe.tecsup.paquitobot.PaquitoBotApp
+import pe.tecsup.paquitobot.auth.authorizedAcademicUserId
 import pe.tecsup.paquitobot.data.local.NotificationPreferencesStore
-import pe.tecsup.paquitobot.data.remote.CanvasMockApiError
-import pe.tecsup.paquitobot.data.remote.TokenProvider
-import pe.tecsup.paquitobot.data.repository.createDefaultAcademicRepository
 import pe.tecsup.paquitobot.domain.notifications.AcademicNotificationPlanner
 import pe.tecsup.paquitobot.domain.notifications.NotificationAssignment
 import java.security.MessageDigest
@@ -39,9 +40,7 @@ class AcademicNotificationsWorker(context: Context, parameters: WorkerParameters
                 throw cancelled
             } catch (error: Exception) {
                 // No registrar credenciales ni el cuerpo de respuestas del backend.
-                if (error is CanvasMockApiError.InvalidApiKey || error is CanvasMockApiError.NotConnected) {
-                    Result.success(workDataOf("status" to "needs_academic_connection"))
-                } else if (runAttemptCount < 3) Result.retry()
+                if (runAttemptCount < 3) Result.retry()
                 else Result.success(workDataOf("status" to "refresh_failed"))
             }
         }
@@ -49,15 +48,13 @@ class AcademicNotificationsWorker(context: Context, parameters: WorkerParameters
 
     private suspend fun deliver(): Result {
         val context = applicationContext
+        withTimeoutOrNull(30_000) { Clerk.isInitialized.first { it } } ?: return Result.retry()
         if (!AndroidAcademicNotificationScheduler.isEligible(context)) return Result.success()
         val preferences = NotificationPreferencesStore(context)
         val categories = preferences.enabledCategories()
         val schedule = preferences.schedule()
-        val keys = CanvasMockKeyStore(context)
-        val originalKey = keys.getToken() ?: return Result.success()
-        val repository = createDefaultAcademicRepository(object : TokenProvider {
-            override suspend fun getToken(): String = originalKey
-        })
+        val originalUser = authorizedAcademicUserId() ?: return Result.success()
+        val repository = (context as PaquitoBotApp).academicRepository
         val profile = repository.profile().getOrThrow()
         val courses = repository.courses().getOrThrow()
         val assignments = mutableListOf<NotificationAssignment>()
@@ -74,8 +71,8 @@ class AcademicNotificationsWorker(context: Context, parameters: WorkerParameters
         val now = Instant.now()
         val notices = AcademicNotificationPlanner.plan(assignments, categories, schedule, now, ZoneId.systemDefault())
         val ledger = context.getSharedPreferences("academic_notice_delivery", Context.MODE_PRIVATE)
-        // Separa cuentas sin persistir la API key ni incluirla en nombres de trabajo/notificaciones.
-        val scope = MessageDigest.getInstance("SHA-256").digest(originalKey.toByteArray())
+        // Separa cuentas de Clerk sin publicar el identificador en tags o nombres de trabajo.
+        val scope = MessageDigest.getInstance("SHA-256").digest(originalUser.toByteArray())
             .joinToString("") { "%02x".format(it) }.take(24) + ":${profile.id}:"
         val oldest = now.toEpochMilli() - TimeUnit.DAYS.toMillis(90)
         val cleanup = ledger.edit()
@@ -85,7 +82,7 @@ class AcademicNotificationsWorker(context: Context, parameters: WorkerParameters
         AndroidAcademicNotificationScheduler.createChannel(context)
         var published = 0
         for (notice in notices.sortedBy { if (it.key.startsWith("summary:")) 0 else 1 }) {
-            if (isStopped || keys.getToken() != originalKey || preferences.enabledCategories() != categories ||
+            if (isStopped || authorizedAcademicUserId() != originalUser || preferences.enabledCategories() != categories ||
                 preferences.schedule() != schedule || !AndroidAcademicNotificationScheduler.isEligible(context)) return Result.success()
             val eventKey = scope + notice.key
             if (ledger.contains(eventKey)) continue

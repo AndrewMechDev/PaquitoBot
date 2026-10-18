@@ -1,4 +1,15 @@
+import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+val clerkPublishableKey = localProperties.getProperty("clerk.publishableKey", "").trim()
+val miniMaxApiKey = localProperties.getProperty("minimax.apiKey", "").trim()
+require(clerkPublishableKey.startsWith("pk_test_") || clerkPublishableKey.startsWith("pk_live_")) {
+    "Falta clerk.publishableKey en local.properties. Agrega la publishable key de Clerk (pk_test_... o pk_live_...)."
+}
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -7,11 +18,14 @@ plugins {
 
 kotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_11
+        jvmTarget = JvmTarget.JVM_17
     }
 }
 dependencies {
     implementation(project(":sharedLogic"))
+
+    implementation(libs.clerk.android.api)
+    implementation(libs.clerk.android.ui)
 
     implementation(libs.androidx.activity.compose)
 
@@ -25,31 +39,19 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.androidx.work.runtime)
     coreLibraryDesugaring(libs.desugar.jdk)
-    testImplementation(libs.junit)
-
-    // Google Sign-In (Credential Manager - API moderna recomendada, reemplaza
-    // GoogleSignInClient) + almacenamiento cifrado del JWT del backend.
-    implementation(libs.androidx.credentials)
-    implementation(libs.androidx.credentials.playServicesAuth)
-    implementation(libs.googleid)
-    implementation(libs.androidx.security.crypto)
 
     // Glassmorphism real (blur de fondo) para el Navbar flotante - reemplaza
     // la opacidad simulada sin blur que habia antes.
     implementation(libs.haze)
     implementation(libs.haze.materials)
 
-    // Renderiza el Markdown crudo que devuelve paquitobot-rag (negritas,
-    // tablas, headers) en vez de mostrar el texto plano con "**"/"##"
-    // literales - variante m3 para que respete Material3/PaquitoTheme.
-    implementation(libs.markdown.renderer)
-    implementation(libs.markdown.renderer.m3)
-
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
 
+    testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.testExt.junit)
     androidTestImplementation(libs.androidx.test.runner)
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${libs.versions.kotlinx.coroutines.get()}")
 }
 
 android {
@@ -63,6 +65,12 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "CLERK_PUBLISHABLE_KEY",
+            "\"$clerkPublishableKey\""
+        )
     }
     packaging {
         resources {
@@ -70,12 +78,13 @@ android {
         }
     }
     buildTypes {
-
         debug {
             applicationIdSuffix = ".debug"
+            // Solo para prototipos locales: la clave queda dentro del APK debug.
+            buildConfigField("String", "MINIMAX_API_KEY", "\"${miniMaxApiKey.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
         }
-
         release {
+            buildConfigField("String", "MINIMAX_API_KEY", "\"\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -85,10 +94,11 @@ android {
     }
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }

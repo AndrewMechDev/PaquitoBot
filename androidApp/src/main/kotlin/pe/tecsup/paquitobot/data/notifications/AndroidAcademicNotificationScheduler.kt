@@ -4,13 +4,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
-import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import pe.tecsup.paquitobot.auth.CanvasMockKeyStore
-import pe.tecsup.paquitobot.auth.SecureTokenStore
+import pe.tecsup.paquitobot.auth.authorizedAcademicUserId
 import pe.tecsup.paquitobot.data.local.NotificationPreferencesStore
 import pe.tecsup.paquitobot.domain.notifications.AcademicNotificationScheduler
 import pe.tecsup.paquitobot.domain.notifications.NotificationCategory
@@ -27,10 +24,9 @@ class AndroidAcademicNotificationScheduler(context: Context) : AcademicNotificat
             return
         }
         val request = PeriodicWorkRequestBuilder<AcademicNotificationsWorker>(15, TimeUnit.MINUTES)
-            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
             .build()
-        // KEEP no reinicia el período en cada apertura o cambio de pantalla.
-        manager.enqueueUniquePeriodicWork(WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, request)
+        // UPDATE conserva el período y migra restricciones antiguas del backend de red.
+        manager.enqueueUniquePeriodicWork(WORK_NAME, ExistingPeriodicWorkPolicy.UPDATE, request)
     }
 
     companion object {
@@ -46,8 +42,8 @@ class AndroidAcademicNotificationScheduler(context: Context) : AcademicNotificat
         }
 
         fun isEligible(context: Context): Boolean =
-            SecureTokenStore(context).hasCompletedOnboarding() &&
-                CanvasMockKeyStore(context).hasApiKey() &&
+            NotificationPreferencesStore(context).hasCompletedSetup() &&
+                authorizedAcademicUserId() != null &&
                 NotificationCategory.Deadlines in NotificationPreferencesStore(context).enabledCategories() &&
                 notificationsAllowed(context)
 

@@ -1,7 +1,7 @@
 package pe.tecsup.paquitobot.util
 
 /**
- * Utilidades de fecha para datos de `canvas-mock` (ISO `yyyy-MM-dd...`), sin
+ * Utilidades de fecha para datos academicos (ISO `yyyy-MM-dd...`), sin
  * libreria de fechas (Zeller's congruence, Gregoriano) - mismo criterio que
  * ya se uso en `AcademicScheduleViewModel`, extraido aca para reusar tambien
  * en Home. `dateKey` siempre es el prefijo `yyyy-MM-dd` de un ISO datetime.

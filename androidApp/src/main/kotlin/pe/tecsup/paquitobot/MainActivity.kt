@@ -1,6 +1,12 @@
 package pe.tecsup.paquitobot
 
 import android.os.Bundle
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import pe.tecsup.paquitobot.data.local.NotificationPreferencesStore
+import pe.tecsup.paquitobot.data.notifications.AndroidAcademicNotificationScheduler
+import pe.tecsup.paquitobot.ui.components.NotificationType
+import pe.tecsup.paquitobot.ui.notifications.NotificationPermissionSection
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -11,47 +17,33 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import kotlinx.coroutines.launch
-import pe.tecsup.paquitobot.auth.CanvasMockKeyStore
-import pe.tecsup.paquitobot.auth.GoogleAuthClient
-import pe.tecsup.paquitobot.auth.SecureTokenStore
-import pe.tecsup.paquitobot.data.local.NotificationPreferencesStore
-import pe.tecsup.paquitobot.data.notifications.AndroidAcademicNotificationScheduler
+import pe.tecsup.paquitobot.data.MiniMaxChatRepository
 import pe.tecsup.paquitobot.session.SessionViewModel
-import pe.tecsup.paquitobot.ui.academic.AcademicConnectScreen
-import pe.tecsup.paquitobot.ui.academic.AcademicConnectViewModel
 import pe.tecsup.paquitobot.ui.academic.AcademicCourseDetailViewModel
 import pe.tecsup.paquitobot.ui.academic.AcademicHomeViewModel
 import pe.tecsup.paquitobot.ui.academic.AcademicScheduleViewModel
 import pe.tecsup.paquitobot.ui.academic.AcademicViewModel
-import pe.tecsup.paquitobot.ui.auth.AuthGateScreen
+import pe.tecsup.paquitobot.ui.auth.ClerkAuthGate
 import pe.tecsup.paquitobot.ui.chat.ChatScreen
 import pe.tecsup.paquitobot.ui.chat.ChatViewModel
 import pe.tecsup.paquitobot.ui.components.NavTab
-import pe.tecsup.paquitobot.ui.components.NotificationType
 import pe.tecsup.paquitobot.ui.courses.CourseCardData
-import pe.tecsup.paquitobot.ui.courses.CourseDetailData
 import pe.tecsup.paquitobot.ui.courses.CourseDetailScreen
 import pe.tecsup.paquitobot.ui.courses.CoursesScreen
-import pe.tecsup.paquitobot.ui.courses.CoursesScreenData
 import pe.tecsup.paquitobot.ui.home.HomeScreen
-import pe.tecsup.paquitobot.ui.home.HomeScreenData
 import pe.tecsup.paquitobot.ui.notifications.NotificationsInboxScreen
-import pe.tecsup.paquitobot.ui.notifications.NotificationPermissionSection
 import pe.tecsup.paquitobot.ui.onboarding.OnboardingNotificationsScreen
 import pe.tecsup.paquitobot.ui.onboarding.OnboardingTourScreen
 import pe.tecsup.paquitobot.ui.onboarding.WelcomeScreen
@@ -67,6 +59,15 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 private enum class RootScreen { Tabs, Chat, CourseDetail, Notifications }
 
 private enum class OnboardingStep { Welcome, Notifications, Tour }
+
+/**
+ * Fecha "de hoy" que usan las pantallas academicas. El JSON de demo
+ * (`assets/academic.json`) tiene sus eventos en la semana del 2026-08-03,
+ * que casi nunca coincide con la fecha del dispositivo; se fija para que la
+ * demo se vea con datos vigentes. Cuando haya datos reales, cambiar por
+ * `::deviceToday` (es el valor por defecto de los ViewModels academicos).
+ */
+private const val DEMO_TODAY = "2026-08-03"
 
 /** [CourseCardData] no es Parcelable: se guarda como lista de primitivos para sobrevivir a la rotacion. */
 private val SelectedCourseSaver = listSaver<CourseCardData?, Any>(
@@ -104,6 +105,10 @@ private val SelectedCourseSaver = listSaver<CourseCardData?, Any>(
     },
 )
 
+/** Factory de un solo ViewModel; sin libreria de DI (ver skill architecture-paquitobot). */
+private inline fun <reified VM : ViewModel> factoryOf(noinline create: () -> VM): ViewModelProvider.Factory =
+    viewModelFactory { initializer { create() } }
+
 class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
@@ -128,48 +133,25 @@ class MainActivity : ComponentActivity() {
 }
 
 /**
- * Flujo de gates antes de mostrar Home o Chat (actualizado 2026-08-19):
+ * Iteracion 2026-08-13 (flujo de gates): antes de mostrar Home o Chat, la
+ * app presenta el onboarding en cada apertura y después evalúa Clerk:
  *
- *   1. Sin sesion de Google -> [AuthGateScreen] (unico gate OBLIGATORIO).
- *   2. Con sesion, sin canvas-mock conectado -> gate OPCIONAL de
- *      canvas-mock (siempre se puede omitir - ver skill
- *      canvas-mock-backend).
- *   3. Con Google + (mock conectado u omitido) -> Home/Chat normal.
- *
- * El gate de Canvas REAL (paquitobot-rag) esta retirado del flujo
- * mientras no haya API real de Canvas disponible.
+ *   1. Bienvenida, notificaciones y recorrido.
+ *   2. Sin sesion de Clerk -> [ClerkAuthGate].
+ *   3. Con sesion -> pantallas de la app.
  */
 @Composable
 private fun AppRoot() {
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    val tokenStore = remember { SecureTokenStore(context.applicationContext) }
-    val notificationPreferences = remember { NotificationPreferencesStore(context.applicationContext) }
-    val notificationScheduler = remember { AndroidAcademicNotificationScheduler(context.applicationContext) }
-    val canvasMockKeyStore = remember { CanvasMockKeyStore(context.applicationContext) }
-    var academicGatePassed by remember {
-        mutableStateOf(canvasMockKeyStore.hasApiKey() || canvasMockKeyStore.isSkipped())
-    }
-    val googleWebClientId = stringResource(R.string.google_web_client_id)
-    val googleAuthClient = remember(context, googleWebClientId) {
-        GoogleAuthClient(
-            context = context,
-            webClientId = googleWebClientId,
-        )
-    }
-
-    val sessionViewModel: SessionViewModel = viewModel(
-        factory = remember {
-            viewModelFactory {
-                initializer {
-                    SessionViewModel(tokenStore = tokenStore, notificationPreferences = notificationPreferences,
-                        notificationScheduler = notificationScheduler)
-                }
-            }
-        },
-    )
+    val context = LocalContext.current.applicationContext
+    val notificationPreferences = remember(context) { NotificationPreferencesStore(context) }
+    val notificationScheduler = remember(context) { AndroidAcademicNotificationScheduler(context) }
+    val sessionViewModel: SessionViewModel = viewModel(factory = remember {
+        factoryOf { SessionViewModel(notificationPreferences, notificationScheduler) }
+    })
     val sessionUiState by sessionViewModel.uiState.collectAsStateWithLifecycle()
-    var onboardingStep by rememberSaveable { mutableStateOf(OnboardingStep.Welcome) }
+    var onboardingStep by remember(sessionUiState.sessionRevision) {
+        mutableStateOf(OnboardingStep.Welcome)
+    }
 
     when {
         !sessionUiState.isOnboardingComplete -> when (onboardingStep) {
@@ -177,9 +159,7 @@ private fun AppRoot() {
                 onContinueClick = { onboardingStep = OnboardingStep.Notifications },
             )
             OnboardingStep.Notifications -> OnboardingNotificationsScreen(
-                initialEnabled = NotificationType.entries.filterTo(mutableSetOf()) {
-                    it.category in sessionUiState.enabledNotifications
-                },
+                initialEnabled = NotificationType.entries.filterTo(mutableSetOf()) { it.category in sessionUiState.enabledNotifications },
                 initialSchedule = sessionUiState.notificationSchedule,
                 permissionContent = { NotificationPermissionSection(onPermissionChanged = notificationScheduler::reconcile) },
                 onContinue = { enabled, schedule ->
@@ -192,58 +172,12 @@ private fun AppRoot() {
             )
         }
 
-        !sessionUiState.isAuthenticated -> AuthGateScreen(
-            isSigningIn = sessionUiState.isSigningIn,
-            errorMessage = sessionUiState.authError,
-            onSignInClick = {
-                sessionViewModel.prepareSignIn()
-                coroutineScope.launch {
-                    googleAuthClient.signIn()
-                        .onSuccess { result ->
-                            sessionViewModel.completeSignIn(result.idToken, result.firstName())
-                        }
-                        .onFailure { error -> sessionViewModel.signInFailed(error) }
-                }
-            },
+        !sessionUiState.isAuthenticated -> ClerkAuthGate(
+            isUnauthorizedSession = sessionUiState.isUnauthorizedSession,
+            isSigningOut = sessionUiState.isSigningOut,
+            signOutError = sessionUiState.signOutError,
+            onSignOutClick = sessionViewModel::signOut,
         )
-
-        // Gate del Canvas REAL (paquitobot-rag) RETIRADO del flujo
-        // (2026-08-19): mientras no haya API real de Canvas, la unica
-        // fuente de datos academicos es canvas-mock (gate de abajo,
-        // opcional). Se mantiene solo el gate de Google como obligatorio.
-        // CanvasConnectScreen/CanvasConnectViewModel quedan sin uso aca a
-        // proposito - no se borran porque son necesarios el dia que haya
-        // integracion Canvas real.
-
-        // Tercer gate (2026-08-19), OPCIONAL: canvas-mock (ver skill
-        // canvas-mock-backend). A diferencia de los gates de arriba, este
-        // SIEMPRE se puede omitir - los datos mock son una demo, no un
-        // requisito. Independiente del gate de Canvas real de arriba (dos
-        // backends distintos).
-        !academicGatePassed -> {
-            val academicConnectViewModel: AcademicConnectViewModel = viewModel(
-                factory = remember {
-                    viewModelFactory {
-                        initializer { AcademicConnectViewModel(keyStore = canvasMockKeyStore) }
-                    }
-                },
-            )
-            val academicUiState by academicConnectViewModel.uiState.collectAsStateWithLifecycle()
-            LaunchedEffect(academicUiState.isConnected) {
-                if (academicUiState.isConnected) {
-                    academicGatePassed = true
-                    notificationScheduler.reconcile()
-                }
-            }
-            AcademicConnectScreen(
-                uiState = academicUiState,
-                onConnectClick = academicConnectViewModel::connect,
-                onSkipClick = {
-                    canvasMockKeyStore.markSkipped()
-                    academicGatePassed = true
-                },
-            )
-        }
 
         else -> {
             // rememberSaveable: sobrevive a la rotacion (Android recrea la Activity)
@@ -254,115 +188,76 @@ private fun AppRoot() {
                 mutableStateOf<CourseCardData?>(null)
             }
             val userFirstName = sessionUiState.userFirstName ?: "estudiante"
+            val academicRepository = (LocalContext.current.applicationContext as PaquitoBotApp).academicRepository
 
             when (rootScreen) {
                 RootScreen.Tabs -> when (currentTab) {
                     NavTab.Inicio -> {
-                        // Mismo criterio que Cursos/Horarios: real si hay key mock conectada.
-                        if (canvasMockKeyStore.hasApiKey()) {
-                            val homeViewModel: AcademicHomeViewModel = viewModel(
-                                factory = remember {
-                                    viewModelFactory {
-                                        initializer { AcademicHomeViewModel(keyStore = canvasMockKeyStore) }
-                                    }
-                                },
-                            )
-                            val homeData by homeViewModel.uiState.collectAsStateWithLifecycle()
-                            val homeError by homeViewModel.errorMessage.collectAsStateWithLifecycle()
-                            HomeScreen(
-                                data = homeData.copy(greeting = "¡Bienvenido, $userFirstName!"),
-                                currentTab = currentTab,
-                                onTabSelected = { currentTab = it },
-                                onPaquitoClick = { rootScreen = RootScreen.Chat },
-                                onNotificationsClick = { rootScreen = RootScreen.Notifications },
-                                errorMessage = homeError,
-                                onRetry = homeViewModel::load,
-                            )
-                        } else {
-                            HomeScreen(
-                                data = HomeScreenData.default().copy(
-                                    greeting = "¡Bienvenido, $userFirstName!",
-                                ),
-                                currentTab = currentTab,
-                                onTabSelected = { currentTab = it },
-                                onPaquitoClick = { rootScreen = RootScreen.Chat },
-                                onNotificationsClick = { rootScreen = RootScreen.Notifications },
-                            )
-                        }
+                        val homeViewModel: AcademicHomeViewModel = viewModel(
+                            factory = remember {
+                                factoryOf { AcademicHomeViewModel(academicRepository, today = { DEMO_TODAY }) }
+                            },
+                        )
+                        val homeData by homeViewModel.uiState.collectAsStateWithLifecycle()
+                        val homeError by homeViewModel.errorMessage.collectAsStateWithLifecycle()
+                        HomeScreen(
+                            data = homeData.copy(greeting = "¡Bienvenido, $userFirstName!"),
+                            currentTab = currentTab,
+                            onTabSelected = { currentTab = it },
+                            onPaquitoClick = { rootScreen = RootScreen.Chat },
+                            onNotificationsClick = { rootScreen = RootScreen.Notifications },
+                            onSignOutClick = sessionViewModel::signOut,
+                            isSigningOut = sessionUiState.isSigningOut,
+                            signOutError = sessionUiState.signOutError,
+                            errorMessage = homeError,
+                            onRetry = homeViewModel::load,
+                        )
                     }
                     NavTab.Cursos -> {
-                        // Iteracion 2026-08-19: si el estudiante conecto una
-                        // cuenta mock (ver skill canvas-mock-backend), Cursos
-                        // muestra datos REALES de canvas-mock en vez del mock
-                        // hardcodeado. Si omitio el gate, sigue con el mock.
-                        if (canvasMockKeyStore.hasApiKey()) {
-                            val academicViewModel: AcademicViewModel = viewModel(
-                                factory = remember {
-                                    viewModelFactory {
-                                        initializer { AcademicViewModel(keyStore = canvasMockKeyStore) }
-                                    }
-                                },
-                            )
-                            val academicData by academicViewModel.uiState.collectAsStateWithLifecycle()
-                            val academicError by academicViewModel.errorMessage.collectAsStateWithLifecycle()
-                            CoursesScreen(
-                                data = academicData,
-                                currentTab = currentTab,
-                                onTabSelected = { currentTab = it },
-                                onPaquitoClick = { rootScreen = RootScreen.Chat },
-                                onCourseClick = { course ->
-                                    selectedCourse = course
-                                    rootScreen = RootScreen.CourseDetail
-                                },
-                                errorMessage = academicError,
-                                onRetry = academicViewModel::load,
-                            )
-                        } else {
-                            CoursesScreen(
-                                currentTab = currentTab,
-                                onTabSelected = { currentTab = it },
-                                onPaquitoClick = { rootScreen = RootScreen.Chat },
-                                onCourseClick = { course ->
-                                    selectedCourse = course
-                                    rootScreen = RootScreen.CourseDetail
-                                },
-                            )
-                        }
+                        val coursesViewModel: AcademicViewModel = viewModel(
+                            factory = remember {
+                                factoryOf { AcademicViewModel(academicRepository, today = { DEMO_TODAY }) }
+                            },
+                        )
+                        val coursesData by coursesViewModel.uiState.collectAsStateWithLifecycle()
+                        val coursesError by coursesViewModel.errorMessage.collectAsStateWithLifecycle()
+                        CoursesScreen(
+                            data = coursesData,
+                            currentTab = currentTab,
+                            onTabSelected = { currentTab = it },
+                            onPaquitoClick = { rootScreen = RootScreen.Chat },
+                            onCourseClick = { course ->
+                                selectedCourse = course
+                                rootScreen = RootScreen.CourseDetail
+                            },
+                            errorMessage = coursesError,
+                            onRetry = coursesViewModel::load,
+                        )
                     }
                     NavTab.Horarios -> {
-                        // Mismo criterio que Cursos: real si hay key mock conectada.
-                        if (canvasMockKeyStore.hasApiKey()) {
-                            val scheduleViewModel: AcademicScheduleViewModel = viewModel(
-                                factory = remember {
-                                    viewModelFactory {
-                                        initializer { AcademicScheduleViewModel(keyStore = canvasMockKeyStore) }
-                                    }
-                                },
-                            )
-                            val scheduleData by scheduleViewModel.uiState.collectAsStateWithLifecycle()
-                            val scheduleError by scheduleViewModel.errorMessage.collectAsStateWithLifecycle()
-                            ScheduleScreen(
-                                data = scheduleData,
-                                currentTab = currentTab,
-                                onTabSelected = { currentTab = it },
-                                onPaquitoClick = { rootScreen = RootScreen.Chat },
-                                errorMessage = scheduleError,
-                                onRetry = scheduleViewModel::load,
-                            )
-                        } else {
-                            ScheduleScreen(
-                                currentTab = currentTab,
-                                onTabSelected = { currentTab = it },
-                                onPaquitoClick = { rootScreen = RootScreen.Chat },
-                            )
-                        }
+                        val scheduleViewModel: AcademicScheduleViewModel = viewModel(
+                            factory = remember {
+                                factoryOf { AcademicScheduleViewModel(academicRepository, today = { DEMO_TODAY }) }
+                            },
+                        )
+                        val scheduleData by scheduleViewModel.uiState.collectAsStateWithLifecycle()
+                        val scheduleError by scheduleViewModel.errorMessage.collectAsStateWithLifecycle()
+                        ScheduleScreen(
+                            data = scheduleData,
+                            currentTab = currentTab,
+                            onTabSelected = { currentTab = it },
+                            onPaquitoClick = { rootScreen = RootScreen.Chat },
+                            errorMessage = scheduleError,
+                            onRetry = scheduleViewModel::load,
+                        )
                     }
                 }
                 RootScreen.Chat -> {
                     val chatViewModel: ChatViewModel = viewModel(
+                        key = "chat-${sessionUiState.sessionRevision}",
                         factory = remember {
                             viewModelFactory {
-                                initializer { ChatViewModel(tokenStore = tokenStore) }
+                                initializer { ChatViewModel(MiniMaxChatRepository(BuildConfig.MINIMAX_API_KEY)) }
                             }
                         },
                     )
@@ -375,18 +270,17 @@ private fun AppRoot() {
                     )
                 }
                 RootScreen.CourseDetail -> {
-                    val course = selectedCourse ?: CoursesScreenData.default().courses.first()
-                    // Real solo si hay key mock conectada Y el id del curso es
-                    // numerico (viene de canvas-mock) - el mock hardcodeado usa
-                    // ids tipo "calculo-ii", que no son un curso real ahi.
-                    if (canvasMockKeyStore.hasApiKey() && course.id.toIntOrNull() != null) {
+                    val course = selectedCourse
+                    if (course == null) {
+                        // No deberia pasar (se elige un curso antes de navegar), pero si el
+                        // estado guardado se pierde, volver a las pestanas en vez de quedar vacio.
+                        LaunchedEffect(Unit) { rootScreen = RootScreen.Tabs }
+                    } else {
                         val detailViewModel: AcademicCourseDetailViewModel = viewModel(
                             key = course.id,
                             factory = remember(course.id) {
-                                viewModelFactory {
-                                    initializer {
-                                        AcademicCourseDetailViewModel(keyStore = canvasMockKeyStore, course = course)
-                                    }
+                                factoryOf {
+                                    AcademicCourseDetailViewModel(academicRepository, course, today = { DEMO_TODAY })
                                 }
                             },
                         )
@@ -396,11 +290,6 @@ private fun AppRoot() {
                             data = detailData,
                             errorMessage = detailError,
                             onRetry = detailViewModel::load,
-                            onBackClick = { rootScreen = RootScreen.Tabs },
-                        )
-                    } else {
-                        CourseDetailScreen(
-                            data = CourseDetailData.forCourse(course),
                             onBackClick = { rootScreen = RootScreen.Tabs },
                         )
                     }

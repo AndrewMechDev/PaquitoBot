@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -16,6 +17,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -33,8 +37,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pe.tecsup.paquitobot.R
+import pe.tecsup.paquitobot.ui.components.AcademicErrorBanner
 import pe.tecsup.paquitobot.ui.components.AppTabScaffold
-import pe.tecsup.paquitobot.ui.components.CanvasMockErrorBanner
 import pe.tecsup.paquitobot.ui.components.NavTab
 import pe.tecsup.paquitobot.ui.components.NotificationBellButton
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
@@ -48,7 +52,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
  *
  * Estructura (de arriba hacia abajo):
  *   1. Header / saludo     ("¡Bienvenido, {nombre}!" + fecha completa) — alineado a izquierda
- *   2. Snapshot de los 3 dolores (promedio / faltas / entregas)
+ *   2. Snapshot academico de 3 cards (ranking general / ranking por ciclo / carrera)
  *   3. Calendario semanal  ("Semana 10" + card oscura con 7 dias en 1 sola fila)
  *   4. Tareas pendientes   (lista unificada: foros, labs, practicas)
  *   5. Navbar inferior     (3 tabs + boton Paquito + badge)
@@ -78,6 +82,9 @@ fun HomeScreen(
     onTabSelected: (NavTab) -> Unit = {},
     onPaquitoClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
+    onSignOutClick: () -> Unit = {},
+    isSigningOut: Boolean = false,
+    signOutError: String? = null,
     errorMessage: String? = null,
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -93,9 +100,9 @@ fun HomeScreen(
 
     // Iteracion 2026-08-19 (card de ranking por ciclo, funcional): que ciclo
     // se esta mostrando en la card verde vive como estado de UI, arranca en
-    // el ciclo completado MAS RECIENTE (el anterior al actual - canvas-mock
-    // no tiene el concepto de "ciclo" en absoluto, ver comentario en
-    // `HomeScreenData`).
+    // el ciclo completado MAS RECIENTE (el anterior al actual - el JSON
+    // academico local no tiene el concepto de "ciclo" en absoluto, ver
+    // comentario en `PainSnapshotRow`).
     var selectedCycleIndex by remember(data) { mutableStateOf(data.cycleRankings.lastIndex) }
 
     AppTabScaffold(
@@ -106,13 +113,16 @@ fun HomeScreen(
         modifier = modifier,
     ) {
         if (errorMessage != null) {
-            CanvasMockErrorBanner(message = errorMessage, onRetry = onRetry)
+            AcademicErrorBanner(message = errorMessage, onRetry = onRetry)
         }
         HomeMessage(
             greeting = data.greeting,
             dateLabel = data.dateLabel,
             unreadNotificationsCount = data.unreadNotificationsCount,
             onNotificationsClick = onNotificationsClick,
+            onSignOutClick = onSignOutClick,
+            isSigningOut = isSigningOut,
+            signOutError = signOutError,
         )
         PainSnapshotRow(
             overallRanking = data.overallRanking,
@@ -144,18 +154,17 @@ fun HomeScreen(
 
 /**
  * Iteracion 2026-08-19 (repensado, pedido explicito del usuario): las 3
- * cards ya NO muestran datos de canvas-mock (promedio/faltas/entregas -
- * esos siguen viviendo en Cursos y Horarios) sino informacion academica de
- * "ranking": ranking general acumulado (todos los ciclos antes del
- * actual), ranking del ciclo anterior al que cursas (seleccionable entre
- * los ciclos ya finalizados, 1° a 6°), y codigo de carrera + ciclo actual.
+ * cards ya NO muestran promedio/faltas/entregas (esos viven en Cursos y
+ * Horarios) sino informacion academica de "ranking": ranking general
+ * acumulado (todos los ciclos antes del actual), ranking del ciclo anterior
+ * al que cursas (seleccionable entre los ciclos ya finalizados, 1° a 6°), y
+ * codigo de carrera + ciclo actual.
  *
- * ⚠️ DATO DEMO, no viene de canvas-mock: ese backend no tiene NINGUN
- * concepto de "ranking", "ciclo" ni "codigo de carrera" en sus 8 endpoints
- * (ver skill `canvas-mock-backend`) - ni el mock ni Canvas real exponen
- * esto hoy. Confirmado con el usuario (2026-08-19) usar datos fijos de
- * demo, documentados como tal, en vez de dejarlo pendiente - mismo
- * criterio que `ASSUMED_ABSENCE_LIMIT` en `AcademicViewModel`.
+ * ⚠️ DATO DEMO, no viene del JSON academico local: ese archivo no tiene
+ * NINGUN concepto de "ranking", "ciclo" ni "codigo de carrera" (tampoco lo
+ * tenia el backend anterior). Se mantienen datos fijos de demo, documentados
+ * como tal, mismo criterio que `ASSUMED_ABSENCE_LIMIT` en los ViewModels
+ * academicos.
  */
 @Composable
 private fun PainSnapshotRow(
@@ -258,34 +267,53 @@ private fun HomeMessage(
     dateLabel: String,
     unreadNotificationsCount: Int,
     onNotificationsClick: () -> Unit,
+    onSignOutClick: () -> Unit,
+    isSigningOut: Boolean,
+    signOutError: String?,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalAlignment = Alignment.Start, // <-- antes Center; ahora Start segun Figma
-            modifier = Modifier.weight(1f),
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = greeting,
-                style = PaquitoTypography.DisplayLarge,
-                color = PaquitoColors.TextHomeStrong,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
+            Spacer(Modifier.weight(1f))
+            NotificationBellButton(
+                unreadCount = unreadNotificationsCount,
+                onClick = onNotificationsClick,
             )
+            Button(
+                onClick = onSignOutClick,
+                enabled = !isSigningOut,
+                colors = ButtonDefaults.buttonColors(containerColor = PaquitoColors.StateDanger),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.padding(start = 8.dp),
+            ) {
+                Text(
+                    text = if (isSigningOut) "Cerrando…" else "Cerrar sesión",
+                    style = PaquitoTypography.BodySmall,
+                    color = Color.White,
+                )
+            }
+        }
+        Text(
+            text = greeting,
+            style = PaquitoTypography.DisplayLarge,
+            color = PaquitoColors.TextHomeStrong,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = dateLabel,
+            style = PaquitoTypography.HeadlineSmall,
+            color = PaquitoColors.TextHomeMuted,
+        )
+        if (signOutError != null) {
             Text(
-                text = dateLabel,
-                style = PaquitoTypography.HeadlineSmall,
-                color = PaquitoColors.TextHomeMuted,
+                text = signOutError,
+                style = PaquitoTypography.BodySmall,
+                color = PaquitoColors.StateDanger,
             )
         }
-        NotificationBellButton(
-            unreadCount = unreadNotificationsCount,
-            onClick = onNotificationsClick,
-        )
     }
 }
 
@@ -614,7 +642,7 @@ data class TaskEntry(
 
 /**
  * Ranking de un ciclo YA FINALIZADO (1° al 6°, nunca el ciclo en curso -
- * ver comentario de [HomeScreenData]). `ranking` va de 0 a 20 con
+ * ver comentario de `PainSnapshotRow`). `ranking` va de 0 a 20 con
  * decimales, igual que las notas.
  */
 data class CycleRanking(
@@ -622,7 +650,7 @@ data class CycleRanking(
     val ranking: Double,
 )
 
-/** Snapshot de la pantalla Home. Vendra del Repository cuando este listo. */
+/** Snapshot de la pantalla Home, armado por `AcademicHomeViewModel` desde el JSON academico local. */
 data class HomeScreenData(
     val greeting: String,
     val dateLabel: String,
@@ -633,18 +661,25 @@ data class HomeScreenData(
     val pendingCount: Int,
     // Ranking academico general (acumulado, todos los ciclos antes del
     // actual) y ranking por ciclo (seleccionable, ver `PainSnapshotRow`) -
-    // dato de DEMO, canvas-mock no tiene este concepto (ver comentario en
-    // `PainSnapshotRow`).
+    // dato de DEMO, el JSON local no tiene este concepto.
     val overallRanking: Double,
     val careerCode: String,
     val currentCycle: Int,
     val cycleRankings: List<CycleRanking>,
     // `pendingCount` de arriba es el badge del FAB de Paquito (tareas
     // pendientes) - este es un contador DISTINTO para la campana del header
-    // (avisos generales: vencimientos, notas nuevas, sync de Canvas). Se
+    // (avisos generales: vencimientos, notas nuevas, sync de datos). Se
     // muestran juntos en pantalla, pero no deberian ser el mismo numero:
     // implicaria que son el mismo concepto y no lo son.
     val unreadNotificationsCount: Int = 0,
+    // LEGADO: las cards de promedio/faltas/entregas ya no se dibujan en Home
+    // (las reemplazo el ranking), pero `MockAcademicContext` (contexto del
+    // chat, que sigue con datos demo) todavia los lee desde `default()`.
+    // Borrar junto con ese uso cuando el chat lea el JSON local.
+    val trackValue: String = "—",
+    val absencesUsed: Int = 0,
+    val absencesLimit: Int = 0,
+    val dueThisWeek: Int = 0,
 ) {
     companion object {
         fun default(): HomeScreenData = HomeScreenData(
@@ -661,11 +696,8 @@ data class HomeScreenData(
                 WeekDayData("Domingo",   "09", "09/08/26", isToday = false, isCritical = false),
             ),
             tasksHeader = "Tareas Pendientes",
-            // Iteracion 2026-08-19 (mas variedad, pedido del usuario): cada
-            // dia tiene una cantidad distinta de tareas (2, 1, 2, 1, 1, 1),
-            // menos Domingo (09) que queda a proposito sin ninguna - para
-            // probar el estado vacio "No hay tareas pendientes" y porque
-            // ningun curso agenda entregas en fin de semana.
+            // Domingo (09) queda a proposito sin ninguna tarea, para probar
+            // el estado vacio "No hay tareas pendientes".
             tasks = listOf(
                 TaskEntry(
                     label = "Calculo II · lab",
@@ -676,36 +708,12 @@ data class HomeScreenData(
                     iconRes = R.drawable.ic_paquito_lab_profile,
                 ),
                 TaskEntry(
-                    label = "Algoritmos · lectura",
-                    title = "Lectura: Complejidad algoritmica",
-                    timestamp = "18 h",
-                    urgency = TaskUrgency.Normal,
-                    dayNumber = "03",
-                    iconRes = R.drawable.ic_paquito_book_outline,
-                ),
-                TaskEntry(
-                    label = "Fisica I · practica",
-                    title = "Practica 2",
-                    timestamp = "1 d",
-                    urgency = TaskUrgency.Normal,
-                    dayNumber = "04",
-                    iconRes = R.drawable.ic_paquito_docs_default,
-                ),
-                TaskEntry(
-                    label = "Algoritmos · pendiente",
-                    title = "Pendiente 2",
+                    label = "Algoritmos · foro",
+                    title = "Foro 2",
                     timestamp = "2 d",
                     urgency = TaskUrgency.Urgent,
                     dayNumber = "05",
                     iconRes = R.drawable.ic_paquito_docs_default,
-                ),
-                TaskEntry(
-                    label = "Calculo II · lab",
-                    title = "Laboratorio 5",
-                    timestamp = "2 d",
-                    urgency = TaskUrgency.Normal,
-                    dayNumber = "05",
-                    iconRes = R.drawable.ic_paquito_lab_profile,
                 ),
                 TaskEntry(
                     label = "Fisica I · practica",
@@ -716,14 +724,6 @@ data class HomeScreenData(
                     iconRes = R.drawable.ic_paquito_docs_default,
                 ),
                 TaskEntry(
-                    label = "Algoritmos · lectura",
-                    title = "Lectura: Arboles balanceados",
-                    timestamp = "4 d",
-                    urgency = TaskUrgency.Future,
-                    dayNumber = "07",
-                    iconRes = R.drawable.ic_paquito_book_outline,
-                ),
-                TaskEntry(
                     label = "Calculo II · practica",
                     title = "Practica 3",
                     timestamp = "7 d",
@@ -732,7 +732,7 @@ data class HomeScreenData(
                     iconRes = R.drawable.ic_paquito_docs_default,
                 ),
             ),
-            pendingCount = 8,
+            pendingCount = 3,
             overallRanking = 15.0,
             careerCode = "C-24",
             currentCycle = 6,
@@ -744,6 +744,10 @@ data class HomeScreenData(
                 CycleRanking(cycle = 5, ranking = 15.1),
             ),
             unreadNotificationsCount = 2,
+            trackValue = "14.8",
+            absencesUsed = 2,
+            absencesLimit = 5,
+            dueThisWeek = 3,
         )
     }
 }

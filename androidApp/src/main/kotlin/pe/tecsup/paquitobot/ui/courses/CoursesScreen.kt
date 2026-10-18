@@ -14,8 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import pe.tecsup.paquitobot.ui.components.AcademicErrorBanner
 import pe.tecsup.paquitobot.ui.components.AppTabScaffold
-import pe.tecsup.paquitobot.ui.components.CanvasMockErrorBanner
 import pe.tecsup.paquitobot.ui.components.NavTab
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
@@ -52,7 +52,7 @@ fun CoursesScreen(
         modifier = modifier,
     ) {
         if (errorMessage != null) {
-            CanvasMockErrorBanner(message = errorMessage, onRetry = onRetry)
+            AcademicErrorBanner(message = errorMessage, onRetry = onRetry)
         }
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(

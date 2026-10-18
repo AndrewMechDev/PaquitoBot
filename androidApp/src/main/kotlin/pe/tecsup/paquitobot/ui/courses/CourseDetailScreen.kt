@@ -33,7 +33,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import pe.tecsup.paquitobot.R
-import pe.tecsup.paquitobot.ui.components.CanvasMockErrorBanner
+import pe.tecsup.paquitobot.ui.components.AcademicErrorBanner
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
@@ -42,11 +42,10 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
 
 /**
  * Detalle de un curso: promedio proyectado + asistencia + practicas/labs +
- * pendientes. Sin frame Figma. Misma paleta que Home. Sin ViewModel (UI
- * mock) - TODO conectar a `canvas-mock` (courseAttendance/courseClassSessions
- * por curso especifico) para que la asistencia con fecha real y las
- * practicas/labs dejen de ser el mismo mock para todos los cursos excepto
- * "calculo-ii" (ver skill `canvas-mock-backend`).
+ * pendientes. Sin frame Figma. Misma paleta que Home. En la app los datos
+ * los arma `AcademicCourseDetailViewModel` a partir del JSON academico
+ * local; [CourseDetailData.calculoIi] solo alimenta el preview y el valor
+ * por defecto del parametro `data`.
  *
  * Iteracion 2026-08-19 (pedido del usuario, con captura):
  * - Las 4 secciones (Asistencia, Practicas, Laboratorios, Pendientes) ahora
@@ -105,7 +104,7 @@ fun CourseDetailScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             if (errorMessage != null) {
-                CanvasMockErrorBanner(message = errorMessage, onRetry = onRetry)
+                AcademicErrorBanner(message = errorMessage, onRetry = onRetry)
             }
             GradeHero(data = data)
             AttendanceSection(
@@ -316,8 +315,12 @@ private fun EvaluationSection(
 private fun EvaluationDetailDialog(item: EvaluationItem, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Cerrar") } },
-        title = { Text(item.name) },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cerrar", style = PaquitoTypography.ButtonLabel)
+            }
+        },
+        title = { Text(item.name, style = PaquitoTypography.TaskTitle) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 DetailRow(label = "Estado", value = stateLabel(item.state))
@@ -379,10 +382,15 @@ data class CourseDetailData(
     val pending: List<EvaluationItem>,
     // Titulo de la seccion de [pending] - "Pendientes" para el mock
     // categorizado (Practicas/Laboratorios/Pendientes), "Entregas" para
-    // datos reales de canvas-mock (que no categoriza assignments, ver
+    // los datos del JSON local (que no categoriza las entregas, ver
     // `AcademicCourseDetailViewModel`).
     val pendingTitle: String = "Pendientes",
 ) {
+    // LEGADO: antes la lista se llamaba `forums`; `MockAcademicContext`
+    // (contexto del chat, aun con datos demo) todavia la lee con ese nombre.
+    // Borrar junto con ese uso cuando el chat lea el JSON academico local.
+    val forums: List<EvaluationItem> get() = pending
+
     companion object {
         fun forCourse(course: CourseCardData): CourseDetailData =
             if (course.id == "calculo-ii") calculoIi() else generic(course)
@@ -427,7 +435,7 @@ data class CourseDetailData(
                     ),
                     EvaluationItem(
                         "Lab 4", "15%", "Hoy 23:59", EvaluationState.Pending,
-                        detail = "El de mayor peso del ciclo - entregalo completo para subir el promedio.",
+                        detail = "El de mayor peso del ciclo - entrégalo completo para subir el promedio.",
                     ),
                     EvaluationItem("Lab 5", "5%", "Sin abrir", EvaluationState.Pending),
                     EvaluationItem("Lab 6", "5%", "Sin abrir", EvaluationState.Pending),
