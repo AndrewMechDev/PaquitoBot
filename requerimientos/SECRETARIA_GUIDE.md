@@ -51,3 +51,14 @@ Consultar trámites de TECSUP Arequipa sin conexión, con requisitos, orientaci�
 - `:androidApp:lintDebug`: 0 errores, 50 advertencias y 1 sugerencia. Dos advertencias de la guía recomiendan la extensión KTX `toUri`; no impiden abrir los canales.
 - Recursos y referencias verificados; todos los textos nuevos usan DM Sans. Sin nuevas dependencias o permisos.
 - Sin instalación o validación visual automática en dispositivo.
+
+
+## Contraste público del 18/10/2026
+
+Se consultó el [Portal de Transparencia](https://www.tecsup.edu.pe/portal-de-transparencia/). Su apartado 2 enlaza el [Tarifario de procesos y trámites académicos 2026](https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf), publicado en la ruta de septiembre de 2026. El apartado 6.3 sigue enlazando el documento de Proceso de Matrícula de 2024.
+
+Se contrastaron en la columna Arequipa: constancia de estudios S/ 31.50, evaluación extraordinaria S/ 300 y títulos técnico/profesional técnico S/ 400. Las cuatro fichas correspondientes incluyen una nota de contraste; no se cambiaron sus importes porque coincidían. El resto conserva explícitamente el costo del manual de referencia y requiere confirmar equivalencia/aplicación con Tecsup; todas las fichas permiten abrir el tarifario actual.
+
+No se confirma un cronograma de matrícula 2026-II/2027-I para Arequipa en estos documentos. No se inventan fechas: la guía remite al canal oficial. Los requisitos continúan atribuidos a sus documentos originales, incluidas las discrepancias de reserva/licencia. Esta revisión de fuentes públicas no equivale a una aprobación institucional ni a una consulta directa con Secretaría.
+
+Acceso actual: **Perfil → Trámites de secretaría**.

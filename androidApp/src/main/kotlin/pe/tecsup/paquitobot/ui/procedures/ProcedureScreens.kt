@@ -24,7 +24,7 @@ import pe.tecsup.paquitobot.domain.procedures.*
 import pe.tecsup.paquitobot.ui.components.PaquitoPrimaryButton
 import pe.tecsup.paquitobot.ui.theme.*
 
-/** Acceso al catálogo desde Inicio; comparte los tokens de las tarjetas de eventos. */
+/** Acceso al catálogo desde Perfil; comparte los tokens de las tarjetas de eventos. */
 @Composable
 fun ProcedureEntryCard(onClick: () -> Unit, modifier: Modifier = Modifier,
                        title: String = "Trámites de secretaría", subtitle: String = "Requisitos, pasos y canales de atención",
@@ -126,7 +126,7 @@ fun ProcedureDetailScreen(procedure: AcademicProcedure, source: ProcedureSource,
         SourceNote()
         Column(Modifier.fillMaxWidth().paquitoSurface().padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             GuideFact("Dirigido a", procedure.audience)
-            GuideFact("Costo referencial · 2024", procedure.cost)
+            GuideFact("Costo referencial · consulta las notas de vigencia", procedure.cost)
             GuideFact("Tiempo de respuesta indicado", procedure.responseTime)
             procedure.applicationWindow?.let { GuideFact("Cuándo solicitarlo", it) }
             procedure.duration?.let { GuideFact("Duración del programa", it) }
@@ -166,7 +166,7 @@ internal fun GuideHeader(title: String, subtitle: String, onBack: () -> Unit) {
 internal fun SourceNote() {
     Column(Modifier.fillMaxWidth().paquitoSurface().padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text("Antes de realizar tu trámite", style = PaquitoTypography.BodyMedium.copy(fontWeight = FontWeight.SemiBold), color = PaquitoColors.StateInfoStrong)
-        Text("Guía basada en el manual de referencia 2024. Confirma costos, fechas y canales con Tecsup. La app orienta; la solicitud se realiza por el canal oficial.",
+        Text("Requisitos basados en el manual de referencia 2024. Incluye acceso al tarifario oficial 2026; las notas de cada trámite indican los importes contrastados. Confirma fechas y condiciones con Tecsup antes de solicitarlo.",
             style = PaquitoTypography.BodySmall, color = PaquitoColors.TextOnCardMuted)
     }
 }

@@ -135,6 +135,9 @@ internal fun EnrollmentGuideScreen(catalog: ProcedureCatalog, onBackClick: () ->
                             GuideFact("Inicio de clases", guide.calendar.classesStart ?: "Sin fecha confirmada en esta guía")
                             Text("Solicita el cronograma de tu sede y período a Servicios Educativos. Las fechas dependen de tu sede y período académico.", style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextSecondary)
                             GuideChannelAction(guide.calendar.officialChannel, "Consulta de cronograma de matrícula")
+                            GuideChannelAction(ProcedureChannel("Consultar tarifario oficial 2026",
+                                "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+                                ProcedureChannelKind.Web), "Consulta de costos de matrícula")
                         }
                     }
                 }
