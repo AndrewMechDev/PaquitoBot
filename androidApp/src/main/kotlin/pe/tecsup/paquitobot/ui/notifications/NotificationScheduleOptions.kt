@@ -49,88 +49,94 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
 import java.util.Locale
 
+enum class NotificationScheduleSection { Reminders, Summary }
+
 @Composable
 fun NotificationScheduleOptions(
     schedule: NotificationSchedule,
     onChange: (NotificationSchedule) -> Unit,
     modifier: Modifier = Modifier,
+    section: NotificationScheduleSection = NotificationScheduleSection.Reminders,
 ) {
     var timePickerOpen by rememberSaveable { mutableStateOf(false) }
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Horario de avisos", style = PaquitoTypography.HeadlineSmall, color = PaquitoColors.TextPrimary)
-        Surface(shape = PaquitoShapes.large, color = PaquitoColors.SurfaceElevated) {
-            Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Recordatorios de entregas", style = PaquitoTypography.BodyLarge.copy(fontWeight = FontWeight.SemiBold), color = PaquitoColors.TextPrimary)
-                Text("Elige con cuánta anticipación quieres recibirlos.", style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextSecondary)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    NotificationSchedule.reminderOptions.forEach { hours ->
-                        val selected = schedule.reminderHours == hours
-                        FilterChip(
-                            selected = selected,
-                            onClick = { onChange(schedule.copy(reminderHours = hours)) },
-                            label = { Text("$hours h", style = PaquitoTypography.BodyMedium.copy(fontWeight = FontWeight.SemiBold)) },
-                            modifier = Modifier.heightIn(min = 48.dp),
-                            shape = PaquitoShapes.medium,
-                            colors = FilterChipDefaults.filterChipColors(
-                                containerColor = PaquitoColors.Background,
-                                labelColor = PaquitoColors.TextPrimary,
-                                selectedContainerColor = PaquitoColors.BrandPrimary.copy(alpha = 0.18f),
-                                selectedLabelColor = PaquitoColors.TextOnPrimaryDim,
-                            ),
-                            border = BorderStroke(if (selected) 2.dp else 1.dp,
-                                if (selected) PaquitoColors.BrandPrimary else PaquitoColors.BorderDefault),
-                        )
+        if (section == NotificationScheduleSection.Reminders) {
+            Surface(shape = PaquitoShapes.large, color = PaquitoColors.SurfaceElevated) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Recordatorios de entregas", style = PaquitoTypography.BodyLarge.copy(fontWeight = FontWeight.SemiBold), color = PaquitoColors.TextPrimary)
+                    Text("Elige con cuánta anticipación quieres recibirlos.", style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextSecondary)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        NotificationSchedule.reminderOptions.forEach { hours ->
+                            val selected = schedule.reminderHours == hours
+                            FilterChip(
+                                selected = selected,
+                                onClick = { onChange(schedule.copy(reminderHours = hours)) },
+                                label = { Text("$hours h", style = PaquitoTypography.BodyMedium.copy(fontWeight = FontWeight.SemiBold)) },
+                                modifier = Modifier.heightIn(min = 48.dp),
+                                shape = PaquitoShapes.medium,
+                                colors = FilterChipDefaults.filterChipColors(
+                                    containerColor = PaquitoColors.Background,
+                                    labelColor = PaquitoColors.TextPrimary,
+                                    selectedContainerColor = PaquitoColors.BrandPrimary.copy(alpha = 0.18f),
+                                    selectedLabelColor = PaquitoColors.TextOnPrimaryDim,
+                                ),
+                                border = BorderStroke(if (selected) 2.dp else 1.dp,
+                                    if (selected) PaquitoColors.BrandPrimary else PaquitoColors.BorderDefault),
+                            )
+                        }
                     }
+                    Text(if (schedule.reminderHours == 1) "1 hora antes del vencimiento" else "${schedule.reminderHours} horas antes del vencimiento",
+                        style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextSecondary)
                 }
-                Text(if (schedule.reminderHours == 1) "1 hora antes del vencimiento" else "${schedule.reminderHours} horas antes del vencimiento",
-                    style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextSecondary)
             }
         }
-        Surface(shape = PaquitoShapes.large, color = PaquitoColors.SurfaceElevated) {
-            Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().toggleable(
-                        value = schedule.dailySummaryEnabled, role = Role.Switch,
-                        onValueChange = { onChange(schedule.copy(dailySummaryEnabled = it)) },
-                    ),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("Resumen diario", style = PaquitoTypography.BodyLarge.copy(fontWeight = FontWeight.SemiBold), color = PaquitoColors.TextPrimary)
-                        Text("Tus pendientes en un solo aviso.", style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextSecondary)
-                    }
-                    Switch(
-                        checked = schedule.dailySummaryEnabled, onCheckedChange = null,
-                        colors = SwitchDefaults.colors(
-                            checkedTrackColor = PaquitoColors.BrandPrimary,
-                            checkedThumbColor = PaquitoColors.Background,
-                            checkedBorderColor = PaquitoColors.BrandPrimary,
-                            uncheckedTrackColor = PaquitoColors.Background,
-                            uncheckedBorderColor = PaquitoColors.TextDisabled,
-                            uncheckedThumbColor = PaquitoColors.TextSecondary,
+        if (section == NotificationScheduleSection.Summary) {
+            Surface(shape = PaquitoShapes.large, color = PaquitoColors.SurfaceElevated) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().toggleable(
+                            value = schedule.dailySummaryEnabled, role = Role.Switch,
+                            onValueChange = { onChange(schedule.copy(dailySummaryEnabled = it)) },
                         ),
-                    )
-                }
-                if (schedule.dailySummaryEnabled) {
-                    Surface(
-                        onClick = { timePickerOpen = true }, shape = PaquitoShapes.large,
-                        color = PaquitoColors.BrandPrimary.copy(alpha = 0.12f),
-                        border = BorderStroke(1.dp, PaquitoColors.BrandPrimary.copy(alpha = 0.5f)),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Column(Modifier.weight(1f)) {
-                                Text("Hora del resumen", style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextOnPrimaryDim)
-                                Text(String.format(Locale.getDefault(), "%02d:%02d", schedule.summaryHour, schedule.summaryMinute),
-                                    style = PaquitoTypography.DisplayLarge, color = PaquitoColors.TextOnPrimaryDim)
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text("Resumen diario", style = PaquitoTypography.BodyLarge.copy(fontWeight = FontWeight.SemiBold), color = PaquitoColors.TextPrimary)
+                            Text("Tus pendientes en un solo aviso.", style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextSecondary)
+                        }
+                        Switch(
+                            checked = schedule.dailySummaryEnabled, onCheckedChange = null,
+                            colors = SwitchDefaults.colors(
+                                checkedTrackColor = PaquitoColors.BrandPrimary,
+                                checkedThumbColor = PaquitoColors.Background,
+                                checkedBorderColor = PaquitoColors.BrandPrimary,
+                                uncheckedTrackColor = PaquitoColors.Background,
+                                uncheckedBorderColor = PaquitoColors.TextDisabled,
+                                uncheckedThumbColor = PaquitoColors.TextSecondary,
+                            ),
+                        )
+                    }
+                    if (schedule.dailySummaryEnabled) {
+                        Surface(
+                            onClick = { timePickerOpen = true }, shape = PaquitoShapes.large,
+                            color = PaquitoColors.BrandPrimary.copy(alpha = 0.12f),
+                            border = BorderStroke(1.dp, PaquitoColors.BrandPrimary.copy(alpha = 0.5f)),
+                        ) {
+                            Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Column(Modifier.weight(1f)) {
+                                    Text("Hora del resumen", style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextOnPrimaryDim)
+                                    Text(String.format(Locale.getDefault(), "%02d:%02d", schedule.summaryHour, schedule.summaryMinute),
+                                        style = PaquitoTypography.DisplayLarge, color = PaquitoColors.TextOnPrimaryDim)
+                                }
+                                Text("Cambiar", style = PaquitoTypography.BodyMedium.copy(fontWeight = FontWeight.SemiBold), color = PaquitoColors.TextOnPrimaryDim)
                             }
-                            Text("Cambiar", style = PaquitoTypography.BodyMedium.copy(fontWeight = FontWeight.SemiBold), color = PaquitoColors.TextOnPrimaryDim)
                         }
                     }
                 }
             }
+            Text("Hora local de tu dispositivo. Sin categorías activas no recibirás avisos.", style = PaquitoTypography.BodySmall, color = PaquitoColors.TextSecondary)
         }
-        Text("Hora local de tu dispositivo. Sin categorías activas no recibirás avisos.", style = PaquitoTypography.BodySmall, color = PaquitoColors.TextSecondary)
     }
     if (timePickerOpen) {
         NotificationTimePickerDialog(schedule.summaryHour, schedule.summaryMinute,
@@ -196,6 +202,16 @@ private fun NotificationScheduleOptionsPreview() {
     var schedule by remember { mutableStateOf(NotificationSchedule()) }
     PaquitoTheme {
         NotificationScheduleOptions(schedule, onChange = { schedule = it }, modifier = Modifier.padding(16.dp))
+    }
+}
+
+@Preview(showBackground = true, name = "Resumen diario", widthDp = 360)
+@Composable
+private fun DailySummaryOptionsPreview() {
+    var schedule by remember { mutableStateOf(NotificationSchedule()) }
+    PaquitoTheme {
+        NotificationScheduleOptions(schedule, onChange = { schedule = it }, modifier = Modifier.padding(16.dp),
+            section = NotificationScheduleSection.Summary)
     }
 }
 

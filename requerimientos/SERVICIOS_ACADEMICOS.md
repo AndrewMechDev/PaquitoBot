@@ -52,6 +52,20 @@ Las anticipaciones se eligen mediante chips visibles que se distribuyen en varia
 
 Validación del rediseño: compilación Android y revisión de referencias/tokens; sin nuevas dependencias ni instalación. Pendiente de revisión visual en Android Studio y pruebas de interacción en dispositivo.
 
+### Flujo progresivo de configuración
+
+Para evitar reunir todas las decisiones en una sola pantalla, el selector ahora tiene tres pasos:
+
+1. Categorías de avisos, manteniendo la elección cuadros/lista.
+2. Anticipación de los recordatorios de entrega.
+3. Resumen diario, selector de hora y permiso de Android.
+
+El avance requiere pulsar Continuar: elegir una categoría u horario no cambia de etapa automáticamente. Se muestra el paso actual y una barra de progreso celeste. La transición combina un desplazamiento corto y desvanecimiento; al usar Atrás se invierte la dirección. Etapa, categorías, variante y horario se mantienen como borrador restaurable fuera del contenido animado.
+
+Solo Finalizar (onboarding) o Guardar cambios (edición) persisten la configuración. Atrás dentro del flujo conserva el borrador; Cancelar descarta toda la edición. El botón de sistema Atrás navega entre etapas durante el onboarding; en el diálogo de edición conserva el comportamiento de cancelar la edición completa. El permiso de Android sigue siendo independiente del guardado.
+
+Validación: compilación Android correcta y revisión de rutas de guardado; pendientes en dispositivo/preview interactivo: recorrer los tres pasos, volver y comprobar elecciones, cancelar sin guardar, reiniciar y girar durante la edición, y revisar espaciado con fuentes grandes. Se mantienen pospuestas las instalaciones por indicación del usuario.
+
 ## Reglas y permiso de notificaciones
 
 Reglas iniciales aceptadas por el usuario: recordar entregas 24 horas antes y resumen diario a las 08:00, según la zona horaria del dispositivo.
