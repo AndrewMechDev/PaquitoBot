@@ -15,6 +15,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import pe.tecsup.paquitobot.R
+import pe.tecsup.paquitobot.ui.procedures.ProcedureEntryCard
 import pe.tecsup.paquitobot.ui.components.AcademicErrorBanner
 import pe.tecsup.paquitobot.ui.components.AppTabScaffold
 import pe.tecsup.paquitobot.ui.components.NavTab
@@ -50,6 +52,7 @@ fun ScheduleScreen(
     onPaquitoClick: () -> Unit = {},
     errorMessage: String? = null,
     onRetry: () -> Unit = {},
+    onCalendarClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     AppTabScaffold(
@@ -59,7 +62,7 @@ fun ScheduleScreen(
         notificationCount = data.pendingCount,
         modifier = modifier,
     ) {
-        ScheduleTabContent(data, errorMessage, onRetry)
+        ScheduleTabContent(data, errorMessage, onRetry, onCalendarClick = onCalendarClick)
     }
 }
 
@@ -69,6 +72,7 @@ fun ScheduleTabContent(
     data: ScheduleScreenData,
     errorMessage: String?,
     onRetry: () -> Unit,
+    onCalendarClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -90,6 +94,8 @@ fun ScheduleTabContent(
                 color = PaquitoColors.TextHomeMuted,
             )
         }
+        ProcedureEntryCard(onClick = onCalendarClick, title = "Google Calendar",
+            subtitle = "Sincroniza las entregas que elijas", iconRes = R.drawable.ic_paquito_calendar_fill)
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             data.days.forEach { day ->
                 DayBlock(day = day)

@@ -400,3 +400,11 @@ Layout horizontal (de Figma 365:896):
 - Dos recorridos con preparación, pasos animados, indicadores de lectura, retroceso y consulta de trámites relacionados. Los canales se comparten con Secretaría mediante GuideChannelAction.
 - Cronograma sin fechas confirmadas; costos y plazos referenciales. Se señalan diferencias entre documentos oficiales para reserva/licencia. Detalles en `ENROLLMENT_GUIDE.md`.
 - El recorrido no registra ni confirma matrícula: el estudiante debe completar los pasos en los canales de Tecsup.
+
+
+### Google Calendar (2026-10-18)
+
+- Horarios incluye acceso a Google Calendar reutilizando la tarjeta de servicios. Conexión Google independiente de Clerk, selección de tareas y sincronización manual con resultado parcial.
+- Tokens solo en memoria; consentimiento y resolución oficial de Google, renovación y revocación de acceso. Estado visible para carga, conexión, envío y errores.
+- Datos de demostración conservan sus fechas originales; las vencidas requieren mostrarse y seleccionarse expresamente. Zona académica Perú.
+- Implementación local y pruebas de lógica; OAuth real y escrituras en Google pendientes de configurar Cloud y validar en dispositivo. Configuración y alcance: `GOOGLE_CALENDAR.md`.

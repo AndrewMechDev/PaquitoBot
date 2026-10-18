@@ -27,10 +27,11 @@ import pe.tecsup.paquitobot.ui.theme.*
 /** Acceso al catálogo desde Inicio; comparte los tokens de las tarjetas de eventos. */
 @Composable
 fun ProcedureEntryCard(onClick: () -> Unit, modifier: Modifier = Modifier,
-                       title: String = "Trámites de secretaría", subtitle: String = "Requisitos, pasos y canales de atención") {
+                       title: String = "Trámites de secretaría", subtitle: String = "Requisitos, pasos y canales de atención",
+                       iconRes: Int = R.drawable.ic_paquito_docs_default) {
     Row(modifier.fillMaxWidth().paquitoSurface().clickable(onClick = onClick).padding(18.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-        Image(painterResource(R.drawable.ic_paquito_docs_default), contentDescription = null, modifier = Modifier.size(32.dp))
+        Image(painterResource(iconRes), contentDescription = null, modifier = Modifier.size(32.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(title, style = PaquitoTypography.TaskTitle, color = PaquitoColors.TextOnCardStrong)
             Text(subtitle, style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextOnCardMuted)

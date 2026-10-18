@@ -1,6 +1,7 @@
 package pe.tecsup.paquitobot
 
 import android.os.Bundle
+import pe.tecsup.paquitobot.ui.calendar.CalendarScreen
 import pe.tecsup.paquitobot.ui.procedures.EnrollmentGuideRoute
 import pe.tecsup.paquitobot.ui.procedures.ProcedureGuideScreen
 import pe.tecsup.paquitobot.ui.procedures.ProcedureDetailScreen
@@ -78,7 +79,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  * del Navbar se usa como toggle hacia Chat; Cursos y Horarios son pestañas
  * reales. El detalle de curso usa flecha atras como el chat.
  */
-private enum class RootScreen { Tabs, Chat, CourseDetail, Notifications, Events, EventDetail, Procedures, ProcedureDetail, Enrollment }
+private enum class RootScreen { Tabs, Chat, CourseDetail, Notifications, Events, EventDetail, Procedures, ProcedureDetail, Enrollment, Calendar }
 
 private enum class OnboardingStep { Welcome, Notifications, Tour }
 
@@ -303,6 +304,7 @@ private fun AppRoot() {
                             data = scheduleData,
                             errorMessage = scheduleError,
                             onRetry = scheduleViewModel::load,
+                            onCalendarClick = { rootScreen = RootScreen.Calendar },
                         )
                     }
                     }
@@ -383,6 +385,7 @@ private fun AppRoot() {
                         }
                     }
                 }
+                RootScreen.Calendar -> CalendarScreen(onBackClick = { rootScreen = RootScreen.Tabs })
                 RootScreen.Enrollment -> EnrollmentGuideRoute(onBackClick = { rootScreen = RootScreen.Tabs })
                 RootScreen.Procedures, RootScreen.ProcedureDetail -> {
                     val repository = (context as PaquitoBotApp).procedureRepository

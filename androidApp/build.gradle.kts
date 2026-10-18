@@ -24,6 +24,8 @@ kotlin {
 dependencies {
     implementation(project(":sharedLogic"))
 
+    implementation(libs.google.auth)
+    implementation(libs.kotlinx.coroutines.playServices)
     implementation(libs.clerk.android.api)
     implementation(libs.clerk.android.ui)
 
