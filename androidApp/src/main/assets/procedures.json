@@ -437,11 +437,18 @@
           "label": "Abrir formulario de reserva",
           "target": "https://forms.gle/3iKP3yRerwsWwcMH7",
           "kind": "Web"
+        },
+        {
+          "label": "Consultar proceso de matrícula",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2024/07/proceso-de-matricula.pdf",
+          "kind": "Web"
         }
       ],
       "applicationWindow": "Dentro de los 7 días hábiles posteriores a la admisión.",
       "notes": [
-        "No matricularse ni solicitar reserva dentro del plazo puede implicar la pérdida de la vacante."
+        "No matricularse ni solicitar reserva dentro del plazo puede implicar la pérdida de la vacante.",
+        "Hay diferencias entre el MPA y el documento oficial «Proceso de matrícula»: confirma con Servicios Educativos los plazos y pagos vigentes para tu caso.",
+        "El MPA menciona hasta 4 períodos de reserva; el documento «Proceso de matrícula» indica hasta 1 año. No asumas una duración sin confirmación."
       ],
       "duration": null
     },
@@ -462,7 +469,7 @@
         "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
         "Consulta la respuesta y las indicaciones de entrega."
       ],
-      "cost": "Sin pago por el trámite",
+      "cost": "MPA: sin pago por el trámite; confirmar condición vigente con Tecsup",
       "responseTime": "7 días hábiles desde la solicitud",
       "sourcePage": 4,
       "responsibleArea": "Servicios Educativos",
@@ -471,10 +478,17 @@
           "label": "Abrir Intranet Académica",
           "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
           "kind": "Web"
+        },
+        {
+          "label": "Consultar proceso de matrícula",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2024/07/proceso-de-matricula.pdf",
+          "kind": "Web"
         }
       ],
-      "applicationWindow": "Entre el período concluido y el inicio de matrícula del siguiente.",
-      "notes": [],
+      "applicationWindow": "Confirma el plazo vigente: el MPA indica entre períodos; el documento de matrícula indica durante el proceso de matrícula.",
+      "notes": [
+        "Hay diferencias entre el MPA y el documento oficial «Proceso de matrícula»: confirma con Servicios Educativos los plazos y pagos vigentes para tu caso."
+      ],
       "duration": null
     },
     {
@@ -1193,5 +1207,193 @@
       ],
       "duration": null
     }
-  ]
+  ],
+  "enrollment": {
+    "tracks": [
+      {
+        "id": "incoming",
+        "title": "Soy ingresante",
+        "description": "Primera matrícula",
+        "checklist": [
+          "No tener deudas vencidas con Tecsup.",
+          "No tener procedimiento o sanción disciplinaria que implique suspensión.",
+          "Contar con navegador actualizado e internet; revisa en el portal los requisitos técnicos actuales.",
+          "Tener el correo de admisión y los documentos solicitados."
+        ],
+        "stepIds": [
+          "admission",
+          "documents",
+          "payment",
+          "validation",
+          "changes",
+          "confirmation",
+          "access"
+        ],
+        "relatedProcedureIds": [
+          "reserva-matricula",
+          "becas",
+          "credito-educativo"
+        ]
+      },
+      {
+        "id": "returning",
+        "title": "Ya soy estudiante",
+        "description": "Ratificación de matrícula",
+        "checklist": [
+          "No tener deudas vencidas con Tecsup.",
+          "No tener procedimiento o sanción disciplinaria que implique suspensión.",
+          "Contar con navegador actualizado e internet; revisa en el portal los requisitos técnicos actuales.",
+          "Cumplir las condiciones académicas del artículo 24 del Reglamento Institucional.",
+          "La ratificación no requiere envío de documentos, según el manual."
+        ],
+        "stepIds": [
+          "payment",
+          "validation",
+          "changes",
+          "confirmation"
+        ],
+        "relatedProcedureIds": [
+          "licencia-estudios",
+          "reincorporacion",
+          "refinanciamiento",
+          "retiro-periodo"
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "id": "admission",
+        "title": "Revisa tu admisión",
+        "body": [
+          "Busca el correo con los resultados de admisión, tu código de estudiante y las claves del portal de matrícula.",
+          "Si vas a postergar el inicio, consulta la reserva de matrícula y su plazo antes de dejar pasar tu vacante."
+        ],
+        "channels": [],
+        "cost": null,
+        "responseTime": null,
+        "optional": false,
+        "sourcePage": 2
+      },
+      {
+        "id": "documents",
+        "title": "Entrega tus documentos",
+        "body": [
+          "Envía al asesor comercial todos los documentos solicitados en la admisión.",
+          "Incluye el certificado médico si tu programa lo exige y los requisitos especiales que te hayan comunicado."
+        ],
+        "channels": [],
+        "cost": null,
+        "responseTime": null,
+        "optional": false,
+        "sourcePage": 3
+      },
+      {
+        "id": "payment",
+        "title": "Matrícula y primera cuota",
+        "body": [
+          "Confirma el tarifario y las instrucciones de pago con Tecsup antes de pagar.",
+          "Realiza el pago de matrícula y primera cuota. El pago habilita la revisión de cursos: todavía debes validar y confirmar."
+        ],
+        "channels": [
+          {
+            "label": "Consultar información oficial",
+            "target": "https://www.tecsup.edu.pe/portal-de-transparencia/",
+            "kind": "Web"
+          }
+        ],
+        "cost": "Matrícula: S/ 300 según referencia 2024, sujeta a promociones. Primera cuota: depende del programa y la sede.",
+        "responseTime": "Ingresantes: hasta 2 días hábiles tras documentos y pago para recibir instrucciones. Estudiantes actuales: continúa con la revisión tras el pago.",
+        "optional": false,
+        "sourcePage": 3
+      },
+      {
+        "id": "validation",
+        "title": "Revisa cursos y horarios",
+        "body": [
+          "Ingresa al portal y verifica los cursos y horarios asignados.",
+          "Si estás de acuerdo, continúa a la confirmación. Si necesitas un cambio, revisa el siguiente paso."
+        ],
+        "channels": [
+          {
+            "label": "Abrir portal de matrícula",
+            "target": "https://app.tecsup.edu.pe/matricula/",
+            "kind": "Web"
+          }
+        ],
+        "cost": "Sin pago por la validación",
+        "responseTime": "Validación en tiempo real",
+        "optional": false,
+        "sourcePage": 3
+      },
+      {
+        "id": "changes",
+        "title": "¿Necesitas un cambio?",
+        "body": [
+          "Este paso solo aplica si no estás de acuerdo con los cursos u horarios.",
+          "Prepara un correo con tus datos personales, programa académico y ciclo.",
+          "Espera la respuesta de Servicios Educativos y revisa el cambio en el portal antes de confirmar."
+        ],
+        "channels": [
+          {
+            "label": "Consultar cambio de cursos u horarios",
+            "target": "scervantes@tecsup.edu.pe",
+            "kind": "Email"
+          }
+        ],
+        "cost": "Sin pago por la solicitud de cambio",
+        "responseTime": "Hasta 4 días hábiles desde el envío del correo",
+        "optional": true,
+        "sourcePage": 3
+      },
+      {
+        "id": "confirmation",
+        "title": "Confirma en el portal",
+        "body": [
+          "Después de revisar tus cursos y horarios, registra la confirmación en el portal de matrícula.",
+          "Comprueba el mensaje de confirmación que muestra la web. Recorrer esta guía no confirma tu matrícula."
+        ],
+        "channels": [
+          {
+            "label": "Abrir portal de matrícula",
+            "target": "https://app.tecsup.edu.pe/matricula/",
+            "kind": "Web"
+          }
+        ],
+        "cost": "Sin pago por la confirmación",
+        "responseTime": "Confirmación inmediata en la web",
+        "optional": false,
+        "sourcePage": 3
+      },
+      {
+        "id": "access",
+        "title": "Revisa tus accesos institucionales",
+        "body": [
+          "Si eres de primer ciclo, revisa tu correo personal para recibir las credenciales del correo institucional.",
+          "Si no llegan, consulta con Servicios Educativos. Nunca compartas tus claves en PaquitoBot."
+        ],
+        "channels": [
+          {
+            "label": "Consultar a Servicios Educativos",
+            "target": "scervantes@tecsup.edu.pe",
+            "kind": "Email"
+          }
+        ],
+        "cost": null,
+        "responseTime": "2 días hábiles después de la confirmación, según el manual",
+        "optional": false,
+        "sourcePage": 3
+      }
+    ],
+    "calendar": {
+      "period": null,
+      "regular": null,
+      "extraordinary": null,
+      "classesStart": null,
+      "officialChannel": {
+        "label": "Consultar publicaciones oficiales",
+        "target": "https://www.tecsup.edu.pe/portal-de-transparencia/",
+        "kind": "Web"
+      }
+    }
+  }
 }

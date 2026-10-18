@@ -66,4 +66,41 @@ class LocalJsonProcedureRepositoryTest {
             LocalJsonProcedureRepository { throw CancellationException("cancelled") }.catalog()
         }
     }
+    @Test fun enrollmentUsesSeparatePathsAndSharedPaymentStep() = runTest {
+        val catalog = LocalJsonProcedureRepository { asset() }.catalog().getOrThrow()
+        val guide = assertNotNull(catalog.enrollment)
+        val incoming = guide.tracks.single { it.id == "incoming" }
+        val returning = guide.tracks.single { it.id == "returning" }
+        assertEquals(7, guide.stepsFor(incoming).size)
+        assertEquals(4, guide.stepsFor(returning).size)
+        assertEquals("access", guide.stepsFor(incoming).last().id)
+        assertEquals("confirmation", guide.stepsFor(returning).last().id)
+        assertEquals(1, guide.steps.count { it.id == "payment" })
+        assertTrue(guide.steps.single { it.id == "changes" }.optional)
+        assertNull(guide.calendar.regular)
+        assertNull(guide.calendar.extraordinary)
+        assertNull(guide.calendar.classesStart)
+        assertTrue(guide.tracks.flatMap { it.relatedProcedureIds }.all { catalog.find(it) != null })
+    }
+    @Test fun missingEnrollmentStepIsReported() = runTest {
+        val json = asset().replace("\"validation\",", "\"missing-step\",")
+        assertTrue(LocalJsonProcedureRepository { json }.catalog().isFailure)
+    }
+    @Test fun unscopedCalendarDatesAreRejected() = runTest {
+        val json = asset().replace("\"regular\": null", "\"regular\": \"2026-08-01\"")
+        assertTrue(LocalJsonProcedureRepository { json }.catalog().isFailure)
+    }
+    @Test fun confirmationCannotAppearBeforeValidation() = runTest {
+        val original = asset()
+        val json = original.replace(Regex("\"payment\",\\s*\"validation\",\\s*\"changes\",\\s*\"confirmation\""),
+            "\"payment\", \"confirmation\", \"changes\", \"validation\"")
+        assertNotEquals(original, json)
+        assertTrue(LocalJsonProcedureRepository { json }.catalog().isFailure)
+    }
+    @Test fun conflictingOfficialConditionsAreVisibleInRelatedProcedures() = runTest {
+        val catalog = LocalJsonProcedureRepository { asset() }.catalog().getOrThrow()
+        assertTrue(catalog.find("reserva-matricula")!!.notes.any { it.contains("diferencias") })
+        assertTrue(catalog.find("licencia-estudios")!!.cost.contains("confirmar"))
+    }
+
 }

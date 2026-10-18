@@ -392,3 +392,11 @@ Layout horizontal (de Figma 365:896):
 - Canal externo con manejo de aplicación no disponible y dirección seleccionable; correo solo prepara una consulta. No se presentan solicitudes ni se recopilan documentos personales.
 - Tarifas/plazos se muestran como referencia 2024. Modelo y contenido compartidos permiten reutilizarlos en la siguiente guía de matrícula; no hay cronogramas inventados.
 - Plan, decisiones editoriales y pendientes: `requerimientos/SECRETARIA_GUIDE.md`. La revisión visual en dispositivo continúa pendiente.
+
+
+### Guía de matrícula (2026-10-18)
+
+- Inicio añade «Guía de matrícula» usando la misma tarjeta de Secretaría. Bienvenida incorpora acceso al contenido informativo antes de Clerk. Los gates de datos personales no cambian.
+- Dos recorridos con preparación, pasos animados, indicadores de lectura, retroceso y consulta de trámites relacionados. Los canales se comparten con Secretaría mediante GuideChannelAction.
+- Cronograma sin fechas confirmadas; costos y plazos referenciales. Se señalan diferencias entre documentos oficiales para reserva/licencia. Detalles en `ENROLLMENT_GUIDE.md`.
+- El recorrido no registra ni confirma matrícula: el estudiante debe completar los pasos en los canales de Tecsup.

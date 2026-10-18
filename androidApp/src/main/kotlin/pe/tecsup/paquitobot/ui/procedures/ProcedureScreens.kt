@@ -1,8 +1,5 @@
 package pe.tecsup.paquitobot.ui.procedures
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,13 +26,14 @@ import pe.tecsup.paquitobot.ui.theme.*
 
 /** Acceso al catálogo desde Inicio; comparte los tokens de las tarjetas de eventos. */
 @Composable
-fun ProcedureEntryCard(onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun ProcedureEntryCard(onClick: () -> Unit, modifier: Modifier = Modifier,
+                       title: String = "Trámites de secretaría", subtitle: String = "Requisitos, pasos y canales de atención") {
     Row(modifier.fillMaxWidth().paquitoSurface().clickable(onClick = onClick).padding(18.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
         Image(painterResource(R.drawable.ic_paquito_docs_default), contentDescription = null, modifier = Modifier.size(32.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("Trámites de secretaría", style = PaquitoTypography.TaskTitle, color = PaquitoColors.TextOnCardStrong)
-            Text("Requisitos, pasos y canales de atención", style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextOnCardMuted)
+            Text(title, style = PaquitoTypography.TaskTitle, color = PaquitoColors.TextOnCardStrong)
+            Text(subtitle, style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextOnCardMuted)
         }
         Text("›", style = PaquitoTypography.HeadlineSmall, color = PaquitoColors.StateInfoStrong)
     }
@@ -104,7 +101,7 @@ fun ProcedureGuideScreen(state: ProcedureUiState, onRetry: () -> Unit, onProcedu
 }
 
 @Composable
-private fun GuideCategoryChip(label: String, selected: Boolean, onClick: () -> Unit) {
+internal fun GuideCategoryChip(label: String, selected: Boolean, onClick: () -> Unit) {
     FilterChip(selected = selected, onClick = onClick, label = {
         Text(label, style = PaquitoTypography.BodyMedium)
     }, colors = FilterChipDefaults.filterChipColors(
@@ -116,17 +113,6 @@ private fun GuideCategoryChip(label: String, selected: Boolean, onClick: () -> U
 fun ProcedureDetailScreen(procedure: AcademicProcedure, source: ProcedureSource, onBackClick: () -> Unit,
                           modifier: Modifier = Modifier) {
     BackHandler(onBack = onBackClick)
-    val context = LocalContext.current
-    var actionError by remember(procedure.id) { mutableStateOf<String?>(null) }
-    fun open(target: String, email: Boolean = false) {
-        actionError = null
-        val intent = if (email) Intent(Intent.ACTION_SENDTO,
-            Uri.parse("mailto:" + Uri.encode(target) + "?subject=" + Uri.encode("Consulta: " + procedure.title)))
-        else Intent(Intent.ACTION_VIEW, Uri.parse(target))
-        try { context.startActivity(intent) }
-        catch (_: ActivityNotFoundException) { actionError = "No hay una aplicación disponible para abrir este canal. Puedes copiar la dirección que aparece abajo." }
-        catch (_: SecurityException) { actionError = "No se pudo abrir el canal. Puedes copiar la dirección que aparece abajo." }
-    }
     Column(modifier.fillMaxSize().background(PaquitoColors.Background).systemBarsPadding()
         .verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -151,31 +137,20 @@ fun ProcedureDetailScreen(procedure: AcademicProcedure, source: ProcedureSource,
         Column(Modifier.fillMaxWidth().paquitoSurface().padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("Canales de atención", style = PaquitoTypography.TaskTitle, color = PaquitoColors.TextPrimary)
             Text("Los enlaces abren servicios externos. Si eliges correo, revisa y envía tu consulta desde tu aplicación.", style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextSecondary)
-            procedure.channels.forEach { channel ->
-                Button(onClick = { open(channel.target, channel.kind == ProcedureChannelKind.Email) },
-                    modifier = Modifier.fillMaxWidth(), shape = PaquitoShapes.medium,
-                    colors = ButtonDefaults.buttonColors(containerColor = PaquitoColors.BrandPrimary, contentColor = PaquitoColors.TextOnPrimaryDim)) {
-                    Text(channel.label, style = PaquitoTypography.ButtonLabel)
-                }
-                androidx.compose.foundation.text.selection.SelectionContainer {
-                    Text(channel.target, style = PaquitoTypography.BodySmall, color = PaquitoColors.TextOnCardMuted)
-                }
-            }
-            actionError?.let { Text(it, style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextPrimary) }
+            procedure.channels.forEach { channel -> GuideChannelAction(channel, "Consulta: " + procedure.title) }
         }
         Text("Fuente y vigencia", style = PaquitoTypography.TaskTitle, color = PaquitoColors.TextPrimary)
         Text("${source.title} · ${source.edition} · página ${procedure.sourcePage}.\nContenido contrastado: ${source.reviewedOn}. Esta fecha no confirma la vigencia de tarifas o contactos.",
             style = PaquitoTypography.BodySmall, color = PaquitoColors.TextSecondary)
-        OutlinedButton(onClick = { open(source.url + "#page=" + procedure.sourcePage) }, modifier = Modifier.fillMaxWidth()) {
-            Text("Consultar manual oficial", style = PaquitoTypography.BodyMedium)
-        }
+        GuideChannelAction(ProcedureChannel("Consultar manual oficial", source.url + "#page=" + procedure.sourcePage,
+            ProcedureChannelKind.Web), "Consulta: " + procedure.title)
         Spacer(Modifier.height(12.dp))
     }
 }
 
 // Secciones específicas de una guía; las tarjetas y tipografía reutilizan el theme existente.
 @Composable
-private fun GuideHeader(title: String, subtitle: String, onBack: () -> Unit) {
+internal fun GuideHeader(title: String, subtitle: String, onBack: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onBack) {
             Image(painterResource(R.drawable.ic_paquito_arrow_back), "Volver", Modifier.size(24.dp))
@@ -187,7 +162,7 @@ private fun GuideHeader(title: String, subtitle: String, onBack: () -> Unit) {
     }
 }
 @Composable
-private fun SourceNote() {
+internal fun SourceNote() {
     Column(Modifier.fillMaxWidth().paquitoSurface().padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text("Antes de realizar tu trámite", style = PaquitoTypography.BodyMedium.copy(fontWeight = FontWeight.SemiBold), color = PaquitoColors.StateInfoStrong)
         Text("Guía basada en el manual de referencia 2024. Confirma costos, fechas y canales con Tecsup. La app orienta; la solicitud se realiza por el canal oficial.",
@@ -195,14 +170,14 @@ private fun SourceNote() {
     }
 }
 @Composable
-private fun GuideFact(label: String, value: String) {
+internal fun GuideFact(label: String, value: String) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(label, style = PaquitoTypography.Caption, color = PaquitoColors.TextOnCardMuted)
         Text(value, style = PaquitoTypography.BodyLarge, color = PaquitoColors.TextOnCardStrong)
     }
 }
 @Composable
-private fun GuideSection(title: String, lines: List<String>, numbered: Boolean = false) {
+internal fun GuideSection(title: String, lines: List<String>, numbered: Boolean = false) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(title, style = PaquitoTypography.TaskTitle, color = PaquitoColors.TextPrimary)
         lines.forEachIndexed { index, line ->

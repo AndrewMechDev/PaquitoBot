@@ -15,7 +15,7 @@ data class AcademicProcedure(
     val channels: List<ProcedureChannel>, val notes: List<String>, val sourcePage: Int,
 )
 data class ProcedureSource(val title: String, val url: String, val edition: String, val reviewedOn: String)
-data class ProcedureCatalog(val source: ProcedureSource, val procedures: List<AcademicProcedure>) {
+data class ProcedureCatalog(val source: ProcedureSource, val procedures: List<AcademicProcedure>, val enrollment: EnrollmentGuide? = null) {
     fun find(id: String?): AcademicProcedure? = procedures.firstOrNull { it.id == id }
     /** Búsqueda por palabras, sin distinguir tildes o mayúsculas, combinada con categoría. */
     fun search(query: String, category: ProcedureCategory? = null): List<AcademicProcedure> {

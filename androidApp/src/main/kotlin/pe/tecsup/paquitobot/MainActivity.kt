@@ -1,6 +1,7 @@
 package pe.tecsup.paquitobot
 
 import android.os.Bundle
+import pe.tecsup.paquitobot.ui.procedures.EnrollmentGuideRoute
 import pe.tecsup.paquitobot.ui.procedures.ProcedureGuideScreen
 import pe.tecsup.paquitobot.ui.procedures.ProcedureDetailScreen
 import pe.tecsup.paquitobot.ui.procedures.ProcedureViewModel
@@ -77,7 +78,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  * del Navbar se usa como toggle hacia Chat; Cursos y Horarios son pestañas
  * reales. El detalle de curso usa flecha atras como el chat.
  */
-private enum class RootScreen { Tabs, Chat, CourseDetail, Notifications, Events, EventDetail, Procedures, ProcedureDetail }
+private enum class RootScreen { Tabs, Chat, CourseDetail, Notifications, Events, EventDetail, Procedures, ProcedureDetail, Enrollment }
 
 private enum class OnboardingStep { Welcome, Notifications, Tour }
 
@@ -174,10 +175,13 @@ private fun AppRoot() {
         mutableStateOf(OnboardingStep.Welcome)
     }
 
+    var publicEnrollmentOpen by rememberSaveable { mutableStateOf(false) }
     when {
+        publicEnrollmentOpen -> EnrollmentGuideRoute(onBackClick = { publicEnrollmentOpen = false })
         !sessionUiState.isOnboardingComplete -> when (onboardingStep) {
             OnboardingStep.Welcome -> WelcomeScreen(
                 onContinueClick = { onboardingStep = OnboardingStep.Notifications },
+                onEnrollmentGuideClick = { publicEnrollmentOpen = true },
             )
             OnboardingStep.Notifications -> OnboardingNotificationsScreen(
                 initialEnabled = NotificationType.entries.filterTo(mutableSetOf()) { it.category in sessionUiState.enabledNotifications },
@@ -259,6 +263,7 @@ private fun AppRoot() {
                             onNotificationsClick = { rootScreen = RootScreen.Notifications },
                             onEventsClick = { rootScreen = RootScreen.Events },
                             onProceduresClick = { rootScreen = RootScreen.Procedures },
+                            onEnrollmentClick = { rootScreen = RootScreen.Enrollment },
                             onSignOutClick = sessionViewModel::signOut,
                             isSigningOut = sessionUiState.isSigningOut,
                             signOutError = sessionUiState.signOutError,
@@ -378,6 +383,7 @@ private fun AppRoot() {
                         }
                     }
                 }
+                RootScreen.Enrollment -> EnrollmentGuideRoute(onBackClick = { rootScreen = RootScreen.Tabs })
                 RootScreen.Procedures, RootScreen.ProcedureDetail -> {
                     val repository = (context as PaquitoBotApp).procedureRepository
                     val guideViewModel: ProcedureViewModel = viewModel(factory = remember {

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -45,6 +46,7 @@ fun WelcomeScreen(
     supportingText: String? = null,
     errorMessage: String? = null,
     isLoading: Boolean = false,
+    onEnrollmentGuideClick: (() -> Unit)? = null,
 ) {
     Column(
         modifier = modifier
@@ -90,6 +92,11 @@ fun WelcomeScreen(
             isLoading = isLoading,
         )
 
+        onEnrollmentGuideClick?.let { openGuide ->
+            TextButton(onClick = openGuide, modifier = Modifier.fillMaxWidth()) {
+                Text("Consultar guía de matrícula", style = PaquitoTypography.BodyMedium, color = PaquitoColors.StateInfoStrong)
+            }
+        }
         if (supportingText != null) {
             Spacer(modifier = Modifier.height(12.dp))
             Text(

@@ -96,6 +96,7 @@ fun HomeScreen(
     errorMessage: String? = null,
     onRetry: () -> Unit = {},
     onProceduresClick: () -> Unit = {},
+    onEnrollmentClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     AppTabScaffold(
@@ -110,6 +111,7 @@ fun HomeScreen(
             onNotificationsClick = onNotificationsClick,
             onEventsClick = onEventsClick,
             onProceduresClick = onProceduresClick,
+            onEnrollmentClick = onEnrollmentClick,
             onSignOutClick = onSignOutClick,
             isSigningOut = isSigningOut,
             signOutError = signOutError,
@@ -131,6 +133,7 @@ fun HomeTabContent(
     errorMessage: String?,
     onRetry: () -> Unit,
     onProceduresClick: () -> Unit = {},
+    onEnrollmentClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var selectedDayNumber by remember(data) { mutableStateOf<String?>(null) }
@@ -171,6 +174,7 @@ fun HomeTabContent(
             },
         )
         ProcedureEntryCard(onClick = onProceduresClick)
+        ProcedureEntryCard(onClick = onEnrollmentClick, title = "Guía de matrícula", subtitle = "Ingresantes y estudiantes · paso a paso")
         HomeHighlights(
             importantNotices = data.importantNotices,
             importantNoticeCount = data.importantNoticeCount,
