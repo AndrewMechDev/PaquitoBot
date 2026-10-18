@@ -2,6 +2,8 @@
 
 Estado vivo de la integración entre el archivo Figma "Paquito (copia)" y el código nativo por plataforma.
 
+Actualización 2026-10-17: rediseño de horarios conforme a PaquitoBot. Anticipaciones como chips con selección celeste, secciones con superficie gris y radios existentes, tarjeta de hora celeste y switch con colores explícitos. Se reemplaza `android.app.TimePickerDialog` por un selector Compose con reloj/teclado, formato 24 horas, DM Sans, colores de marca y CTA `PaquitoPrimaryButton`. Preview adicional `NotificationTimePickerPreview` (Selector de hora Paquito); revisión visual final pendiente del usuario.
+
 Actualización 2026-10-17: onboarding y edición incluyen anticipación de entregas (24 horas por defecto) y resumen diario (08:00 por defecto), con selección de hora local. Preview específico `NotificationScheduleOptionsPreview` en `ui/notifications/NotificationScheduleOptions.kt`. El permiso Android se gestiona desde una sección independiente: petición explícita en Android 13+, ajustes del sistema y actualización de estado al regresar. Este avance configura las reglas; el programador de avisos sigue pendiente.
 
 Actualización 2026-10-17: la bandeja incluye el acceso Preferencias de notificaciones. Reutiliza el selector del onboarding en un diálogo de pantalla completa con Guardar cambios y Cancelar; Atrás descarta la edición. Preview adicional `NotificationPreferencesPreview` en el mismo archivo del onboarding. Se conserva DM Sans y los componentes existentes; validación visual del editor pendiente.

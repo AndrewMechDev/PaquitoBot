@@ -46,6 +46,12 @@ Este avance no solicita permisos ni envía notificaciones. No incorpora aún fre
 
 Las instalaciones y pruebas conectadas permanecen pospuestas por indicación del usuario. No se introducen servicios de notificaciones ni nuevas dependencias para esta edición.
 
+### Diseño de controles de horario
+
+Las anticipaciones se eligen mediante chips visibles que se distribuyen en varias filas si es necesario. El resumen y la hora usan las superficies y radios de PaquitoBot; la selección se marca con celeste y texto oscuro. El selector de hora ahora es Compose, con DM Sans y paleta local, reloj y entrada por teclado, Confirmar hora y Cancelar. El valor solo se cambia al confirmar; cerrar el selector mantiene la hora anterior. El horario completo sigue siendo un borrador hasta Guardar cambios/Continuar. El contenido del diálogo permite desplazamiento en pantallas de menor altura.
+
+Validación del rediseño: compilación Android y revisión de referencias/tokens; sin nuevas dependencias ni instalación. Pendiente de revisión visual en Android Studio y pruebas de interacción en dispositivo.
+
 ## Reglas y permiso de notificaciones
 
 Reglas iniciales aceptadas por el usuario: recordar entregas 24 horas antes y resumen diario a las 08:00, según la zona horaria del dispositivo.
