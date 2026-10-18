@@ -100,7 +100,7 @@ private fun NotificationCardCompact(
             // 2026-08-13 (bug real, reportado por el usuario con captura):
             // `.height(140.dp)` fijo recortaba la 2da linea de titulos
             // largos ("Laboratorios Calificados", "Plazos de Entrega") -
-            // icono + gap + 2 lineas de texto a 22sp no entraban en 140dp.
+            // icono + gap + 2 lineas de texto no entraban en 140dp.
             // `heightIn(min = ...)` respeta el alto de Figma para titulos
             // cortos mientras crece si el contenido real lo necesita, en
             // vez de recortarlo.
@@ -113,7 +113,7 @@ private fun NotificationCardCompact(
                 shape = PaquitoShapes.large,
             )
             .clickable(onClick = onToggle)
-            .padding(20.dp),
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.Bottom),
         horizontalAlignment = Alignment.Start,
     ) {
@@ -125,7 +125,7 @@ private fun NotificationCardCompact(
         )
         Text(
             text = type.title,
-            fontSize = 22.sp,
+            fontSize = 18.sp,
             fontFamily = PaquitoFont.DMSans,
             fontWeight = FontWeight.SemiBold,
             color = PaquitoColors.TextPrimary.copy(alpha = 0.75f),

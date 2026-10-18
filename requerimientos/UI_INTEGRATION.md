@@ -2,6 +2,8 @@
 
 Estado vivo de la integración entre el archivo Figma "Paquito (copia)" y el código nativo por plataforma.
 
+Actualización 2026-10-17: las tarjetas compactas de notificaciones utilizan texto de 18sp y padding de 16dp para dar espacio a los títulos en la cuadrícula de dos columnas. Pendiente de confirmación visual en la vista previa del usuario.
+
 Actualización 2026-10-17: el onboarding de notificaciones carga y guarda las categorías mediante `SessionViewModel` y `NotificationPreferencesStore`. La selección y la presentación cuadros/lista se restauran al recrear la pantalla. Se conserva el diseño existente; todavía no se programan avisos. Alcance y validación en [SERVICIOS_ACADEMICOS.md](SERVICIOS_ACADEMICOS.md).
 
 > **Fuente de verdad del diseño**: canvas `109:97 - Main` del archivo, NO `112:146 - assets?` (esa página está desactualizada). Si hay conflicto, gana Main.
