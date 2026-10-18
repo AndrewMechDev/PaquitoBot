@@ -1,6 +1,8 @@
 package pe.tecsup.paquitobot
 
 import android.os.Bundle
+import android.content.Intent
+import pe.tecsup.paquitobot.data.notifications.AcademicNotificationPublisher
 import pe.tecsup.paquitobot.ui.calendar.CalendarScreen
 import pe.tecsup.paquitobot.ui.procedures.EnrollmentGuideRoute
 import pe.tecsup.paquitobot.ui.procedures.ProcedureGuideScreen
@@ -124,6 +126,13 @@ private inline fun <reified VM : ViewModel> factoryOf(noinline create: () -> VM)
     viewModelFactory { initializer { create() } }
 
 class MainActivity : ComponentActivity() {
+    private var notificationRequest by mutableIntStateOf(0)
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.action == AcademicNotificationPublisher.OPEN_INBOX) notificationRequest++
+    }
+
     override fun onResume() {
         super.onResume()
         AndroidAcademicNotificationScheduler(applicationContext).reconcile()
@@ -133,13 +142,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        if (intent?.action == AcademicNotificationPublisher.OPEN_INBOX) notificationRequest++
         setContent {
             PaquitoTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = PaquitoColors.Background,
                 ) {
-                    AppRoot()
+                    AppRoot(notificationRequest)
                 }
             }
         }
@@ -155,7 +165,7 @@ class MainActivity : ComponentActivity() {
  *   3. Con sesion -> pantallas de la app.
  */
 @Composable
-private fun AppRoot() {
+private fun AppRoot(notificationRequest: Int = 0) {
     val context = LocalContext.current.applicationContext
     val notificationPreferences = remember(context) { NotificationPreferencesStore(context) }
     val notificationScheduler = remember(context) { AndroidAcademicNotificationScheduler(context) }
@@ -163,6 +173,12 @@ private fun AppRoot() {
         factoryOf { SessionViewModel(notificationPreferences, notificationScheduler) }
     })
     val sessionUiState by sessionViewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(notificationRequest, sessionUiState.isAuthenticated) {
+        // Un aviso puede restaurar una configuración existente, nunca omitir autenticación.
+        if (notificationRequest > 0 && sessionUiState.isAuthenticated && notificationPreferences.hasCompletedSetup()) {
+            sessionViewModel.completeOnboarding()
+        }
+    }
     var onboardingStep by remember(sessionUiState.sessionRevision) {
         mutableStateOf(OnboardingStep.Welcome)
     }
@@ -201,6 +217,9 @@ private fun AppRoot() {
             // - con remember simple, girar el telefono mandaba siempre a Inicio.
             var currentTab by rememberSaveable { mutableStateOf(NavTab.Inicio) }
             var rootScreen by rememberSaveable { mutableStateOf(RootScreen.Tabs) }
+            LaunchedEffect(notificationRequest) {
+                if (notificationRequest > 0) rootScreen = RootScreen.Notifications
+            }
             var pendingCount by remember { mutableIntStateOf(0) }
             var selectedCourse by rememberSaveable(stateSaver = SelectedCourseSaver) {
                 mutableStateOf<CourseCardData?>(null)
@@ -350,7 +369,17 @@ private fun AppRoot() {
                 }
                 RootScreen.Notifications -> {
                     var preferencesOpen by rememberSaveable { mutableStateOf(false) }
+                    val owner = pe.tecsup.paquitobot.auth.authorizedAcademicUserId()?.let(AcademicNotificationPublisher::ownerKey).orEmpty()
+                    val inboxModel: pe.tecsup.paquitobot.ui.notifications.NotificationsInboxViewModel = viewModel(
+                        key = "inbox-$owner", factory = remember(owner) {
+                            factoryOf { pe.tecsup.paquitobot.ui.notifications.NotificationsInboxViewModel(context, owner) }
+                        })
+                    val inboxData by inboxModel.data.collectAsStateWithLifecycle()
                     NotificationsInboxScreen(
+                        data = inboxData,
+                        onDeleteItem = inboxModel::delete,
+                        onRestoreItem = inboxModel::restore,
+                        onDeleteAll = inboxModel::deleteAll,
                         onBackClick = { rootScreen = RootScreen.Tabs },
                         onPreferencesClick = { preferencesOpen = true },
                     )

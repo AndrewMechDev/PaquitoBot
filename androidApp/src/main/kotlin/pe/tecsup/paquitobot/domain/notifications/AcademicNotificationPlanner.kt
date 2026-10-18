@@ -5,6 +5,8 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeParseException
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 data class NotificationAssignment(val courseId: Int, val id: Int, val title: String, val due: Instant,
     val category: NotificationCategory = NotificationCategory.Deadlines)
@@ -48,8 +50,9 @@ object AcademicNotificationPlanner {
         val reminders = upcoming.filter {
             !it.due.minus(Duration.ofHours(schedule.reminderHours.toLong())).isAfter(now)
         }.map {
+            val dueLabel = it.due.atZone(zone).format(DateTimeFormatter.ofPattern("dd MMM, HH:mm", Locale.forLanguageTag("es-PE")))
             AcademicNotice("reminder:${it.courseId}:${it.id}:${it.due.toEpochMilli()}",
-                if (it.category == NotificationCategory.Laboratories) "Laboratorio próximo" else "Entrega próxima", "${it.title}. Revisa la fecha de entrega en PaquitoBot.")
+                if (it.category == NotificationCategory.Laboratories) "Laboratorio próximo" else "Entrega próxima", "${it.title}. Vence el $dueLabel. Abre PaquitoBot para revisar la entrega.")
         }
         val gradeNotices = if (NotificationCategory.Laboratories in categories) labGrades
             .filter { it.score.isFinite() }.distinctBy { it.courseId to it.assignmentId }.map {

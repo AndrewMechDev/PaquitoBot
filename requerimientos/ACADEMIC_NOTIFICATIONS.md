@@ -9,15 +9,15 @@
 - Resumen diario desde la hora elegida (08:00 por defecto): pendientes del día entre las categorías seleccionadas y faltas recientes. Solo se publica si hay contenido. Se omite cuando está desactivado.
 - Exclusión mutua, comprobación de sesión/preferencias antes de cada envío y registro de entrega separado por usuario evitan duplicados y envíos tras cambios de sesión. El registro se conserva 90 días. Máximo 10 avisos por ejecución; los restantes se reconsideran en la siguiente.
 - Las notas de laboratorio disponibles pueden generar su primer aviso al activar la categoría aunque se calificaran antes: la fuente demo no ofrece fecha de publicación. El texto dice «calificación disponible» y no afirma que sea una nota nueva.
-- Todos los títulos indican **Demo** mientras se usa el archivo académico de ejemplo. No se activa ninguna API académica real.
+- Todos los avisos muestran **Datos de demostración** mientras se usa el archivo académico de ejemplo. No se activa ninguna API académica real.
 
 ## Validación
 
 Pruebas JVM: selección por categoría, límite del anticipo, vencidas, zona horaria, hora del resumen, cambios de horario de verano, claves estables, duplicados, sesiones futuras/antiguas, resúmenes de asistencia y versiones de notas. Prueba compartida: tipo explícito de actividad, compatibilidad de JSON anterior y rechazo de tipos desconocidos.
 
-Se compila también el APK de pruebas de preferencias Android. La ejecución física en segundo plano y la revisión visual requieren un dispositivo autorizado: no se consideran aprobadas solo por compilar.
+Se ejecutaron 11 comprobaciones instrumentadas en un celular Android 16: preferencias, presentación nativa privada, historial por cuenta, envío con la app en segundo plano y dos ejecuciones del worker académico sin repetir entregas registradas. La revisión de batería/Doze prolongado y del último diseño de la bandeja queda a cargo del usuario.
 
-## Comprobación pendiente en celular
+## Revisión manual adicional
 
 1. Instalar la versión debug y conceder notificaciones; completar onboarding e iniciar sesión institucional.
 2. Elegir cada categoría por separado; comprobar que el trabajo `academic-notifications` queda programado aun sin Entregas.

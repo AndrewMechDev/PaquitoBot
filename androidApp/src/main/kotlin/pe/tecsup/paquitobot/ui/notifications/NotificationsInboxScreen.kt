@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,6 +25,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -43,6 +45,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.activity.compose.BackHandler
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,6 +57,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.DayOfWeek
+import java.time.temporal.TemporalAdjusters
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import pe.tecsup.paquitobot.R
@@ -85,9 +96,8 @@ import pe.tecsup.paquitobot.ui.theme.paquitoSurface
  *   confirmacion via AlertDialog porque es una accion masiva irreversible.
  * - Tocar una notificacion abre un popup con el detalle completo
  *   estructurado (titulo + cuerpo + hora), sin recortar texto largo.
- * - Estado local con `mutableStateListOf` (no ViewModel): no hay backend
- *   de notificaciones todavia, sigue la convencion de `HomeScreenData`
- *   (skill `architecture-paquitobot`).
+ * - Producción recibe el historial local por cuenta desde NotificationsInboxViewModel.
+ *   El estado local permite la animación de borrado y Deshacer; los cambios se persisten.
  */
 @Composable
 fun NotificationsInboxScreen(
@@ -95,18 +105,35 @@ fun NotificationsInboxScreen(
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     onPreferencesClick: () -> Unit = {},
+    onDeleteItem: (NotificationInboxItem) -> Unit = {},
+    onRestoreItem: (NotificationInboxItem) -> Unit = {},
+    onDeleteAll: () -> Unit = {},
 ) {
+    BackHandler(onBack = onBackClick)
     val items = remember(data) { mutableStateListOf(*data.items.toTypedArray()) }
-    var variant by remember { mutableStateOf(NotificationCardVariant.Full) }
+    var variant by rememberSaveable { mutableStateOf(NotificationCardVariant.Full) }
     var selectedItem by remember { mutableStateOf<NotificationInboxItem?>(null) }
     var confirmDeleteAll by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    var period by rememberSaveable { mutableStateOf("Todos") }
+    val today = LocalDate.now()
+    val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+    val visibleItems = items.filter { item ->
+        val date = item.createdAtMillis?.let { Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate() }
+        when (period) {
+            "Hoy" -> date == today
+            "Semana" -> date != null && !date.isBefore(weekStart) && !date.isAfter(today)
+            "Anteriores" -> date != null && date.isBefore(weekStart)
+            else -> true
+        }
+    }
 
     fun deleteItem(item: NotificationInboxItem) {
         val index = items.indexOf(item)
         if (index == -1) return
         items.removeAt(index)
+        onDeleteItem(item)
         coroutineScope.launch {
             val result = snackbarHostState.showSnackbar(
                 message = "Notificación eliminada",
@@ -115,6 +142,7 @@ fun NotificationsInboxScreen(
             )
             if (result == SnackbarResult.ActionPerformed) {
                 items.add(index.coerceIn(0, items.size), item)
+                onRestoreItem(item)
             }
         }
     }
@@ -134,14 +162,14 @@ fun NotificationsInboxScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Image(
+                IconButton(onClick = onBackClick) { Image(
                     painter = painterResource(id = R.drawable.ic_paquito_arrow_back),
                     contentDescription = "Volver",
                     modifier = Modifier
-                        .size(21.dp)
-                        .clickable(onClick = onBackClick),
+                        .size(21.dp),
                     contentScale = ContentScale.Fit,
                 )
+                }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -172,11 +200,22 @@ fun NotificationsInboxScreen(
                 Text(
                     text = "Preferencias de notificaciones",
                     style = PaquitoTypography.BodyMedium,
-                    color = PaquitoColors.TextPrimary,
+                    color = PaquitoColors.StateInfoStrong,
                 )
             }
-
-            if (items.isEmpty()) {
+            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
+                .background(PaquitoColors.SurfaceGlassSoft).padding(4.dp)) {
+                listOf("Todos", "Hoy", "Semana", "Anteriores").forEach { label ->
+                    Box(Modifier.weight(1f).clip(RoundedCornerShape(12.dp))
+                        .background(if (period == label) PaquitoColors.Background else Color.Transparent)
+                        .clickable { period = label }.padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+                        Text(label, style = PaquitoTypography.Caption.copy(fontWeight = if (period == label) FontWeight.SemiBold else FontWeight.Normal),
+                            color = if (period == label) PaquitoColors.StateInfoStrong else PaquitoColors.TextOnCardMuted)
+                    }
+                }
+            }
+            Text("${visibleItems.size} avisos · datos de demostración", style = PaquitoTypography.BodySmall, color = PaquitoColors.TextSecondary)
+            if (visibleItems.isEmpty()) {
                 EmptyState()
             } else {
                 Column(
@@ -187,16 +226,17 @@ fun NotificationsInboxScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     when (variant) {
-                        NotificationCardVariant.Full -> items.forEach { item ->
+                        NotificationCardVariant.Full -> visibleItems.forEach { item ->
                             key(item.id) {
                                 SwipeableNotification(
                                     onDelete = { deleteItem(item) },
                                 ) {
                                     NotificationInboxRow(item, onClick = { selectedItem = item })
                                 }
+                                HorizontalDivider(color = PaquitoColors.TextOnCardMuted.copy(alpha = 0.12f))
                             }
                         }
-                        NotificationCardVariant.Compact -> items.chunked(2).forEach { row ->
+                        NotificationCardVariant.Compact -> visibleItems.chunked(2).forEach { row ->
                             // Key a nivel de fila (primer id) para que Compose tambien
                             // trate cada FILA como estable cuando el chunking se corre
                             // por un borrado - evita que la fila entera "salte" de
@@ -243,15 +283,15 @@ fun NotificationsInboxScreen(
         AlertDialog(
             onDismissRequest = { confirmDeleteAll = false },
             confirmButton = {
-                TextButton(onClick = { items.clear(); confirmDeleteAll = false }) {
-                    Text("Eliminar todas")
+                TextButton(onClick = { items.clear(); onDeleteAll(); confirmDeleteAll = false }) {
+                    Text("Eliminar todas", style = PaquitoTypography.BodyMedium)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { confirmDeleteAll = false }) { Text("Cancelar") }
+                TextButton(onClick = { confirmDeleteAll = false }) { Text("Cancelar", style = PaquitoTypography.BodyMedium) }
             },
-            title = { Text("¿Eliminar todas las notificaciones?") },
-            text = { Text("Esta acción no se puede deshacer.") },
+            title = { Text("¿Eliminar todas las notificaciones?", style = PaquitoTypography.HeadlineSmall) },
+            text = { Text("Esta acción no se puede deshacer.", style = PaquitoTypography.BodyMedium) },
         )
     }
 }
@@ -261,7 +301,7 @@ fun NotificationsInboxScreen(
 private fun LayoutToggleButton(variant: NotificationCardVariant, onToggle: () -> Unit) {
     Box(
         modifier = Modifier
-            .size(36.dp)
+            .size(48.dp)
             .clip(CircleShape)
             .background(PaquitoColors.OverlayInfoSubtle)
             .clickable(
@@ -312,7 +352,7 @@ private fun LayoutToggleButton(variant: NotificationCardVariant, onToggle: () ->
 private fun DeleteAllButton(onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .size(36.dp)
+            .size(48.dp)
             .clip(CircleShape)
             .background(PaquitoColors.StateDanger.copy(alpha = 0.12f))
             .clickable(onClickLabel = "Eliminar todas las notificaciones", onClick = onClick),
@@ -357,7 +397,7 @@ private fun EmptyState() {
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            text = "No tenés notificaciones por ahora",
+            text = "No hay avisos en este período. Puedes consultar Todos o enviar una prueba desde Preferencias.",
             style = PaquitoTypography.BodyLarge,
             color = PaquitoColors.TextHomeMuted,
         )
@@ -409,7 +449,11 @@ private fun SwipeableNotification(
         SwipeToDismissBox(
             state = dismissState,
             enableDismissFromStartToEnd = false,
-            backgroundContent = { SwipeDeleteBackground() },
+            backgroundContent = {
+                // El fondo rojo solo aparece al deslizar: no debe teñir la tarjeta translúcida en reposo.
+                if (dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart) SwipeDeleteBackground()
+                else Box(Modifier.fillMaxSize())
+            },
         ) {
             content()
         }
@@ -451,45 +495,20 @@ private fun SwipeDeleteBackground() {
 /** Fila de una notificacion (variante Lista), mismo layout que `TaskInfoRow` del Home. */
 @Composable
 private fun NotificationInboxRow(item: NotificationInboxItem, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .paquitoSurface()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 18.dp, horizontal = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
         NotificationIcon(item.iconRes)
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Text(
-                text = item.title,
-                style = PaquitoTypography.TaskTitle,
-                color = PaquitoColors.TextOnCardStrong,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = item.body,
-                style = PaquitoTypography.TaskSubtitle,
-                color = PaquitoColors.TextOnCardMuted,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
+                Text(item.title, modifier = Modifier.weight(1f), style = PaquitoTypography.TaskTitle,
+                    color = PaquitoColors.TextOnCardStrong, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                if (item.severity == NotificationSeverity.Urgent) Box(Modifier.padding(top = 7.dp).size(6.dp)
+                    .background(PaquitoColors.StateDanger, CircleShape))
+            }
+            Text(item.body, style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextOnCardMuted,
+                maxLines = 3, overflow = TextOverflow.Ellipsis)
+            Text(item.timestamp, style = PaquitoTypography.Caption, color = PaquitoColors.StateInfoStrong)
         }
-        Text(
-            text = item.timestamp,
-            style = PaquitoTypography.Timestamp,
-            color = if (item.severity == NotificationSeverity.Urgent) {
-                PaquitoColors.StateDanger
-            } else {
-                PaquitoColors.TextTimestamp
-            },
-            softWrap = false,
-        )
     }
 }
 
@@ -499,8 +518,10 @@ private fun NotificationInboxCard(item: NotificationInboxItem, onClick: () -> Un
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(140.dp)
-            .paquitoSurface()
+            .heightIn(min = 172.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(PaquitoColors.SurfaceGlassSoft)
+            .border(1.dp, PaquitoColors.StateInfoStrong.copy(alpha = 0.10f), RoundedCornerShape(20.dp))
             .clickable(onClick = onClick)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
@@ -529,8 +550,8 @@ private fun NotificationInboxCard(item: NotificationInboxItem, onClick: () -> Un
 private fun NotificationIcon(@DrawableRes iconRes: Int) {
     Box(
         modifier = Modifier
-            .size(36.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .size(48.dp)
+            .clip(CircleShape)
             .background(PaquitoColors.OverlayInfoSubtle),
         contentAlignment = Alignment.Center,
     ) {
@@ -551,8 +572,8 @@ private fun NotificationIcon(@DrawableRes iconRes: Int) {
 private fun NotificationDetailDialog(item: NotificationInboxItem, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Cerrar") } },
-        title = { Text(item.title) },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Cerrar", style = PaquitoTypography.BodyMedium) } },
+        title = { Text(item.title, style = PaquitoTypography.HeadlineSmall) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
@@ -563,7 +584,7 @@ private fun NotificationDetailDialog(item: NotificationInboxItem, onDismiss: () 
                     lineHeight = PaquitoTypography.BodyLarge.lineHeight,
                 )
                 Text(
-                    text = "Hace ${item.timestamp}",
+                    text = item.timestamp,
                     style = PaquitoTypography.BodySmall,
                     color = PaquitoColors.TextHomeMuted,
                 )
@@ -592,6 +613,7 @@ data class NotificationInboxItem(
     val timestamp: String,
     val severity: NotificationSeverity,
     @DrawableRes val iconRes: Int,
+    val createdAtMillis: Long? = null,
 )
 
 /** Snapshot de la bandeja de notificaciones. Vendra del Repository cuando exista backend de avisos. */
@@ -619,7 +641,7 @@ data class NotificationsInboxData(
                 ),
                 NotificationInboxItem(
                     id = "canvas-sync",
-                    title = "Canvas sincronizado",
+                    title = "Datos de ejemplo",
                     body = "Tus cursos y tareas están al día",
                     timestamp = "2 d",
                     severity = NotificationSeverity.Info,
@@ -633,7 +655,7 @@ data class NotificationsInboxData(
                 NotificationInboxItem(
                     id = "asistencia-ciclo",
                     title = "Asistencia del ciclo",
-                    body = "2 de 5 faltas usadas. Te quedan 3 antes del jalado automático.",
+                    body = "Ejemplo de asistencia. Consulta las faltas registradas en tus cursos.",
                     timestamp = "3 d",
                     severity = NotificationSeverity.Urgent,
                     iconRes = R.drawable.ic_paquito_frame_person,

@@ -15,6 +15,16 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.work.WorkManager
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.ExistingWorkPolicy
+import androidx.work.WorkInfo
+import androidx.work.workDataOf
+import java.util.concurrent.TimeUnit
+import pe.tecsup.paquitobot.auth.authorizedAcademicUserId
+import pe.tecsup.paquitobot.data.notifications.AcademicNotificationPublisher
+import pe.tecsup.paquitobot.data.notifications.NotificationTestWorker
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,8 +71,17 @@ fun NotificationPermissionSection(modifier: Modifier = Modifier, onPermissionCha
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    val workManager = remember(context) { WorkManager.getInstance(context.applicationContext) }
+    var testStatus by remember { mutableStateOf<WorkInfo?>(null) }
+    var testError by remember { mutableStateOf(false) }
+    LaunchedEffect(workManager) {
+        workManager.getWorkInfosForUniqueWorkFlow(NotificationTestWorker.WORK_NAME).collect { work ->
+            val currentOwner = authorizedAcademicUserId()?.let(AcademicNotificationPublisher::ownerKey)
+            testStatus = work.filter { currentOwner != null && "owner:$currentOwner" in it.tags }.maxByOrNull { info -> info.tags.firstOrNull { it.startsWith("requested:") }?.substringAfter(":")?.toLongOrNull() ?: 0L }
+        }
+    }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Los avisos disponibles cubren entregas con fecha. Laboratorios y asistencias estarán disponibles más adelante.",
+        Text("Entregas, laboratorios calificados e inasistencias registradas. Usamos datos de demostración. Android puede aplazar los avisos por ahorro de batería.",
             style = PaquitoTypography.BodySmall, color = PaquitoColors.TextSecondary)
         Text("Permiso de notificaciones", style = PaquitoTypography.HeadlineSmall, color = PaquitoColors.TextPrimary)
         Text(
@@ -97,6 +116,27 @@ fun NotificationPermissionSection(modifier: Modifier = Modifier, onPermissionCha
                     "Permitir notificaciones" else "Abrir ajustes de notificaciones",
                 style = PaquitoTypography.BodyMedium,
             )
+        }
+        if (authorizedAcademicUserId() != null) {
+            OutlinedButton(enabled = allowed && testStatus?.state?.isFinished != false, onClick = {
+                val owner = authorizedAcademicUserId()?.let(AcademicNotificationPublisher::ownerKey)
+                if (owner != null) {
+                    try {
+                        val request = OneTimeWorkRequestBuilder<NotificationTestWorker>()
+                            .setInitialDelay(30, TimeUnit.SECONDS).addTag("owner:$owner").addTag("requested:${System.currentTimeMillis()}")
+                            .setInputData(workDataOf("owner" to owner)).build()
+                        workManager.enqueueUniqueWork(NotificationTestWorker.WORK_NAME, ExistingWorkPolicy.REPLACE, request)
+                        testError = false
+                    } catch (_: IllegalStateException) { testError = true }
+                }
+            }) { Text("Enviar aviso de prueba en 30 segundos", style = PaquitoTypography.BodyMedium) }
+            Text(when {
+                testError -> "No se pudo programar la prueba. Vuelve a intentarlo."
+                testStatus?.state == WorkInfo.State.SUCCEEDED -> "Aviso enviado. Abre la barra de notificaciones del celular para verlo."
+                testStatus?.state == WorkInfo.State.FAILED -> "No se envió el aviso. Revisa el permiso y tu sesión e inténtalo de nuevo."
+                testStatus?.state?.isFinished == false -> "Prueba programada. Pulsa Inicio del celular para dejar la app en segundo plano. Android puede tardar más de 30 segundos."
+                else -> "Prueba el diseño y la recepción del aviso sin esperar al vencimiento de una tarea."
+            }, style = PaquitoTypography.BodySmall, color = PaquitoColors.TextSecondary)
         }
         if (settingsUnavailable) {
             Text("Abre los ajustes del dispositivo y busca las notificaciones de PaquitoBot.",

@@ -425,3 +425,12 @@ Layout horizontal (de Figma 365:896):
 - Cerrar sesión se traslada de Inicio a Perfil, con confirmación, estado de progreso y error reintentable. Se reutiliza `SessionViewModel.signOut`; no se añade un segundo proveedor de autenticación.
 - Se reutilizan `ProcedureEntryCard`, superficies, colores y tipografía existentes. Perfil no añade scroll anidado: lo proporciona `AppTabScaffold`.
 - **Decisión del usuario:** cursos, notas, tareas y horarios continúan siendo datos locales de demostración hasta nuevo aviso. Inicio y Perfil lo indican; el título de los avisos del sistema incorpora «Demo».
+
+
+## Bandeja de avisos · diseño actualizado 18/10/2026
+
+Referencia proporcionada por el usuario: centro de notificaciones con filas ligeras, iconos circulares y separadores. Se mantienen blanco/celeste y DM Sans de PaquitoBot. La lista elimina las tarjetas rosadas, usa más espacio para el contenido, metadatos discretos y detalle completo al tocar. Se conserva la alternativa de cuadros con superficies claras, sin altura fija que recorte texto ampliado.
+
+Filtros: Todos, Hoy, Semana (lunes hasta hoy) y Anteriores (antes del lunes), calculados con la fecha real de recepción y zona local del celular. El historial persiste por cuenta, con borrado y Deshacer; no se modifica el registro que evita repetir entregas. Los avisos del sistema abren esta bandeja con sesión válida y configuración completada. Preferencias permite enviar un aviso explícito de prueba en 30 segundos, sujeto a la programación de Android.
+
+Pruebas anteriores de esta sesión: 74 pruebas JVM y 11 comprobaciones instrumentadas aprobadas en el celular Android 16; incluyen envío en segundo plano, deduplicación, historial separado por cuenta, preferencias y presentación nativa privada. El último cambio visual se verifica mediante compilación; el usuario realiza la revisión manual del diseño. No se ejecutan más pruebas físicas por su indicación.

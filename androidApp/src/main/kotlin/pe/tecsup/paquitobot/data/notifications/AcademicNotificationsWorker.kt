@@ -1,13 +1,6 @@
 package pe.tecsup.paquitobot.data.notifications
 
-import android.Manifest
-import android.app.Notification
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
@@ -19,8 +12,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.flow.first
-import pe.tecsup.paquitobot.MainActivity
-import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.PaquitoBotApp
 import pe.tecsup.paquitobot.auth.authorizedAcademicUserId
 import pe.tecsup.paquitobot.data.local.NotificationPreferencesStore
@@ -71,12 +62,12 @@ class AcademicNotificationsWorker(context: Context, parameters: WorkerParameters
             repository.courseAssignments(course.id).getOrThrow().forEach { assignment ->
                 if (assignment.kind == AcademicAssignmentKind.Laboratory) {
                     grades[assignment.id]?.let { grade ->
-                        labGrades += NotificationLabGrade(course.id, assignment.id, assignment.name, grade.score)
+                        labGrades += NotificationLabGrade(course.id, assignment.id, "${course.code} · ${assignment.name}", grade.score)
                     }
                 }
                 val due = AcademicNotificationPlanner.parseDueAt(assignment.dueAt)
                 if (due != null && assignment.id !in graded) {
-                    assignments += NotificationAssignment(course.id, assignment.id, assignment.name, due,
+                    assignments += NotificationAssignment(course.id, assignment.id, "${course.code} · ${assignment.name}", due,
                         if (assignment.kind == AcademicAssignmentKind.Laboratory) NotificationCategory.Laboratories else NotificationCategory.Deadlines)
                 }
             }
@@ -98,7 +89,6 @@ class AcademicNotificationsWorker(context: Context, parameters: WorkerParameters
         val cleanup = ledger.edit()
         ledger.all.forEach { (key, value) -> if (value is Long && value < oldest) cleanup.remove(key) }
         cleanup.apply()
-        val manager = context.getSystemService(NotificationManager::class.java)
         AndroidAcademicNotificationScheduler.createChannel(context)
         var published = 0
         for (notice in notices.sortedBy { if (it.key.startsWith("summary:")) 0 else 1 }) {
@@ -107,24 +97,8 @@ class AcademicNotificationsWorker(context: Context, parameters: WorkerParameters
             val eventKey = scope + notice.key
             if (ledger.contains(eventKey)) continue
             if (published == 10) break
-            val intent = Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            val pending = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                Notification.Builder(context, AndroidAcademicNotificationScheduler.CHANNEL_ID)
-            } else {
-                @Suppress("DEPRECATION")
-                Notification.Builder(context)
-            }
-            val notification = builder.setSmallIcon(R.drawable.ic_paquito_docs_default)
-                .setContentTitle("Demo · ${notice.title}").setContentText(notice.body)
-                .setStyle(Notification.BigTextStyle().bigText(notice.body))
-                .setContentIntent(pending).setAutoCancel(true).setOnlyAlertOnce(true)
-                .setVisibility(Notification.VISIBILITY_PRIVATE).build()
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return Result.success()
-            try {
-                manager.notify(scope + notice.displayKey, 0, notification)
-            } catch (_: SecurityException) {
+            val owner = AcademicNotificationPublisher.ownerKey(originalUser)
+            if (!AcademicNotificationPublisher(context).publish(owner, notice, now.toEpochMilli(), silent = published > 0)) {
                 return Result.success(workDataOf("status" to "notifications_blocked"))
             }
             // El tag estable actualiza el mismo aviso si el proceso muere antes de registrar el envío.
