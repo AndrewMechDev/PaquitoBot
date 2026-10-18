@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import pe.tecsup.paquitobot.ui.procedures.ProcedureEntryCard
 import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.ui.components.AcademicErrorBanner
 import pe.tecsup.paquitobot.ui.components.AppTabScaffold
@@ -94,6 +95,7 @@ fun HomeScreen(
     signOutError: String? = null,
     errorMessage: String? = null,
     onRetry: () -> Unit = {},
+    onProceduresClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     AppTabScaffold(
@@ -107,6 +109,7 @@ fun HomeScreen(
             data = data,
             onNotificationsClick = onNotificationsClick,
             onEventsClick = onEventsClick,
+            onProceduresClick = onProceduresClick,
             onSignOutClick = onSignOutClick,
             isSigningOut = isSigningOut,
             signOutError = signOutError,
@@ -127,6 +130,7 @@ fun HomeTabContent(
     signOutError: String?,
     errorMessage: String?,
     onRetry: () -> Unit,
+    onProceduresClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var selectedDayNumber by remember(data) { mutableStateOf<String?>(null) }
@@ -166,6 +170,7 @@ fun HomeTabContent(
                 }
             },
         )
+        ProcedureEntryCard(onClick = onProceduresClick)
         HomeHighlights(
             importantNotices = data.importantNotices,
             importantNoticeCount = data.importantNoticeCount,

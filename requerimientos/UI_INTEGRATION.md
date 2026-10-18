@@ -383,3 +383,12 @@ Layout horizontal (de Figma 365:896):
 - La integración local valida compilación y pruebas con JDK 21 y AGP 9.1.1. La comprobación visual y el acceso real a Clerk requieren ejecutar la app.
 
 - Validación de la integración (2026-10-18): APK debug y APK de pruebas generados; pruebas unitarias Android y sharedLogic aprobadas; lint sin errores. No se instalaron APKs ni se verificó el acceso a Clerk en dispositivo. Se conservaron el asistente de avisos y la edición de preferencias junto con eventos y transiciones del nuevo diseño.
+
+
+### Guía de secretaría (2026-10-18)
+
+- Inicio incorpora acceso «Trámites de secretaría». Catálogo y detalle en `ui/procedures`, con 35 fichas locales, 7 categorías, búsqueda sin tildes y consulta de fuente por página.
+- Se reutilizan `paquitoSurface`, `PaquitoShapes`, `PaquitoTypography` (DM Sans), el botón primario y la flecha existentes. Lista de carga/error/vacío y detalle con scroll; regreso conserva consulta y filtro.
+- Canal externo con manejo de aplicación no disponible y dirección seleccionable; correo solo prepara una consulta. No se presentan solicitudes ni se recopilan documentos personales.
+- Tarifas/plazos se muestran como referencia 2024. Modelo y contenido compartidos permiten reutilizarlos en la siguiente guía de matrícula; no hay cronogramas inventados.
+- Plan, decisiones editoriales y pendientes: `requerimientos/SECRETARIA_GUIDE.md`. La revisión visual en dispositivo continúa pendiente.

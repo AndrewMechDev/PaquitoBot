@@ -5,9 +5,19 @@ import com.clerk.api.Clerk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import pe.tecsup.paquitobot.data.repository.LocalJsonAcademicRepository
+import pe.tecsup.paquitobot.data.repository.LocalJsonProcedureRepository
+import pe.tecsup.paquitobot.domain.procedures.ProcedureRepository
 import pe.tecsup.paquitobot.domain.academic.AcademicRepository
 
 class PaquitoBotApp : Application() {
+    val procedureRepository: ProcedureRepository by lazy {
+        LocalJsonProcedureRepository {
+            withContext(Dispatchers.IO) {
+                assets.open("procedures.json").bufferedReader().use { it.readText() }
+            }
+        }
+    }
+
 
     /**
      * Fuente unica de datos academicos para toda la app: lee

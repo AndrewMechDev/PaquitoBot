@@ -1,6 +1,10 @@
 package pe.tecsup.paquitobot
 
 import android.os.Bundle
+import pe.tecsup.paquitobot.ui.procedures.ProcedureGuideScreen
+import pe.tecsup.paquitobot.ui.procedures.ProcedureDetailScreen
+import pe.tecsup.paquitobot.ui.procedures.ProcedureViewModel
+import pe.tecsup.paquitobot.ui.procedures.ProcedureUiState
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import pe.tecsup.paquitobot.data.local.NotificationPreferencesStore
@@ -30,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -72,7 +77,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  * del Navbar se usa como toggle hacia Chat; Cursos y Horarios son pestañas
  * reales. El detalle de curso usa flecha atras como el chat.
  */
-private enum class RootScreen { Tabs, Chat, CourseDetail, Notifications, Events, EventDetail }
+private enum class RootScreen { Tabs, Chat, CourseDetail, Notifications, Events, EventDetail, Procedures, ProcedureDetail }
 
 private enum class OnboardingStep { Welcome, Notifications, Tour }
 
@@ -204,6 +209,8 @@ private fun AppRoot() {
             var selectedCourse by rememberSaveable(stateSaver = SelectedCourseSaver) {
                 mutableStateOf<CourseCardData?>(null)
             }
+            val guideStateHolder = rememberSaveableStateHolder()
+            var selectedProcedureId by rememberSaveable { mutableStateOf<String?>(null) }
             var selectedEventId by rememberSaveable { mutableStateOf<String?>(null) }
             val userFirstName = sessionUiState.userFirstName ?: "estudiante"
             val academicRepository = (LocalContext.current.applicationContext as PaquitoBotApp).academicRepository
@@ -251,6 +258,7 @@ private fun AppRoot() {
                             data = homeData.copy(greeting = "¡Bienvenido, $userFirstName!"),
                             onNotificationsClick = { rootScreen = RootScreen.Notifications },
                             onEventsClick = { rootScreen = RootScreen.Events },
+                            onProceduresClick = { rootScreen = RootScreen.Procedures },
                             onSignOutClick = sessionViewModel::signOut,
                             isSigningOut = sessionUiState.isSigningOut,
                             signOutError = sessionUiState.signOutError,
@@ -367,6 +375,25 @@ private fun AppRoot() {
                                     onCancel = { preferencesOpen = false },
                                 )
                             }
+                        }
+                    }
+                }
+                RootScreen.Procedures, RootScreen.ProcedureDetail -> {
+                    val repository = (context as PaquitoBotApp).procedureRepository
+                    val guideViewModel: ProcedureViewModel = viewModel(factory = remember {
+                        factoryOf { ProcedureViewModel(repository) }
+                    })
+                    val guideState by guideViewModel.uiState.collectAsStateWithLifecycle()
+                    val ready = guideState as? ProcedureUiState.Ready
+                    val procedure = ready?.catalog?.find(selectedProcedureId)
+                    if (screen == RootScreen.ProcedureDetail && procedure != null) {
+                        ProcedureDetailScreen(procedure, ready.catalog.source,
+                            onBackClick = { rootScreen = RootScreen.Procedures })
+                    } else {
+                        guideStateHolder.SaveableStateProvider("procedure-catalog") {
+                            ProcedureGuideScreen(guideState, onRetry = guideViewModel::load,
+                                onProcedureClick = { selectedProcedureId = it; rootScreen = RootScreen.ProcedureDetail },
+                                onBackClick = { rootScreen = RootScreen.Tabs })
                         }
                     }
                 }
