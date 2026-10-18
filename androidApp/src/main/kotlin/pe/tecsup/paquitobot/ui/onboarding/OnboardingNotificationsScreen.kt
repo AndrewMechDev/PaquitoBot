@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +51,7 @@ fun OnboardingNotificationsScreen(
     },
     onContinue: (Set<NotificationType>) -> Unit = {},
     modifier: Modifier = Modifier,
+    onCancel: (() -> Unit)? = null,
 ) {
     var variant by rememberSaveable { mutableStateOf(NotificationCardVariant.Compact) }
     var enabled by rememberSaveable(
@@ -74,7 +76,7 @@ fun OnboardingNotificationsScreen(
                 color = PaquitoColors.TextPrimary,
             )
             Text(
-                text = "Activa tus avisos",
+                text = if (onCancel == null) "Activa tus avisos" else "Elige qué avisos quieres recibir",
                 style = PaquitoTypography.HeadlineSmall,
                 color = PaquitoColors.TextSecondary,
             )
@@ -104,10 +106,22 @@ fun OnboardingNotificationsScreen(
         }
 
         PaquitoPrimaryButton(
-            text = "Continuar",
+            text = if (onCancel == null) "Continuar" else "Guardar cambios",
             onClick = { onContinue(enabled) },
             modifier = Modifier.padding(top = 16.dp),
         )
+        if (onCancel != null) {
+            TextButton(
+                onClick = onCancel,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = "Cancelar",
+                    style = PaquitoTypography.BodyLarge,
+                    color = PaquitoColors.TextPrimary,
+                )
+            }
+        }
     }
 }
 
@@ -239,5 +253,14 @@ private fun toggleNotification(
 private fun OnboardingNotificationsScreenPreview() {
     PaquitoTheme {
         OnboardingNotificationsScreen()
+    }
+}
+
+// Reutiliza el selector del onboarding: cambia las acciones, no duplica tarjetas ni estado.
+@Preview(showBackground = true, name = "Preferencias de notificaciones")
+@Composable
+private fun NotificationPreferencesPreview() {
+    PaquitoTheme {
+        OnboardingNotificationsScreen(onCancel = {})
     }
 }

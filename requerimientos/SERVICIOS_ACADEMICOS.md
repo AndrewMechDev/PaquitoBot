@@ -20,8 +20,28 @@ Auditoría del cambio: sin errores de formato (`git diff --check`), referencias 
 
 ### Siguientes avances
 
-1. Permitir modificar las preferencias después del onboarding.
-2. Definir frecuencia, anticipación y horarios; gestionar permiso de notificaciones.
-3. Programar, actualizar y cancelar avisos sin duplicados.
+1. Definir frecuencia, anticipación y horarios; gestionar permiso de notificaciones.
+2. Programar, actualizar y cancelar avisos sin duplicados.
 
 Este avance no solicita permisos ni envía notificaciones. No incorpora aún frecuencia u horarios.
+
+## Edición después del onboarding
+
+- Acceso: Inicio → campana → Preferencias de notificaciones.
+- La edición reutiliza `OnboardingNotificationsScreen`, con Guardar cambios y Cancelar. El onboarding mantiene su botón Continuar.
+- Se abre como diálogo de pantalla completa sobre la bandeja para conservar su estado al regresar y bloquear interacciones con el contenido de fondo.
+- La selección inicial viene de `SessionUiState.enabledNotifications`; los cambios permanecen en un borrador local restaurable durante la edición.
+- Guardar persiste mediante `SessionViewModel.saveNotificationPreferences` y cierra el editor. Cancelar o Atrás descartan el borrador sin escribir preferencias.
+- Al volver a abrir se carga la última selección guardada, incluido el conjunto vacío.
+- Vista previa en Android Studio: `NotificationPreferencesPreview`, dentro de `OnboardingNotificationsScreen.kt`. El preview permite revisar la selección y el diseño; no reproduce la navegación ni el guardado real de la aplicación.
+
+### Verificación pendiente en dispositivo
+
+1. Guardar una selección y comprobarla al reabrir y reiniciar la app.
+2. Modificar y cancelar; comprobar que conserva la selección anterior.
+3. Repetir usando Atrás en lugar de Cancelar.
+4. Desactivar todas, guardar y reabrir.
+5. Girar el dispositivo durante la edición y verificar el borrador.
+6. Cambiar la vista de la bandeja y verificar que se conserva al cerrar preferencias.
+
+Las instalaciones y pruebas conectadas permanecen pospuestas por indicación del usuario. No se introducen servicios de notificaciones ni nuevas dependencias para esta edición.

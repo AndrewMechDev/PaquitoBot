@@ -93,6 +93,7 @@ fun NotificationsInboxScreen(
     data: NotificationsInboxData = NotificationsInboxData.default(),
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier,
+    onPreferencesClick: () -> Unit = {},
 ) {
     val items = remember(data) { mutableStateListOf(*data.items.toTypedArray()) }
     var variant by remember { mutableStateOf(NotificationCardVariant.Full) }
@@ -165,6 +166,14 @@ fun NotificationsInboxScreen(
                 style = PaquitoTypography.DisplayLarge,
                 color = PaquitoColors.TextHomeStrong,
             )
+
+            TextButton(onClick = onPreferencesClick) {
+                Text(
+                    text = "Preferencias de notificaciones",
+                    style = PaquitoTypography.BodyMedium,
+                    color = PaquitoColors.TextPrimary,
+                )
+            }
 
             if (items.isEmpty()) {
                 EmptyState()

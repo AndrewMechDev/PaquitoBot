@@ -18,6 +18,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
@@ -387,9 +389,37 @@ private fun AppRoot() {
                         )
                     }
                 }
-                RootScreen.Notifications -> NotificationsInboxScreen(
-                    onBackClick = { rootScreen = RootScreen.Tabs },
-                )
+                RootScreen.Notifications -> {
+                    var preferencesOpen by rememberSaveable { mutableStateOf(false) }
+                    NotificationsInboxScreen(
+                        onBackClick = { rootScreen = RootScreen.Tabs },
+                        onPreferencesClick = { preferencesOpen = true },
+                    )
+                    if (preferencesOpen) {
+                        // La edición ocupa toda la pantalla y mantiene la bandeja compuesta
+                        // para conservar sus elementos y selección de vista al regresar.
+                        Dialog(
+                            onDismissRequest = { preferencesOpen = false },
+                            properties = DialogProperties(
+                                usePlatformDefaultWidth = false,
+                                decorFitsSystemWindows = false,
+                            ),
+                        ) {
+                            PaquitoTheme {
+                                OnboardingNotificationsScreen(
+                                    initialEnabled = NotificationType.entries.filterTo(mutableSetOf()) {
+                                        it.category in sessionUiState.enabledNotifications
+                                    },
+                                    onContinue = { enabled ->
+                                        sessionViewModel.saveNotificationPreferences(enabled.map { it.category }.toSet())
+                                        preferencesOpen = false
+                                    },
+                                    onCancel = { preferencesOpen = false },
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
