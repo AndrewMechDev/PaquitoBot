@@ -1,5 +1,7 @@
 # Servicios y funcionalidades académicas
 
+Estado 2026-10-18: programador local Android implementado para entregas con fecha y resumen diario. Las secciones de configuración documentan avances anteriores; la cobertura y validación del programador se describen al final.
+
 ## Preferencias de notificaciones — primer avance
 
 - El onboarding carga las categorías guardadas y las persiste al pulsar Continuar.
@@ -82,8 +84,35 @@ Reglas iniciales aceptadas por el usuario: recordar entregas 24 horas antes y re
 
 La API ofrece fechas de entrega, notas, sesiones de clase y asistencias. No expone un tipo de asignación que identifique laboratorios ni un estado explícito de entrega del estudiante. No se deben clasificar laboratorios por palabras del título ni asumir que no tener nota equivale a no haber entregado. Las reglas específicas de laboratorio y asistencia requieren un contrato de datos/regla de negocio antes de implementarse.
 
-El siguiente avance es implementar el programador de recordatorios y resumen, con reprogramación al cambiar ajustes/datos y prevención de duplicados. Este commit todavía no publica notificaciones.
+El programador descrito al final incorpora recordatorios de entregas y resumen; laboratorio y asistencia continúan pendientes de reglas/datos.
 
 ### Verificación
 
 Compilación de la app y del APK de pruebas. Pruebas instrumentadas adicionales preparadas para migración de preferencias anteriores, persistencia de horario y recuperación de valores fuera de rango. Su ejecución, el permiso concedido/rechazado y el retorno desde ajustes quedan pendientes de prueba final en dispositivo por indicación del usuario.
+
+## Programador local Android — 2026-10-18
+
+- Contrato común `AcademicNotificationScheduler`; implementación `AndroidAcademicNotificationScheduler` y `AcademicNotificationsWorker` en Android `data/notifications`. Reglas deterministas en `AcademicNotificationPlanner` (Android/JVM por el uso de `java.time`, habilitado mediante desugaring para Android 24–25).
+- Trabajo periódico único de WorkManager cada 15 minutos, con red. Android puede retrasarlo por batería/reposo; no son alarmas exactas ni push remoto. WorkManager conserva trabajo tras reinicios normales; después de una detención forzada se debe volver a abrir la app.
+- Se reconcilia al completar onboarding, conectar la cuenta académica, guardar ajustes y volver a la app o a los permisos. Requiere onboarding completado, clave académica configurada, Plazos activo y permisos habilitados para app/canal. Desactivarlos cancela el trabajo; el worker vuelve a comprobarlos antes de cada publicación.
+- Cada ejecución consulta perfil, cursos, notas y asignaciones actuales. Excluye calificadas, vencidas, sin fecha o sin zona/offset. No afirma que una tarea no calificada esté sin entregar. No programa datos visuales de ejemplo: requiere acceso real al servidor académico, actualmente en una IP local.
+- Recordatorios desde el inicio de la anticipación hasta el vencimiento. Si la red/sistema lo retrasa, se recuperan solo dentro de esa ventana. Cambiar fechas o eliminar tareas actualiza la próxima evaluación sin dejar trabajos individuales antiguos.
+- Resumen una vez por fecha local desde la hora elegida, solo si quedan entregas con vencimiento ese día. Los cambios de zona se leen en cada ejecución; las horas inexistentes por horario de verano pasan al siguiente instante válido.
+- Registro persistente por cuenta/credencial, curso, tarea y vencimiento. Cambiar anticipación no repite la misma fecha; cambiar el vencimiento crea una versión nueva. Tag estable y `onlyAlertOnce` actualizan la misma publicación si el proceso se interrumpe entre enviar y registrar. No hay garantía de transacción atómica entre Android y preferencias.
+- Máximo diez publicaciones nuevas por ejecución, priorizando el resumen; las demás se reevalúan después. Marcas antiguas se eliminan tras 90 días. Cambiar preferencias no borra notificaciones ya entregadas.
+- Canal Avisos académicos, contenido privado en pantalla bloqueada y apertura de PaquitoBot al pulsar el aviso. La bandeja interna sigue siendo demo, sin historial de estas publicaciones.
+- Los fallos parciales no generan resúmenes incompletos. Reintentos limitados con backoff y nueva oportunidad en el siguiente período. Credenciales inválidas dejan estado de conexión requerida. No se incluyen API keys en WorkData, tags ni logs.
+
+### Validación del programador
+
+Pruebas JVM preparadas para anticipación y límites de vencimiento, categorías desactivadas, resumen por fecha/hora local, resumen desactivado, claves al cambiar configuración/fecha, duplicados, ISO con offset/fracciones y horario de verano. Se ejecutan sin backend ni celular.
+
+Pendiente de prueba final conectada: publicación real con backend accesible, permiso/canal bloqueados, cancelación durante consulta, cambio de cuenta/fechas, no repetición entre períodos, reinicio y recuperación de red. Las instalaciones siguen pospuestas por el usuario. Laboratorios/asistencia requieren reglas y datos adicionales; no se infieren por palabras del título. Release sigue bloqueando el HTTP del backend mock intencionalmente.
+
+### Auditoría y resultados — 2026-10-18
+
+- `:androidApp:assembleDebug`, `:androidApp:assembleDebugAndroidTest` y `:androidApp:testDebugUnitTest`: correctos; 11 pruebas JVM, cero fallos/errores.
+- `:androidApp:lintDebug`: correcto, cero errores. Mantiene 61 advertencias y una sugerencia en el proyecto; en el worker hay dos sugerencias UseKtx no bloqueantes. Se conserva el editor manual para comprobar el booleano de escritura síncrona antes de dar por registrado un aviso.
+- Se corrigieron los errores detectados: escape de la ruta en `local.properties` (archivo local ignorado), idioma observable en el horario y `stringResource` para el cliente Google. La configuración OAuth no cambia.
+- Kotlin/recursos/Gradle: referencias y aliases verificados por compilación; sin drawables nuevos ni nuevas pantallas. WorkManager aporta permisos normales de red/reinicio/bloqueo de CPU para sus restricciones y persistencia; no se solicita permiso de alarmas exactas. Se mantiene `POST_NOTIFICATIONS` con control en ejecución.
+- Documentación de alcance/limitaciones actualizada; `git diff --check` sin errores. Revisión estática sin bloqueantes para el cambio. La aprobación de uso real continúa pendiente de las pruebas conectadas indicadas arriba.

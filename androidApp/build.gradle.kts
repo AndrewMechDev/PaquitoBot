@@ -23,6 +23,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.androidx.work.runtime)
+    coreLibraryDesugaring(libs.desugar.jdk)
+    testImplementation(libs.junit)
 
     // Google Sign-In (Credential Manager - API moderna recomendada, reemplaza
     // GoogleSignInClient) + almacenamiento cifrado del JWT del backend.
@@ -81,6 +84,7 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }

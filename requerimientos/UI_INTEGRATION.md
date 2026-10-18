@@ -2,6 +2,8 @@
 
 Estado vivo de la integración entre el archivo Figma "Paquito (copia)" y el código nativo por plataforma.
 
+Actualización 2026-10-18: la sección de permiso aclara que la cobertura actual son entregas con fecha; laboratorio/asistencia siguen pendientes. Detecta también el canal académico bloqueado y reconcilia programación al regresar desde ajustes o conceder permiso. Sin nuevos colores ni componentes visuales. Los avisos locales abren la app; la bandeja sigue siendo demo.
+
 Actualización 2026-10-17: configuración de notificaciones en tres pasos dentro de la misma vista: categorías → anticipación → resumen diario. Indicador Paso N de 3, progreso celeste y transición horizontal/desvanecimiento de 250 ms, con dirección inversa al retroceder. Atrás conserva las elecciones; Continuar cambia de paso y solo Finalizar/Guardar cambios ejecuta el guardado. Los componentes de horario se reutilizan por sección. Previews de cada etapa en `OnboardingNotificationsScreen.kt`; interacción y animación pendientes de validación visual.
 
 Actualización 2026-10-17: rediseño de horarios conforme a PaquitoBot. Anticipaciones como chips con selección celeste, secciones con superficie gris y radios existentes, tarjeta de hora celeste y switch con colores explícitos. Se reemplaza `android.app.TimePickerDialog` por un selector Compose con reloj/teclado, formato 24 horas, DM Sans, colores de marca y CTA `PaquitoPrimaryButton`. Preview adicional `NotificationTimePickerPreview` (Selector de hora Paquito); revisión visual final pendiente del usuario.

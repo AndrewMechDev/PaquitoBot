@@ -18,6 +18,7 @@ import pe.tecsup.paquitobot.domain.auth.AuthRepository
 import pe.tecsup.paquitobot.domain.canvas.CanvasRepository
 import pe.tecsup.paquitobot.domain.notifications.NotificationCategory
 import pe.tecsup.paquitobot.domain.notifications.NotificationSchedule
+import pe.tecsup.paquitobot.domain.notifications.AcademicNotificationScheduler
 
 /**
  * Estado de sesion a nivel de toda la app: dos gates secuenciales antes de
@@ -37,6 +38,7 @@ data class SessionUiState(
 class SessionViewModel(
     private val tokenStore: SecureTokenStore,
     private val notificationPreferences: NotificationPreferencesStore,
+    private val notificationScheduler: AcademicNotificationScheduler,
     private val authRepository: AuthRepository = createDefaultAuthRepository(),
     private val canvasRepository: CanvasRepository = createDefaultCanvasRepository(tokenStore),
 ) : ViewModel() {
@@ -115,11 +117,13 @@ class SessionViewModel(
 
     fun completeOnboarding() {
         tokenStore.markOnboardingComplete()
+        notificationScheduler.reconcile()
         _uiState.update { it.copy(isOnboardingComplete = true) }
     }
 
     fun saveNotificationPreferences(categories: Set<NotificationCategory>, schedule: NotificationSchedule) {
         notificationPreferences.savePreferences(categories, schedule)
+        notificationScheduler.reconcile()
         _uiState.update { it.copy(enabledNotifications = categories.toSet(), notificationSchedule = schedule) }
     }
 

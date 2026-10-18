@@ -34,6 +34,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,7 +48,6 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
-import java.util.Locale
 
 enum class NotificationScheduleSection { Reminders, Summary }
 
@@ -58,6 +58,7 @@ fun NotificationScheduleOptions(
     modifier: Modifier = Modifier,
     section: NotificationScheduleSection = NotificationScheduleSection.Reminders,
 ) {
+    val locale = LocalConfiguration.current.locales[0]
     var timePickerOpen by rememberSaveable { mutableStateOf(false) }
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         if (section == NotificationScheduleSection.Reminders) {
@@ -126,7 +127,7 @@ fun NotificationScheduleOptions(
                             Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f)) {
                                     Text("Hora del resumen", style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextOnPrimaryDim)
-                                    Text(String.format(Locale.getDefault(), "%02d:%02d", schedule.summaryHour, schedule.summaryMinute),
+                                    Text(String.format(locale, "%02d:%02d", schedule.summaryHour, schedule.summaryMinute),
                                         style = PaquitoTypography.DisplayLarge, color = PaquitoColors.TextOnPrimaryDim)
                                 }
                                 Text("Cambiar", style = PaquitoTypography.BodyMedium.copy(fontWeight = FontWeight.SemiBold), color = PaquitoColors.TextOnPrimaryDim)

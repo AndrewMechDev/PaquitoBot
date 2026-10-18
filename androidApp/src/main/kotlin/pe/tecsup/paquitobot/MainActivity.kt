@@ -17,6 +17,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -29,6 +30,7 @@ import pe.tecsup.paquitobot.auth.CanvasMockKeyStore
 import pe.tecsup.paquitobot.auth.GoogleAuthClient
 import pe.tecsup.paquitobot.auth.SecureTokenStore
 import pe.tecsup.paquitobot.data.local.NotificationPreferencesStore
+import pe.tecsup.paquitobot.data.notifications.AndroidAcademicNotificationScheduler
 import pe.tecsup.paquitobot.session.SessionViewModel
 import pe.tecsup.paquitobot.ui.academic.AcademicConnectScreen
 import pe.tecsup.paquitobot.ui.academic.AcademicConnectViewModel
@@ -103,6 +105,11 @@ private val SelectedCourseSaver = listSaver<CourseCardData?, Any>(
 )
 
 class MainActivity : ComponentActivity() {
+    override fun onResume() {
+        super.onResume()
+        AndroidAcademicNotificationScheduler(applicationContext).reconcile()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -138,14 +145,16 @@ private fun AppRoot() {
     val coroutineScope = rememberCoroutineScope()
     val tokenStore = remember { SecureTokenStore(context.applicationContext) }
     val notificationPreferences = remember { NotificationPreferencesStore(context.applicationContext) }
+    val notificationScheduler = remember { AndroidAcademicNotificationScheduler(context.applicationContext) }
     val canvasMockKeyStore = remember { CanvasMockKeyStore(context.applicationContext) }
     var academicGatePassed by remember {
         mutableStateOf(canvasMockKeyStore.hasApiKey() || canvasMockKeyStore.isSkipped())
     }
-    val googleAuthClient = remember {
+    val googleWebClientId = stringResource(R.string.google_web_client_id)
+    val googleAuthClient = remember(context, googleWebClientId) {
         GoogleAuthClient(
             context = context,
-            webClientId = context.getString(R.string.google_web_client_id),
+            webClientId = googleWebClientId,
         )
     }
 
@@ -153,7 +162,8 @@ private fun AppRoot() {
         factory = remember {
             viewModelFactory {
                 initializer {
-                    SessionViewModel(tokenStore = tokenStore, notificationPreferences = notificationPreferences)
+                    SessionViewModel(tokenStore = tokenStore, notificationPreferences = notificationPreferences,
+                        notificationScheduler = notificationScheduler)
                 }
             }
         },
@@ -171,7 +181,7 @@ private fun AppRoot() {
                     it.category in sessionUiState.enabledNotifications
                 },
                 initialSchedule = sessionUiState.notificationSchedule,
-                permissionContent = { NotificationPermissionSection() },
+                permissionContent = { NotificationPermissionSection(onPermissionChanged = notificationScheduler::reconcile) },
                 onContinue = { enabled, schedule ->
                     sessionViewModel.saveNotificationPreferences(enabled.map { it.category }.toSet(), schedule)
                     onboardingStep = OnboardingStep.Tour
@@ -220,7 +230,10 @@ private fun AppRoot() {
             )
             val academicUiState by academicConnectViewModel.uiState.collectAsStateWithLifecycle()
             LaunchedEffect(academicUiState.isConnected) {
-                if (academicUiState.isConnected) academicGatePassed = true
+                if (academicUiState.isConnected) {
+                    academicGatePassed = true
+                    notificationScheduler.reconcile()
+                }
             }
             AcademicConnectScreen(
                 uiState = academicUiState,
@@ -414,7 +427,7 @@ private fun AppRoot() {
                                         it.category in sessionUiState.enabledNotifications
                                     },
                                     initialSchedule = sessionUiState.notificationSchedule,
-                                    permissionContent = { NotificationPermissionSection() },
+                                    permissionContent = { NotificationPermissionSection(onPermissionChanged = notificationScheduler::reconcile) },
                                     onContinue = { enabled, schedule ->
                                         sessionViewModel.saveNotificationPreferences(enabled.map { it.category }.toSet(), schedule)
                                         preferencesOpen = false
