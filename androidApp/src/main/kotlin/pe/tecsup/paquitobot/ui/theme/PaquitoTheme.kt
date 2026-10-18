@@ -1,12 +1,17 @@
 package pe.tecsup.paquitobot.ui.theme
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -53,13 +58,13 @@ object PaquitoColors {
     val TextTimestampLarge      = Color(0xFF29617B) // timestamp grande normal
     val TextTimestampLargeAccent = Color(0xB322CCFF) // rgba(34,204,255,0.7)
     val TextTimestampLargeMuted  = Color(0x8000C9FB) // rgba(0,201,251,0.5) futuro lejano
-    val TextHomeTaskLabel       = Color(0x801C1B1F) // rgba(28,27,31,0.5) label "Curso" sobre task info
+    val TextHomeTaskLabel       = Color(0xFF5B6470) // contraste legible para metadatos sobre fondo claro
 
     // Superficies
     val Background     = Color(0xFFFFFFFF) // token: surface/background (fondo Welcome + Home)
     val SurfaceElevated = Color(0xFFEEEEEE) // token: surface/elevated (tab activo Navbar)
     val SurfaceGlassStrong = Color(0xD6FFFFFF) // rgba(255,255,255,0.82) (card "Paquito te avisó")
-    val SurfaceGlassSoft   = Color(0xD9F6F7F9) // rgba(246,247,249,0.85) (días normales)
+    val SurfaceGlassSoft   = Color(0xD9F6F7F9) // superficie clara de tarjetas y controles
     val SurfaceOverlay  = Color(0x05000000) // rgba(0,0,0,0.02) (cards de selección Onboarding)
 
     // Texto
@@ -80,7 +85,7 @@ object PaquitoColors {
     val TextDayNumber    = Color(0xFF0D1520) // número del día seleccionado
     val TextDayNumberInactive = Color(0xFF4D5866) // número del día inactivo
     val TextTimestamp    = Color(0xFF98A1AC) // "2 d", "hace cuanto"
-    val TextLink         = Color(0xFF0393C9) // "Ver todo" (link secundario Home B)
+    val TextLink         = Color(0xFF0277A8) // link secundario con contraste legible
     val TextDisabled     = Color(0xFFB0B7BF) // token: text/disabled - aún no observado, placeholder gris claro
 
     // Bordes
@@ -118,18 +123,18 @@ object PaquitoTypography {
     val BodyLarge      = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
     val BodySmall      = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
     val BodyMedium     = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
-    val Caption        = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
-    val LabelSmall     = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium,   fontFamily = PaquitoFont.DMSans)
+    val Caption        = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
+    val LabelSmall     = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium,   fontFamily = PaquitoFont.DMSans)
 
     // Nuevos (Home B)
     val Greeting       = TextStyle(fontSize = 30.sp, fontWeight = FontWeight.Bold,     fontFamily = PaquitoFont.DMSans)
     val TaskTitle      = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold, fontFamily = PaquitoFont.DMSans)
-    val TaskSubtitle   = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
-    val DayOfWeek      = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
+    val TaskSubtitle   = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
+    val DayOfWeek      = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
     val DayNumber      = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = PaquitoFont.DMSans)
     val BadgeInitials  = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold,     fontFamily = PaquitoFont.DMSans)
-    val ChipLabel      = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Medium,   fontFamily = PaquitoFont.DMSans)
-    val Timestamp      = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
+    val ChipLabel      = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium,   fontFamily = PaquitoFont.DMSans)
+    val Timestamp      = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Normal,   fontFamily = PaquitoFont.DMSans)
     val AlertCardTitle = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.SemiBold, fontFamily = PaquitoFont.DMSans)
     val AlertCardSubtitle = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Normal, fontFamily = PaquitoFont.DMSans)
     val ButtonLabel    = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold, fontFamily = PaquitoFont.DMSans)
@@ -158,6 +163,12 @@ object PaquitoShapes {
     val card   = RoundedCornerShape(24.dp)
     val alertCard = RoundedCornerShape(26.dp)
 }
+
+/** Superficie clara y contorno compartidos por las tarjetas de contenido. */
+fun Modifier.paquitoSurface(shape: Shape = PaquitoShapes.large): Modifier = this
+    .clip(shape)
+    .background(PaquitoColors.SurfaceGlassSoft)
+    .border(1.dp, PaquitoColors.BorderDefault, shape)
 
 /**
  * Theme raíz. Conecta tokens con MaterialTheme.

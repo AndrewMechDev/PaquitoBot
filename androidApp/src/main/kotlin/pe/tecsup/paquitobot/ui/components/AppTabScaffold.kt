@@ -141,7 +141,7 @@ fun AppTabScaffold(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(bottom = 24.dp),
+                .padding(bottom = 10.dp),
         ) {
             Box(
                 modifier = Modifier.fillMaxWidth(),
@@ -170,4 +170,4 @@ private const val SETTLE_DELAY_MS = 300L
  * real ya esta completamente libre del Navbar, sin necesitar el gesto de
  * ocultamiento por velocidad para leerlo.
  */
-private val BOTTOM_CONTENT_PADDING = 112.dp
+private val BOTTOM_CONTENT_PADDING = 100.dp

@@ -19,6 +19,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import pe.tecsup.paquitobot.ui.chat.components.ChatHeader
 import pe.tecsup.paquitobot.ui.components.ChatInput
@@ -74,6 +79,17 @@ fun ChatScreen(
 ) {
     val messages = uiState.messages
     val scrollState = rememberScrollState()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val dismissKeyboardOnUserScroll = androidx.compose.runtime.remember(keyboardController) {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (source == NestedScrollSource.UserInput && available.y != 0f) {
+                    keyboardController?.hide()
+                }
+                return Offset.Zero
+            }
+        }
+    }
     LaunchedEffect(messages.size, uiState.isSending) {
         scrollState.animateScrollTo(scrollState.maxValue)
     }
@@ -104,6 +120,7 @@ fun ChatScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
+                    .nestedScroll(dismissKeyboardOnUserScroll)
                     .verticalScroll(scrollState)
                     .padding(top = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(11.dp),

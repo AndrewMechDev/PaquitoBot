@@ -22,6 +22,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
+import pe.tecsup.paquitobot.ui.theme.paquitoSurface
 
 /**
  * Pestaña Horarios. Frame Figma `351:719` solo tiene navbar.
@@ -58,6 +59,22 @@ fun ScheduleScreen(
         notificationCount = data.pendingCount,
         modifier = modifier,
     ) {
+        ScheduleTabContent(data, errorMessage, onRetry)
+    }
+}
+
+/** Contenido de Horarios sin su scaffold para compartir la navbar persistente. */
+@Composable
+fun ScheduleTabContent(
+    data: ScheduleScreenData,
+    errorMessage: String?,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+    ) {
         if (errorMessage != null) {
             AcademicErrorBanner(message = errorMessage, onRetry = onRetry)
         }
@@ -93,22 +110,21 @@ private fun DayBlock(day: ScheduleDay) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(PaquitoShapes.medium)
-                    .background(PaquitoColors.SurfaceElevated)
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                    .paquitoSurface()
+                    .padding(horizontal = 14.dp, vertical = 14.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = event.time,
                     style = PaquitoTypography.Caption,
-                    color = PaquitoColors.TextTimestampLarge,
+                    color = PaquitoColors.TextOnCardMuted,
                     modifier = Modifier.width(56.dp),
                 )
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = event.title,
-                        style = PaquitoTypography.TaskTitle,
+                        style = PaquitoTypography.BodyMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold),
                         color = PaquitoColors.TextOnCardStrong,
                     )
                     Text(
@@ -121,6 +137,10 @@ private fun DayBlock(day: ScheduleDay) {
                     text = event.kind.label,
                     style = PaquitoTypography.ChipLabel,
                     color = event.kind.color(),
+                    modifier = Modifier
+                        .clip(PaquitoShapes.pill)
+                        .background(event.kind.color().copy(alpha = 0.12f))
+                        .padding(horizontal = 8.dp, vertical = 5.dp),
                 )
             }
         }

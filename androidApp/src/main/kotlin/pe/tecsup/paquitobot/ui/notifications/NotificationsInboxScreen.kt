@@ -60,6 +60,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
+import pe.tecsup.paquitobot.ui.theme.paquitoSurface
 
 /**
  * Bandeja de notificaciones, abierta desde la campana del Home
@@ -252,7 +253,7 @@ private fun LayoutToggleButton(variant: NotificationCardVariant, onToggle: () ->
         modifier = Modifier
             .size(36.dp)
             .clip(CircleShape)
-            .background(PaquitoColors.SurfaceElevated)
+            .background(PaquitoColors.OverlayInfoSubtle)
             .clickable(
                 onClickLabel = if (variant == NotificationCardVariant.Full) "Ver en cuadros" else "Ver en lista",
                 onClick = onToggle,
@@ -443,8 +444,7 @@ private fun NotificationInboxRow(item: NotificationInboxItem, onClick: () -> Uni
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(PaquitoShapes.large)
-            .background(PaquitoColors.SurfaceElevated)
+            .paquitoSurface()
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -459,7 +459,7 @@ private fun NotificationInboxRow(item: NotificationInboxItem, onClick: () -> Uni
                 text = item.title,
                 style = PaquitoTypography.TaskTitle,
                 color = PaquitoColors.TextOnCardStrong,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
@@ -490,8 +490,7 @@ private fun NotificationInboxCard(item: NotificationInboxItem, onClick: () -> Un
         modifier = Modifier
             .fillMaxWidth()
             .height(140.dp)
-            .clip(PaquitoShapes.large)
-            .background(PaquitoColors.SurfaceElevated)
+            .paquitoSurface()
             .clickable(onClick = onClick)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
@@ -522,7 +521,7 @@ private fun NotificationIcon(@DrawableRes iconRes: Int) {
         modifier = Modifier
             .size(36.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(PaquitoColors.Background),
+            .background(PaquitoColors.OverlayInfoSubtle),
         contentAlignment = Alignment.Center,
     ) {
         Image(
