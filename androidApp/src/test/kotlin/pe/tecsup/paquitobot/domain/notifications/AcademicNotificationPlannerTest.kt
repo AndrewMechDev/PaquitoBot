@@ -34,7 +34,7 @@ class AcademicNotificationPlannerTest {
         assertTrue(AcademicNotificationPlanner.plan(tasks, categories, NotificationSchedule(), now, zone).isEmpty())
     }
 
-    @Test fun disabledAndUnsupportedCategoriesDoNotProduceDeadlineNotices() {
+    @Test fun disabledAndOtherCategoriesDoNotProduceDeadlineNotices() {
         val tasks = listOf(assignment("2026-10-18T18:00:00Z"))
         for (selection in listOf(emptySet(), setOf(NotificationCategory.Attendance, NotificationCategory.Laboratories))) {
             assertTrue(AcademicNotificationPlanner.plan(tasks, selection, NotificationSchedule(), now, zone).isEmpty())
@@ -97,5 +97,43 @@ class AcademicNotificationPlannerTest {
         val after = AcademicNotificationPlanner.plan(tasks, categories, schedule, Instant.parse("2026-03-29T01:30:00Z"), berlin)
         assertFalse(before.any { it.key.startsWith("summary:") })
         assertTrue(after.any { it.key.startsWith("summary:") })
+    }
+
+    @Test fun laboratoryCategoryWorksWithoutDeadlinesAndDoesNotDuplicate() {
+        val lab = assignment("2026-10-18T18:00:00Z").copy(category = NotificationCategory.Laboratories)
+        assertEquals(1, AcademicNotificationPlanner.plan(listOf(lab, lab), setOf(NotificationCategory.Laboratories), noSummary, now, zone).size)
+        assertTrue(AcademicNotificationPlanner.plan(listOf(lab), categories, noSummary, now, zone).isEmpty())
+        assertEquals(1, AcademicNotificationPlanner.plan(listOf(lab), NotificationCategory.entries.toSet(), noSummary, now, zone).size)
+    }
+
+    @Test fun attendanceOnlyIncludesRecordedRecentCompletedSessions() {
+        val absence = NotificationAbsence(1, 10, "Curso", now.minusSeconds(60))
+        val records = listOf(absence, absence, absence.copy(sessionId = 11, endedAt = now.plusSeconds(1)),
+            absence.copy(sessionId = 12, endedAt = now.minusSeconds(86400)))
+        val notices = AcademicNotificationPlanner.plan(emptyList(), setOf(NotificationCategory.Attendance), noSummary, now, zone, records)
+        assertEquals(1, notices.size)
+        assertTrue(notices.single().key.startsWith("absence:"))
+        assertTrue(AcademicNotificationPlanner.plan(emptyList(), categories, noSummary, now, zone, records).isEmpty())
+    }
+
+    @Test fun attendanceSummaryRespectsConfiguredTimeAndSwitch() {
+        val records = listOf(NotificationAbsence(1, 10, "Curso", now.minusSeconds(60)))
+        val selection = setOf(NotificationCategory.Attendance)
+        assertEquals(2, AcademicNotificationPlanner.plan(emptyList(), selection, NotificationSchedule(), now, zone, records).size)
+        assertEquals(1, AcademicNotificationPlanner.plan(emptyList(), selection, NotificationSchedule(), now.minusSeconds(1), zone, records).size)
+        assertEquals(1, AcademicNotificationPlanner.plan(emptyList(), selection, noSummary, now, zone, records).size)
+    }
+
+    @Test fun labGradesRespectSelectionAndStableScoreVersion() {
+        val grade = NotificationLabGrade(1, 2, "Laboratorio", 15.0)
+        val selection = setOf(NotificationCategory.Laboratories)
+        fun notices(grades: List<NotificationLabGrade>, selected: Set<NotificationCategory> = selection) =
+            AcademicNotificationPlanner.plan(emptyList(), selected, noSummary, now, zone, labGrades = grades)
+        val notice = notices(listOf(grade, grade)).single()
+        val updated = notices(listOf(grade.copy(score = 16.0))).single()
+        assertNotEquals(notice.key, updated.key)
+        assertEquals(notice.displayKey, updated.displayKey)
+        assertTrue(notices(listOf(grade), categories).isEmpty())
+        assertTrue(notices(listOf(grade.copy(score = Double.NaN))).isEmpty())
     }
 }

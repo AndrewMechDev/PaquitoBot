@@ -208,4 +208,14 @@ class LocalJsonAcademicRepositoryTest {
             .toSet()
         assertTrue(sessionDays.size >= 4, "las sesiones de la semana cubren solo ${sessionDays.size} dias")
     }
+
+    @Test fun assignmentCategoryIsExplicitAndNeverInferredFromTitle() = runTest {
+        val defaultTask = LocalJsonAcademicRepository { fixture }.courseAssignments(2).getOrThrow().single()
+        assertEquals(pe.tecsup.paquitobot.domain.academic.AcademicAssignmentKind.Delivery, defaultTask.kind)
+        val typed = fixture.replace("\"name\": \"Lab 1\"", "\"name\": \"Actividad\", \"kind\": \"laboratory\"")
+        val lab = LocalJsonAcademicRepository { typed }.courseAssignments(2).getOrThrow().single()
+        assertEquals(pe.tecsup.paquitobot.domain.academic.AcademicAssignmentKind.Laboratory, lab.kind)
+        val invalid = typed.replace("\"kind\": \"laboratory\"", "\"kind\": \"unknown\"")
+        assertTrue(LocalJsonAcademicRepository { invalid }.courseAssignments(2).isFailure)
+    }
 }

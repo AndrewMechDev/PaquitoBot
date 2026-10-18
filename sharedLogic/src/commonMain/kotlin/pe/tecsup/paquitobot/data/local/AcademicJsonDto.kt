@@ -43,6 +43,7 @@ data class AssignmentJson(
     @SerialName("points_possible") val pointsPossible: Double,
     /** ISO `yyyy-MM-dd'T'HH:mm:ss`; `null` si la asignacion no tiene fecha limite. */
     @SerialName("due_at") val dueAt: String? = null,
+    val kind: String = "delivery",
 )
 
 @Serializable

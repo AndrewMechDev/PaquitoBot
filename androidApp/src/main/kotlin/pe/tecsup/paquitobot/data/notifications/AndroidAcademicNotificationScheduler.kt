@@ -36,7 +36,7 @@ class AndroidAcademicNotificationScheduler(context: Context) : AcademicNotificat
         fun createChannel(context: Context) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val channel = NotificationChannel(CHANNEL_ID, "Avisos académicos", NotificationManager.IMPORTANCE_DEFAULT)
-                channel.description = "Recordatorios de entregas y resumen diario de PaquitoBot"
+                channel.description = "Entregas, laboratorios, asistencia y resumen diario de PaquitoBot"
                 context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
             }
         }
@@ -44,7 +44,7 @@ class AndroidAcademicNotificationScheduler(context: Context) : AcademicNotificat
         fun isEligible(context: Context): Boolean =
             NotificationPreferencesStore(context).hasCompletedSetup() &&
                 authorizedAcademicUserId() != null &&
-                NotificationCategory.Deadlines in NotificationPreferencesStore(context).enabledCategories() &&
+                NotificationPreferencesStore(context).enabledCategories().isNotEmpty() &&
                 notificationsAllowed(context)
 
         fun notificationsAllowed(context: Context): Boolean =

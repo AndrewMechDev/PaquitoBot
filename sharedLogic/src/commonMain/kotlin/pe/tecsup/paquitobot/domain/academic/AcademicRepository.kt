@@ -24,12 +24,15 @@ data class AcademicAttendance(
     val isPresent: Boolean,
 )
 
+enum class AcademicAssignmentKind { Delivery, Laboratory }
+
 data class AcademicAssignment(
     val id: Int,
     val courseId: Int,
     val name: String,
     val pointsPossible: Double,
     val dueAt: String?,
+    val kind: AcademicAssignmentKind = AcademicAssignmentKind.Delivery,
 )
 
 data class AcademicClassSession(

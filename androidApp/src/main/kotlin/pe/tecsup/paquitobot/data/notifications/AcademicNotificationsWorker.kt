@@ -26,6 +26,10 @@ import pe.tecsup.paquitobot.auth.authorizedAcademicUserId
 import pe.tecsup.paquitobot.data.local.NotificationPreferencesStore
 import pe.tecsup.paquitobot.domain.notifications.AcademicNotificationPlanner
 import pe.tecsup.paquitobot.domain.notifications.NotificationAssignment
+import pe.tecsup.paquitobot.domain.notifications.NotificationLabGrade
+import pe.tecsup.paquitobot.domain.notifications.NotificationAbsence
+import pe.tecsup.paquitobot.domain.notifications.NotificationCategory
+import pe.tecsup.paquitobot.domain.academic.AcademicAssignmentKind
 import java.security.MessageDigest
 import java.time.Instant
 import java.time.ZoneId
@@ -58,18 +62,34 @@ class AcademicNotificationsWorker(context: Context, parameters: WorkerParameters
         val profile = repository.profile().getOrThrow()
         val courses = repository.courses().getOrThrow()
         val assignments = mutableListOf<NotificationAssignment>()
+        val absences = mutableListOf<NotificationAbsence>()
+        val labGrades = mutableListOf<NotificationLabGrade>()
         // Ante un fallo parcial no enviar un resumen incompleto ni asumir datos vacíos.
         for (course in courses) {
-            val graded = repository.courseGrades(course.id).getOrThrow().map { it.assignmentId }.toSet()
+            val grades = repository.courseGrades(course.id).getOrThrow().associateBy { it.assignmentId }
+            val graded = grades.keys
             repository.courseAssignments(course.id).getOrThrow().forEach { assignment ->
+                if (assignment.kind == AcademicAssignmentKind.Laboratory) {
+                    grades[assignment.id]?.let { grade ->
+                        labGrades += NotificationLabGrade(course.id, assignment.id, assignment.name, grade.score)
+                    }
+                }
                 val due = AcademicNotificationPlanner.parseDueAt(assignment.dueAt)
                 if (due != null && assignment.id !in graded) {
-                    assignments += NotificationAssignment(course.id, assignment.id, assignment.name, due)
+                    assignments += NotificationAssignment(course.id, assignment.id, assignment.name, due,
+                        if (assignment.kind == AcademicAssignmentKind.Laboratory) NotificationCategory.Laboratories else NotificationCategory.Deadlines)
+                }
+            }
+            if (NotificationCategory.Attendance in categories) {
+                val sessions = repository.courseClassSessions(course.id).getOrThrow().associateBy { it.id }
+                repository.courseAttendance(course.id).getOrThrow().filter { !it.isPresent }.forEach { record ->
+                    val ended = AcademicNotificationPlanner.parseDueAt(sessions[record.classSessionId]?.endAt)
+                    if (ended != null) absences += NotificationAbsence(course.id, record.classSessionId, course.name, ended)
                 }
             }
         }
         val now = Instant.now()
-        val notices = AcademicNotificationPlanner.plan(assignments, categories, schedule, now, ZoneId.systemDefault())
+        val notices = AcademicNotificationPlanner.plan(assignments, categories, schedule, now, ZoneId.systemDefault(), absences, labGrades)
         val ledger = context.getSharedPreferences("academic_notice_delivery", Context.MODE_PRIVATE)
         // Separa cuentas de Clerk sin publicar el identificador en tags o nombres de trabajo.
         val scope = MessageDigest.getInstance("SHA-256").digest(originalUser.toByteArray())
@@ -96,7 +116,7 @@ class AcademicNotificationsWorker(context: Context, parameters: WorkerParameters
                 Notification.Builder(context)
             }
             val notification = builder.setSmallIcon(R.drawable.ic_paquito_docs_default)
-                .setContentTitle(notice.title).setContentText(notice.body)
+                .setContentTitle("Demo · ${notice.title}").setContentText(notice.body)
                 .setStyle(Notification.BigTextStyle().bigText(notice.body))
                 .setContentIntent(pending).setAutoCancel(true).setOnlyAlertOnce(true)
                 .setVisibility(Notification.VISIBILITY_PRIVATE).build()

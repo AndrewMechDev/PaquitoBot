@@ -6,6 +6,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import pe.tecsup.paquitobot.data.local.AcademicJsonDto
 import pe.tecsup.paquitobot.data.local.AttendanceJson
+import pe.tecsup.paquitobot.domain.academic.AcademicAssignmentKind
 import pe.tecsup.paquitobot.domain.academic.AcademicAssignment
 import pe.tecsup.paquitobot.domain.academic.AcademicAttendance
 import pe.tecsup.paquitobot.domain.academic.AcademicClassSession
@@ -56,7 +57,12 @@ class LocalJsonAcademicRepository(
     override suspend fun courseAssignments(courseId: Int): Result<List<AcademicAssignment>> = query { dto ->
         dto.assignments
             .filter { it.courseId == courseId }
-            .map { AcademicAssignment(it.id, it.courseId, it.name, it.pointsPossible, it.dueAt) }
+            .map { AcademicAssignment(it.id, it.courseId, it.name, it.pointsPossible, it.dueAt,
+                when (it.kind) {
+                    "laboratory" -> AcademicAssignmentKind.Laboratory
+                    "delivery" -> AcademicAssignmentKind.Delivery
+                    else -> error("Tipo de actividad académica desconocido")
+                }) }
     }
 
     override suspend fun courseGrades(courseId: Int): Result<List<AcademicGrade>> = query { dto ->
