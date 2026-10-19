@@ -141,6 +141,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        if (android.os.Build.VERSION.SDK_INT >= 31) {
+            // Retirar la ventana nativa al primer frame, sin otra animación de salida.
+            splashScreen.setOnExitAnimationListener { it.remove() }
+        }
 
         if (intent?.action == AcademicNotificationPublisher.OPEN_INBOX) notificationRequest++
         setContent {
@@ -412,7 +416,10 @@ private fun AppRoot(notificationRequest: Int = 0) {
                     }
                 }
                 RootScreen.Calendar -> CalendarScreen(onBackClick = { rootScreen = RootScreen.Tabs })
-                RootScreen.Enrollment -> EnrollmentGuideRoute(onBackClick = { rootScreen = RootScreen.Tabs })
+                RootScreen.Enrollment -> EnrollmentGuideRoute(onBackClick = {
+                    currentTab = NavTab.Inicio
+                    rootScreen = RootScreen.Tabs
+                })
                 RootScreen.Procedures, RootScreen.ProcedureDetail -> {
                     val repository = (context as PaquitoBotApp).procedureRepository
                     val guideViewModel: ProcedureViewModel = viewModel(factory = remember {

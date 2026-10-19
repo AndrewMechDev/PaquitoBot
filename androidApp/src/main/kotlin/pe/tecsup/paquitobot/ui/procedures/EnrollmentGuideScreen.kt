@@ -2,6 +2,11 @@ package pe.tecsup.paquitobot.ui.procedures
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -69,20 +74,27 @@ internal fun EnrollmentGuideScreen(catalog: ProcedureCatalog, onBackClick: () ->
     val current = stage.coerceIn(-1, steps.size)
     fun back() { if (current >= 0) stage = current - 1 else onBackClick() }
     BackHandler { back() }
+    val completion by animateFloatAsState((current + 1).toFloat() / (steps.size + 1),
+        animationSpec = tween(300), label = "enrollment-progress")
     Column(Modifier.fillMaxSize().background(PaquitoColors.Background).systemBarsPadding().padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        GuideHeader("Matrícula", "Tu recorrido · Arequipa", ::back)
+        GuideHeader("Matrícula", "Tu recorrido · Arequipa", onBackClick, backDescription = "Volver al inicio")
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             guide.tracks.forEach { option ->
                 GuideCategoryChip(option.title, track.id == option.id) { if (trackId != option.id) { trackId = option.id; stage = -1 } }
             }
         }
-        LinearProgressIndicator(progress = { (current + 1).toFloat() / (steps.size + 1) },
+        LinearProgressIndicator(progress = { completion },
             modifier = Modifier.fillMaxWidth(), color = PaquitoColors.StateInfoStrong, trackColor = PaquitoColors.SurfaceElevated)
         Text(if (current < 0) "Antes de empezar" else if (current == steps.size) "Recorrido revisado" else "Paso ${current + 1} de ${steps.size} · ${track.description}",
             style = PaquitoTypography.Caption, color = PaquitoColors.TextSecondary)
-        AnimatedContent(targetState = track.id to current, transitionSpec = { fadeIn() togetherWith fadeOut() },
-            modifier = Modifier.weight(1f), label = "enrollment-step") { (targetTrack, targetStage) ->
+        AnimatedContent(targetState = track.id to current, transitionSpec = {
+            val forward = if (targetState.first == initialState.first) targetState.second > initialState.second
+                else guide.tracks.indexOfFirst { it.id == targetState.first } > guide.tracks.indexOfFirst { it.id == initialState.first }
+            (slideInHorizontally(tween(300)) { if (forward) it / 5 else -it / 5 } + fadeIn(tween(240))) togetherWith
+                (slideOutHorizontally(tween(260)) { if (forward) -it / 5 else it / 5 } + fadeOut(tween(180)))
+        },
+            modifier = Modifier.fillMaxWidth().weight(1f).clipToBounds(), label = "enrollment-step") { (targetTrack, targetStage) ->
             val shownTrack = guide.tracks.first { it.id == targetTrack }
             val shownSteps = guide.stepsFor(shownTrack)
             key(targetTrack, targetStage) {

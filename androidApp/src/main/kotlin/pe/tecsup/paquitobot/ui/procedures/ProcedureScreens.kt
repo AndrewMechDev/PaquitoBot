@@ -151,10 +151,10 @@ fun ProcedureDetailScreen(procedure: AcademicProcedure, source: ProcedureSource,
 
 // Secciones específicas de una guía; las tarjetas y tipografía reutilizan el theme existente.
 @Composable
-internal fun GuideHeader(title: String, subtitle: String, onBack: () -> Unit) {
+internal fun GuideHeader(title: String, subtitle: String, onBack: () -> Unit, backDescription: String = "Volver") {
     Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onBack) {
-            Image(painterResource(R.drawable.ic_paquito_arrow_back), "Volver", Modifier.size(24.dp))
+            Image(painterResource(R.drawable.ic_paquito_arrow_back), backDescription, Modifier.size(24.dp))
         }
         Column(Modifier.weight(1f).padding(start = 8.dp)) {
             Text(title, style = PaquitoTypography.DisplayLarge, color = PaquitoColors.TextPrimary)

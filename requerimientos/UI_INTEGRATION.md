@@ -453,3 +453,12 @@ Se ejecuta al crear una apertura normal de la app, conserva su finalización dur
 ### Apertura · segunda dirección visual
 
 A petición del usuario se sustituye la composición de mascota e iconos por una pieza tridimensional de cristal celeste, con perspectiva y reflejos calculados sobre la malla. Un solo gesto de entrada y giro presenta la escultura; el nombre aparece después con contraste de pesos DM Sans y el subtítulo «Tu mundo académico, en orden.». Lienzo blanco y luz tenue, sin tarjetas flotantes ni indicadores de carga decorativos. Duración 2.85 s; conserva Omitir, escala de movimiento del sistema y apertura directa desde notificaciones. La malla se conserva en memoria y se dibuja en una llamada nativa de vértices, sin texturas, nuevos assets ni SDK. Se comprobó compilación; revisión visual final a cargo del usuario.
+
+
+### Ajustes solicitados: personaje, arranque y matrícula
+
+La entrada vuelve a mostrar `paquito_personaje` centrado, con halo y sombra suaves, aparición progresiva y movimiento breve. Se retira la pieza abstracta y se recuperan exactamente PaquitoTypography.DisplayLarge/BodyLarge y los colores de Welcome, sin dividir el nombre en estilos distintos. Conserva Omitir y dura 2.3 s.
+
+El tema nativo Theme.PaquitoBot conserva el fondo blanco. Desde API 31 el icono de la ventana de arranque se configura con un drawable transparente y su salida se retira al estar disponible el primer frame. Android mantiene su ventana nativa mientras inicia el proceso; no se promete eliminar ese tiempo ni se añade una espera artificial. El icono del launcher no se modifica.
+
+En Matrícula la flecha del encabezado usa la salida de la guía, mientras Anterior mantiene el retroceso de un paso. Con sesión autorizada, salir lleva a Inicio; el acceso público desde Welcome vuelve a la entrada pública sin eludir la autenticación. Los pasos se deslizan en dirección de avance/retroceso y la barra de progreso se anima durante 300 ms.
