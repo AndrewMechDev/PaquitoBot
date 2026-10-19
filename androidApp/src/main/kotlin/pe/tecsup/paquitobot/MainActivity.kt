@@ -144,12 +144,20 @@ class MainActivity : ComponentActivity() {
 
         if (intent?.action == AcademicNotificationPublisher.OPEN_INBOX) notificationRequest++
         setContent {
+            var introVisible by rememberSaveable { mutableStateOf(intent?.action != AcademicNotificationPublisher.OPEN_INBOX) }
+            LaunchedEffect(notificationRequest) {
+                if (notificationRequest > 0) introVisible = false
+            }
             PaquitoTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = PaquitoColors.Background,
                 ) {
-                    AppRoot(notificationRequest)
+                    androidx.compose.animation.Crossfade(targetState = introVisible,
+                        animationSpec = tween(240), label = "launch-intro") { showIntro ->
+                        if (showIntro) pe.tecsup.paquitobot.ui.onboarding.LaunchIntroScreen(onFinished = { introVisible = false })
+                        else AppRoot(notificationRequest)
+                    }
                 }
             }
         }

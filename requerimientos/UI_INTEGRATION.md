@@ -441,3 +441,10 @@ Pruebas anteriores de esta sesión: 74 pruebas JVM y 11 comprobaciones instrumen
 La configuración inicial se restaura desde `NotificationPreferencesStore.hasCompletedSetup()` al crear SessionViewModel. Salir de la app o cerrar/perder la sesión no borra ese avance: una sesión ausente sigue mostrando ClerkAuthGate, sin repetir el selector de preferencias. Se elimina la excepción anterior limitada a aperturas desde notificaciones, pues la persistencia aplica a toda reapertura.
 
 Se retira Mis notificaciones de Perfil; la bandeja y sus preferencias siguen accesibles desde la campana de Inicio. Los iconos de la lista de avisos se centran verticalmente respecto al contenido de cada fila. Los avisos actuales siguen siendo de demostración; abrirlos lleva a la bandeja. No se afirma que exista sincronización con una fuente académica real.
+
+
+## Animación de apertura · PaquitoBot
+
+Inspiración: video adjunto del usuario con entradas de marca sobre lienzo blanco y formas translúcidas. Implementación Android nativa en `ui/onboarding/LaunchIntroScreen.kt`: halo celeste, aro con reflejos, mascota existente y cuatro iconos académicos que se reúnen alrededor. Nombre y subtítulo aparecen progresivamente con DM Sans; duración aproximada 2.2 s y transición de 240 ms hacia el flujo existente. Omitir permite entrar antes.
+
+Se ejecuta al crear una apertura normal de la app, conserva su finalización durante recreaciones con rememberSaveable y no reaparece al volver del segundo plano dentro de esa Activity. Las aperturas desde un aviso la saltan. La animación no modifica preferencias, sesión ni onboarding. Animatable respeta la escala de animación del sistema. No se agregan SDK, videos ni nuevos assets gráficos: se reutilizan el personaje y los iconos de PaquitoBot. iOS conserva su interfaz nativa existente.
