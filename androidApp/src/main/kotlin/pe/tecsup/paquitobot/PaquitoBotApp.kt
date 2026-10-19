@@ -5,6 +5,8 @@ import com.clerk.api.Clerk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import pe.tecsup.paquitobot.data.repository.LocalJsonAcademicRepository
+import pe.tecsup.paquitobot.data.local.AcademicScenarioAssignment
+import pe.tecsup.paquitobot.data.local.assembleAcademicScenario
 import pe.tecsup.paquitobot.data.repository.LocalJsonProcedureRepository
 import pe.tecsup.paquitobot.domain.procedures.ProcedureRepository
 import pe.tecsup.paquitobot.domain.academic.AcademicRepository
@@ -19,20 +21,26 @@ class PaquitoBotApp : Application() {
     }
 
 
-    /**
-     * Fuente unica de datos academicos para toda la app: lee
-     * `assets/academic.json` (sin red ni backend) y el repositorio lo parsea
-     * una sola vez. Se crea de forma perezosa y vive tanto como el proceso,
-     * asi los 4 ViewModels academicos comparten la misma instancia.
-     */
-    val academicRepository: AcademicRepository by lazy {
-        LocalJsonAcademicRepository(
-            readJson = {
-                withContext(Dispatchers.IO) {
-                    assets.open(ACADEMIC_JSON_ASSET).bufferedReader().use { it.readText() }
-                }
-            },
-        )
+    private val scenarioAssignment by lazy { AcademicScenarioAssignment(this) }
+    private var academicOwner: String? = null
+    private var activeAcademicRepository: AcademicRepository? = null
+
+    /** Una instancia y caché por la cuenta activa; nunca reutiliza datos de otra sesión. */
+    @Synchronized
+    fun academicRepositoryFor(clerkUserId: String): AcademicRepository {
+        require(clerkUserId.isNotBlank())
+        if (academicOwner == clerkUserId) activeAcademicRepository?.let { return it }
+        val scenarioId = scenarioAssignment.scenarioFor(clerkUserId)
+        val repository = LocalJsonAcademicRepository {
+            withContext(Dispatchers.IO) {
+                val catalog = assets.open("academic/catalog.json").bufferedReader().use { it.readText() }
+                val scenario = assets.open("academic/scenarios/scenario-$scenarioId.json").bufferedReader().use { it.readText() }
+                assembleAcademicScenario(catalog, scenario)
+            }
+        }
+        academicOwner = clerkUserId
+        activeAcademicRepository = repository
+        return repository
     }
 
     override fun onCreate() {
@@ -43,7 +51,4 @@ class PaquitoBotApp : Application() {
         )
     }
 
-    private companion object {
-        const val ACADEMIC_JSON_ASSET = "academic.json"
-    }
 }

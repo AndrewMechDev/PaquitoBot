@@ -710,14 +710,6 @@ data class HomeScreenData(
     // muestran juntos en pantalla, pero no deberian ser el mismo numero:
     // implicaria que son el mismo concepto y no lo son.
     val unreadNotificationsCount: Int = 0,
-    // LEGADO: las cards de promedio/faltas/entregas ya no se dibujan en Home
-    // (las reemplazo el ranking), pero `MockAcademicContext` (contexto del
-    // chat, que sigue con datos demo) todavia los lee desde `default()`.
-    // Borrar junto con ese uso cuando el chat lea el JSON local.
-    val trackValue: String = "—",
-    val absencesUsed: Int = 0,
-    val absencesLimit: Int = 0,
-    val dueThisWeek: Int = 0,
 ) {
     companion object {
         fun default(): HomeScreenData = HomeScreenData(
@@ -787,10 +779,6 @@ data class HomeScreenData(
             ),
             importantNoticeCount = 2,
             unreadNotificationsCount = 2,
-            trackValue = "14.8",
-            absencesUsed = 2,
-            absencesLimit = 5,
-            dueThisWeek = 3,
         )
     }
 }

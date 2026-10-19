@@ -6,6 +6,7 @@ import java.util.Locale
 import pe.tecsup.paquitobot.domain.academic.AcademicAssignment
 import pe.tecsup.paquitobot.domain.academic.AcademicAttendance
 import pe.tecsup.paquitobot.domain.academic.AcademicGrade
+import pe.tecsup.paquitobot.domain.academic.ACADEMIC_ABSENCE_LIMIT
 
 /**
  * Logica pura (sin Android ni corrutinas) compartida por los ViewModels
@@ -16,7 +17,7 @@ import pe.tecsup.paquitobot.domain.academic.AcademicGrade
 // El JSON academico no modela un "limite de faltas" por curso (es una regla
 // de la institucion, no del dato) - 8 es un valor de referencia razonable,
 // no un dato real. Mismo valor en Cursos, Detalle y cualquier otra pantalla.
-internal const val ASSUMED_ABSENCE_LIMIT = 8
+internal const val ASSUMED_ABSENCE_LIMIT = ACADEMIC_ABSENCE_LIMIT
 
 internal const val NO_DUE_LABEL = "Sin pendientes"
 

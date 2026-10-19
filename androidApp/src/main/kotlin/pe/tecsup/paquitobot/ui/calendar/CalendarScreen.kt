@@ -42,7 +42,7 @@ fun CalendarScreen(onBackClick: () -> Unit) {
     }
     val model: CalendarViewModel = viewModel(key = "calendar-$owner", factory = remember(owner, context) {
         viewModelFactory { initializer {
-            CalendarViewModel((context as PaquitoBotApp).academicRepository, GoogleCalendarAuthorization(context), owner,
+            CalendarViewModel((context as PaquitoBotApp).academicRepositoryFor(owner), GoogleCalendarAuthorization(context), owner,
                 stillAuthorized = { authorizedAcademicUserId() == owner })
         } }
     })

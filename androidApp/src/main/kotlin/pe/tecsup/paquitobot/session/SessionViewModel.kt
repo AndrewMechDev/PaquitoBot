@@ -26,6 +26,7 @@ import pe.tecsup.paquitobot.domain.notifications.NotificationSchedule
 data class SessionUiState(
     val isOnboardingComplete: Boolean = false,
     val isAuthenticated: Boolean = false,
+    val userId: String? = null,
     val isUnauthorizedSession: Boolean = false,
     val userFirstName: String? = null,
     val userFullName: String? = null,
@@ -53,15 +54,17 @@ class SessionViewModel(
         combine(Clerk.isInitialized, Clerk.userFlow, Clerk.sessionFlow) { initialized, user, _ ->
             initialized to user
         }.onEach { (initialized, user) ->
-            val isAuthorized = initialized && authorizedAcademicUserId() != null
+            val authorizedId = if (initialized) authorizedAcademicUserId() else null
+            val isAuthorized = authorizedId != null
             _uiState.update {
                 it.copy(
                     isAuthenticated = isAuthorized,
+                    userId = authorizedId,
                     isUnauthorizedSession = user != null && !user.hasVerifiedTecsupEmail(),
                     userFirstName = user?.firstName?.takeIf { name -> isAuthorized && name.isNotBlank() },
                     userFullName = if (isAuthorized) listOfNotNull(user?.firstName, user?.lastName).filter { name -> name.isNotBlank() }.joinToString(" ").ifBlank { "Estudiante" } else null,
                     userEmail = if (isAuthorized) user?.emailAddresses?.firstOrNull { address -> address.id == user.primaryEmailAddressId }?.emailAddress else null,
-                    sessionRevision = if (it.isAuthenticated && !isAuthorized) it.sessionRevision + 1 else it.sessionRevision,
+                    sessionRevision = if (it.userId != null && it.userId != authorizedId) it.sessionRevision + 1 else it.sessionRevision,
                     isSigningOut = if (user == null) false else it.isSigningOut,
                 )
             }
@@ -90,6 +93,7 @@ class SessionViewModel(
                     _uiState.update {
                         it.copy(
                             isAuthenticated = false,
+                            userId = null,
                             isUnauthorizedSession = false,
                             userFirstName = null,
                             userFullName = null,

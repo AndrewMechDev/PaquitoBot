@@ -1,0 +1,302 @@
+{
+  "scenario_id": "06",
+  "label": "Asistencia en riesgo en Algoritmos",
+  "profile": {
+    "id": 106,
+    "name": "Estudiante de demostración",
+    "email": "demo06@example.invalid"
+  },
+  "grades": [
+    {
+      "assignment_id": 101,
+      "score": 16.0
+    },
+    {
+      "assignment_id": 102,
+      "score": 11.0
+    },
+    {
+      "assignment_id": 104,
+      "score": 18.0
+    },
+    {
+      "assignment_id": 105,
+      "score": 14.0
+    },
+    {
+      "assignment_id": 106,
+      "score": 12.0
+    },
+    {
+      "assignment_id": 108,
+      "score": 20.0
+    },
+    {
+      "assignment_id": 201,
+      "score": 15.0
+    },
+    {
+      "assignment_id": 202,
+      "score": 17.0
+    },
+    {
+      "assignment_id": 204,
+      "score": 17.0
+    },
+    {
+      "assignment_id": 205,
+      "score": 16.0
+    },
+    {
+      "assignment_id": 301,
+      "score": 12.0
+    },
+    {
+      "assignment_id": 302,
+      "score": 13.0
+    },
+    {
+      "assignment_id": 303,
+      "score": 10.0
+    },
+    {
+      "assignment_id": 401,
+      "score": 18.0
+    },
+    {
+      "assignment_id": 402,
+      "score": 15.0
+    },
+    {
+      "assignment_id": 501,
+      "score": 9.0
+    }
+  ],
+  "attendance": [
+    {
+      "class_session_id": 1101,
+      "status": "present"
+    },
+    {
+      "class_session_id": 5101,
+      "status": "present"
+    },
+    {
+      "class_session_id": 2101,
+      "status": "present"
+    },
+    {
+      "class_session_id": 3101,
+      "status": "absent"
+    },
+    {
+      "class_session_id": 1102,
+      "status": "present"
+    },
+    {
+      "class_session_id": 4101,
+      "status": "present"
+    },
+    {
+      "class_session_id": 5102,
+      "status": "present"
+    },
+    {
+      "class_session_id": 3102,
+      "status": "absent"
+    },
+    {
+      "class_session_id": 4102,
+      "status": "present"
+    },
+    {
+      "class_session_id": 2102,
+      "status": "present"
+    },
+    {
+      "class_session_id": 1103,
+      "status": "present"
+    },
+    {
+      "class_session_id": 5103,
+      "status": "present"
+    },
+    {
+      "class_session_id": 2103,
+      "status": "present"
+    },
+    {
+      "class_session_id": 3103,
+      "status": "absent"
+    },
+    {
+      "class_session_id": 1104,
+      "status": "present"
+    },
+    {
+      "class_session_id": 4103,
+      "status": "present"
+    },
+    {
+      "class_session_id": 5104,
+      "status": "present"
+    },
+    {
+      "class_session_id": 3104,
+      "status": "absent"
+    },
+    {
+      "class_session_id": 4104,
+      "status": "present"
+    },
+    {
+      "class_session_id": 2104,
+      "status": "present"
+    },
+    {
+      "class_session_id": 1105,
+      "status": "present"
+    },
+    {
+      "class_session_id": 5105,
+      "status": "present"
+    },
+    {
+      "class_session_id": 2105,
+      "status": "present"
+    },
+    {
+      "class_session_id": 3105,
+      "status": "absent"
+    },
+    {
+      "class_session_id": 1106,
+      "status": "present"
+    },
+    {
+      "class_session_id": 4105,
+      "status": "present"
+    },
+    {
+      "class_session_id": 5106,
+      "status": "present"
+    },
+    {
+      "class_session_id": 3106,
+      "status": "absent"
+    },
+    {
+      "class_session_id": 4106,
+      "status": "present"
+    },
+    {
+      "class_session_id": 2106,
+      "status": "present"
+    },
+    {
+      "class_session_id": 1107,
+      "status": "present"
+    },
+    {
+      "class_session_id": 5107,
+      "status": "present"
+    },
+    {
+      "class_session_id": 2107,
+      "status": "present"
+    },
+    {
+      "class_session_id": 3107,
+      "status": "present"
+    },
+    {
+      "class_session_id": 1108,
+      "status": "present"
+    },
+    {
+      "class_session_id": 4107,
+      "status": "present"
+    },
+    {
+      "class_session_id": 5108,
+      "status": "present"
+    },
+    {
+      "class_session_id": 3108,
+      "status": "present"
+    },
+    {
+      "class_session_id": 4108,
+      "status": "present"
+    },
+    {
+      "class_session_id": 2108,
+      "status": "present"
+    },
+    {
+      "class_session_id": 1001,
+      "status": "present"
+    },
+    {
+      "class_session_id": 2001,
+      "status": "present"
+    },
+    {
+      "class_session_id": 3001,
+      "status": "present"
+    },
+    {
+      "class_session_id": 1002,
+      "status": "present"
+    },
+    {
+      "class_session_id": 4001,
+      "status": "present"
+    },
+    {
+      "class_session_id": 3002,
+      "status": "present"
+    },
+    {
+      "class_session_id": 4002,
+      "status": "present"
+    },
+    {
+      "class_session_id": 2002,
+      "status": "present"
+    },
+    {
+      "class_session_id": 1003,
+      "status": "present"
+    },
+    {
+      "class_session_id": 2003,
+      "status": "present"
+    },
+    {
+      "class_session_id": 3003,
+      "status": "present"
+    },
+    {
+      "class_session_id": 1004,
+      "status": "present"
+    },
+    {
+      "class_session_id": 4003,
+      "status": "present"
+    },
+    {
+      "class_session_id": 3004,
+      "status": "present"
+    },
+    {
+      "class_session_id": 4004,
+      "status": "present"
+    },
+    {
+      "class_session_id": 2004,
+      "status": "present"
+    }
+  ],
+  "due_at_overrides": {}
+}

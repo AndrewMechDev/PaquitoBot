@@ -21,6 +21,7 @@ import pe.tecsup.paquitobot.domain.notifications.NotificationLabGrade
 import pe.tecsup.paquitobot.domain.notifications.NotificationAbsence
 import pe.tecsup.paquitobot.domain.notifications.NotificationCategory
 import pe.tecsup.paquitobot.domain.academic.AcademicAssignmentKind
+import pe.tecsup.paquitobot.domain.academic.AcademicSessionKind
 import java.security.MessageDigest
 import java.time.Instant
 import java.time.ZoneId
@@ -49,7 +50,7 @@ class AcademicNotificationsWorker(context: Context, parameters: WorkerParameters
         val categories = preferences.enabledCategories()
         val schedule = preferences.schedule()
         val originalUser = authorizedAcademicUserId() ?: return Result.success()
-        val repository = (context as PaquitoBotApp).academicRepository
+        val repository = (context as PaquitoBotApp).academicRepositoryFor(originalUser)
         val profile = repository.profile().getOrThrow()
         val courses = repository.courses().getOrThrow()
         val assignments = mutableListOf<NotificationAssignment>()
@@ -74,8 +75,10 @@ class AcademicNotificationsWorker(context: Context, parameters: WorkerParameters
             if (NotificationCategory.Attendance in categories) {
                 val sessions = repository.courseClassSessions(course.id).getOrThrow().associateBy { it.id }
                 repository.courseAttendance(course.id).getOrThrow().filter { !it.isPresent }.forEach { record ->
-                    val ended = AcademicNotificationPlanner.parseDueAt(sessions[record.classSessionId]?.endAt)
-                    if (ended != null) absences += NotificationAbsence(course.id, record.classSessionId, course.name, ended)
+                    val session = sessions[record.classSessionId]
+                    val ended = AcademicNotificationPlanner.parseDueAt(session?.endAt)
+                    if (ended != null) absences += NotificationAbsence(course.id, record.classSessionId,
+                        if (session?.kind == AcademicSessionKind.Laboratory) "Laboratorio de ${course.name}" else course.name, ended)
                 }
             }
         }

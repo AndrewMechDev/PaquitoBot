@@ -46,7 +46,7 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${libs.versions.kotlinx.coroutines.get()}")
-            // Lee el academic.json real de androidApp desde el test (SystemFileSystem).
+            // Lee el catálogo y los escenarios reales de androidApp desde el test (SystemFileSystem).
             implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.7.0")
         }
     }

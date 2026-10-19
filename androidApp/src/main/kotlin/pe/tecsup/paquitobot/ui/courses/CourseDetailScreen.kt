@@ -233,7 +233,7 @@ private fun AttendanceSection(used: Int, limit: Int, entries: List<AttendanceEnt
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Text(
-                            text = entry.dateLabel,
+                            text = listOfNotNull(entry.dateLabel, entry.sessionLabel).joinToString(" · "),
                             style = PaquitoTypography.Caption,
                             color = PaquitoColors.TextOnCardMuted,
                         )
@@ -357,6 +357,7 @@ private fun stateLabel(state: EvaluationState): String = when (state) {
 data class AttendanceEntry(
     val dateLabel: String,
     val isPresent: Boolean,
+    val sessionLabel: String? = null,
 )
 
 data class EvaluationItem(
@@ -384,11 +385,6 @@ data class CourseDetailData(
     // `AcademicCourseDetailViewModel`).
     val pendingTitle: String = "Pendientes",
 ) {
-    // LEGADO: antes la lista se llamaba `forums`; `MockAcademicContext`
-    // (contexto del chat, aun con datos demo) todavia la lee con ese nombre.
-    // Borrar junto con ese uso cuando el chat lea el JSON academico local.
-    val forums: List<EvaluationItem> get() = pending
-
     companion object {
         fun forCourse(course: CourseCardData): CourseDetailData =
             if (course.id == "calculo-ii") calculoIi() else generic(course)

@@ -9,9 +9,12 @@ import org.json.JSONArray
 import org.json.JSONObject
 import pe.tecsup.paquitobot.domain.chat.ChatAnswer
 import pe.tecsup.paquitobot.domain.chat.ChatRepository
+import pe.tecsup.paquitobot.domain.academic.AcademicRepository
+import pe.tecsup.paquitobot.auth.authorizedAcademicUserId
 
 /** Cliente Android de MiniMax para el prototipo debug. La clave se extrae del APK. */
-class MiniMaxChatRepository(private val apiKey: String) : ChatRepository {
+class MiniMaxChatRepository(private val apiKey: String, private val academic: AcademicRepository,
+    private val owner: String) : ChatRepository {
     private val history = mutableListOf<JSONObject>()
 
     override suspend fun askAssistant(question: String): Result<ChatAnswer> = withContext(Dispatchers.IO) {
@@ -19,9 +22,11 @@ class MiniMaxChatRepository(private val apiKey: String) : ChatRepository {
             if (apiKey.isBlank()) {
                 error("Falta minimax.apiKey en local.properties. Agrégala y recompila la app.")
             }
+            check(authorizedAcademicUserId() == owner) { "La sesión académica cambió. Abre el chat nuevamente." }
+            val academicContext = AcademicContextSnapshot.from(academic)
 
             val messages = JSONArray().put(message("system", SYSTEM_INSTRUCTION +
-                "\n\nDatos académicos de demostración de la app (JSON):\n" + MockAcademicContext.snapshot()))
+                "\n\nDatos académicos de esta cuenta (JSON):\n" + academicContext))
             history.forEach { messages.put(it) }
             messages.put(message("user", question))
 
@@ -31,6 +36,7 @@ class MiniMaxChatRepository(private val apiKey: String) : ChatRepository {
                 .put("thinking", JSONObject().put("type", "disabled"))
                 .put("max_completion_tokens", 1024)
 
+            check(authorizedAcademicUserId() == owner) { "La sesión académica cambió. Abre el chat nuevamente." }
             val response = postCompletion(request)
             val apiStatus = response.optJSONObject("base_resp")?.optInt("status_code", 0) ?: 0
             if (apiStatus != 0) error("MiniMax rechazó la solicitud (código $apiStatus). Inténtalo de nuevo.")
@@ -93,7 +99,7 @@ class MiniMaxChatRepository(private val apiKey: String) : ChatRepository {
 
             Solo atiende consultas sobre cursos, notas, tareas, horarios, asistencias, avisos y funcionalidades del sistema académico.
 
-            Usa exclusivamente los datos académicos de demostración proporcionados. No inventes información. Las fechas relativas, como «hoy», corresponden al escenario de demostración.
+            Usa exclusivamente los datos académicos de demostración de esta cuenta. No inventes información. Para fechas relativas, como «hoy», usa fecha_actual del JSON.
 
             Rechaza cualquier consulta ajena al sistema académico, incluso preguntas básicas de matemáticas, programación, traducción, cultura general o temas generales. No respondas parcialmente ni indirectamente a esas consultas.
 

@@ -211,7 +211,7 @@ private fun AppRoot(notificationRequest: Int = 0) {
             )
         }
 
-        !sessionUiState.isAuthenticated -> ClerkAuthGate(
+        !sessionUiState.isAuthenticated || sessionUiState.userId == null -> ClerkAuthGate(
             isUnauthorizedSession = sessionUiState.isUnauthorizedSession,
             isSigningOut = sessionUiState.isSigningOut,
             signOutError = sessionUiState.signOutError,
@@ -219,22 +219,23 @@ private fun AppRoot(notificationRequest: Int = 0) {
         )
 
         else -> {
+            val academicOwner = requireNotNull(sessionUiState.userId)
             // rememberSaveable: sobrevive a la rotacion (Android recrea la Activity)
             // - con remember simple, girar el telefono mandaba siempre a Inicio.
-            var currentTab by rememberSaveable { mutableStateOf(NavTab.Inicio) }
-            var rootScreen by rememberSaveable { mutableStateOf(RootScreen.Tabs) }
+            var currentTab by rememberSaveable(academicOwner) { mutableStateOf(NavTab.Inicio) }
+            var rootScreen by rememberSaveable(academicOwner) { mutableStateOf(RootScreen.Tabs) }
             LaunchedEffect(notificationRequest) {
                 if (notificationRequest > 0) rootScreen = RootScreen.Notifications
             }
-            var pendingCount by remember { mutableIntStateOf(0) }
-            var selectedCourse by rememberSaveable(stateSaver = SelectedCourseSaver) {
+            var pendingCount by remember(academicOwner) { mutableIntStateOf(0) }
+            var selectedCourse by rememberSaveable(academicOwner, stateSaver = SelectedCourseSaver) {
                 mutableStateOf<CourseCardData?>(null)
             }
             val guideStateHolder = rememberSaveableStateHolder()
             var selectedProcedureId by rememberSaveable { mutableStateOf<String?>(null) }
             var selectedEventId by rememberSaveable { mutableStateOf<String?>(null) }
             val userFirstName = sessionUiState.userFirstName ?: "estudiante"
-            val academicRepository = (LocalContext.current.applicationContext as PaquitoBotApp).academicRepository
+            val academicRepository = remember(academicOwner) { (context as PaquitoBotApp).academicRepositoryFor(academicOwner) }
 
             AnimatedContent(
                 targetState = rootScreen,
@@ -268,7 +269,8 @@ private fun AppRoot(notificationRequest: Int = 0) {
                     when (tab) {
                     NavTab.Inicio -> {
                         val homeViewModel: AcademicHomeViewModel = viewModel(
-                            factory = remember {
+                            key = "home-$academicOwner",
+                            factory = remember(academicOwner) {
                                 factoryOf { AcademicHomeViewModel(academicRepository) }
                             },
                         )
@@ -294,7 +296,8 @@ private fun AppRoot(notificationRequest: Int = 0) {
                     )
                     NavTab.Cursos -> {
                         val coursesViewModel: AcademicViewModel = viewModel(
-                            factory = remember {
+                            key = "courses-$academicOwner",
+                            factory = remember(academicOwner) {
                                 factoryOf { AcademicViewModel(academicRepository) }
                             },
                         )
@@ -313,7 +316,8 @@ private fun AppRoot(notificationRequest: Int = 0) {
                     }
                     NavTab.Horarios -> {
                         val scheduleViewModel: AcademicScheduleViewModel = viewModel(
-                            factory = remember {
+                            key = "schedule-$academicOwner",
+                            factory = remember(academicOwner) {
                                 factoryOf { AcademicScheduleViewModel(academicRepository) }
                             },
                         )
@@ -332,10 +336,10 @@ private fun AppRoot(notificationRequest: Int = 0) {
                 }
                 RootScreen.Chat -> {
                     val chatViewModel: ChatViewModel = viewModel(
-                        key = "chat-${sessionUiState.sessionRevision}",
-                        factory = remember {
+                        key = "chat-$academicOwner-${sessionUiState.sessionRevision}",
+                        factory = remember(academicOwner) {
                             viewModelFactory {
-                                initializer { ChatViewModel(MiniMaxChatRepository(BuildConfig.MINIMAX_API_KEY)) }
+                                initializer { ChatViewModel(MiniMaxChatRepository(BuildConfig.MINIMAX_API_KEY, academicRepository, academicOwner)) }
                             }
                         },
                     )
@@ -355,8 +359,8 @@ private fun AppRoot(notificationRequest: Int = 0) {
                         LaunchedEffect(Unit) { rootScreen = RootScreen.Tabs }
                     } else {
                         val detailViewModel: AcademicCourseDetailViewModel = viewModel(
-                            key = course.id,
-                            factory = remember(course.id) {
+                            key = "$academicOwner-${course.id}",
+                            factory = remember(academicOwner, course.id) {
                                 factoryOf {
                                     AcademicCourseDetailViewModel(academicRepository, course)
                                 }

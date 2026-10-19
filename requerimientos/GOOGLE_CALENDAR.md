@@ -7,7 +7,7 @@ Implementación Android con autorización Google Identity Services y Calendar RE
 - Acceso: Horarios → Google Calendar. Clerk sigue protegiendo el contenido académico; autorizar Google no inicia una sesión de PaquitoBot.
 - Conectar obtiene permiso e identifica la cuenta elegida, sin escribir eventos. El correo se muestra antes de sincronizar.
 - Sincroniza solamente las tareas seleccionadas sin nota, con fecha válida. Futuras seleccionadas por defecto; vencidas ocultas y sin seleccionar, disponibles con su fecha original al activarlas expresamente.
-- El origen actual es `academic.json`, datos de demostración de octubre/noviembre de 2026. No se desplazan fechas al presente para aparentar tareas vigentes.
+- El origen actual es el escenario académico de demostración asignado a la cuenta de Clerk (`academic/catalog.json` + `academic/scenarios/scenario-XX.json`). Las fechas pueden variar entre escenarios y no son fechas académicas oficiales.
 - Datetimes sin offset se interpretan en America/Lima (TECSUP Arequipa); offsets explícitos se respetan. Se crea un bloque de 15 minutos desde el vencimiento. Fechas sin hora generan evento de día completo, con fin exclusivo al día siguiente.
 - Una vía, manual al pulsar sincronizar. No se importan cambios de Google hacia PaquitoBot, no hay trabajo periódico ni refresh tokens, no se borran eventos por quitar selección, por calificación o por desconectar. Esas acciones no forman parte de esta entrega.
 
