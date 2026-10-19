@@ -448,3 +448,8 @@ Se retira Mis notificaciones de Perfil; la bandeja y sus preferencias siguen acc
 Inspiración: video adjunto del usuario con entradas de marca sobre lienzo blanco y formas translúcidas. Implementación Android nativa en `ui/onboarding/LaunchIntroScreen.kt`: halo celeste, aro con reflejos, mascota existente y cuatro iconos académicos que se reúnen alrededor. Nombre y subtítulo aparecen progresivamente con DM Sans; duración aproximada 2.2 s y transición de 240 ms hacia el flujo existente. Omitir permite entrar antes.
 
 Se ejecuta al crear una apertura normal de la app, conserva su finalización durante recreaciones con rememberSaveable y no reaparece al volver del segundo plano dentro de esa Activity. Las aperturas desde un aviso la saltan. La animación no modifica preferencias, sesión ni onboarding. Animatable respeta la escala de animación del sistema. No se agregan SDK, videos ni nuevos assets gráficos: se reutilizan el personaje y los iconos de PaquitoBot. iOS conserva su interfaz nativa existente.
+
+
+### Apertura · segunda dirección visual
+
+A petición del usuario se sustituye la composición de mascota e iconos por una pieza tridimensional de cristal celeste, con perspectiva y reflejos calculados sobre la malla. Un solo gesto de entrada y giro presenta la escultura; el nombre aparece después con contraste de pesos DM Sans y el subtítulo «Tu mundo académico, en orden.». Lienzo blanco y luz tenue, sin tarjetas flotantes ni indicadores de carga decorativos. Duración 2.85 s; conserva Omitir, escala de movimiento del sistema y apertura directa desde notificaciones. La malla se conserva en memoria y se dibuja en una llamada nativa de vértices, sin texturas, nuevos assets ni SDK. Se comprobó compilación; revisión visual final a cargo del usuario.
