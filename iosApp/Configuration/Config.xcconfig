@@ -1,3 +1,5 @@
+MINIMAX_API_KEY =
+
 #include? "Config.local.xcconfig"
 
 TEAM_ID=
