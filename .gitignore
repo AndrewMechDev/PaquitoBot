@@ -18,6 +18,9 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
 
+# Configuración local de iOS: contiene credenciales y no debe versionarse.
+iosApp/Configuration/Config.local.xcconfig
+
 # Reglas para recursos Android (reforzadas tras auditoría 2026-08-06).
 # Android Resource Compiler en res/drawable/ SOLO acepta .xml o .png.
 # Cualquier SVG aqui rompe el build con "The file name must end with .xml or .png".
