@@ -1,15 +1,30 @@
 import SwiftUI
 
+@MainActor
 struct CalendarSyncView: View {
-    @State private var connected = false
+    @StateObject private var viewModel: CalendarSyncViewModel
     @State private var showPast = false
-    @State private var selected: Set<String> = Set(AcademicDemoStore.calendarTasks.filter { !$0.isPast }.map(\.id))
-    @State private var isSyncing = false
-    @State private var summary: CalendarSyncSummary?
-    @State private var message: String?
+    @State private var selected: Set<String>
+
+    private let tasks: [CalendarTask]
+
+    init(
+        tasks: [CalendarTask] = AcademicDemoStore.calendarTasks,
+        service: CalendarEventService? = nil
+    ) {
+        self.tasks = tasks
+        _selected = State(initialValue: Set(tasks.filter { !$0.isPast }.map(\.id)))
+        _viewModel = StateObject(
+            wrappedValue: CalendarSyncViewModel(service: service ?? EventKitCalendarService())
+        )
+    }
 
     private var visibleTasks: [CalendarTask] {
-        AcademicDemoStore.calendarTasks.filter { showPast || !$0.isPast }
+        tasks.filter { showPast || !$0.isPast }
+    }
+
+    private var selectedTasks: [CalendarTask] {
+        tasks.filter { selected.contains($0.id) }
     }
 
     var body: some View {
@@ -17,43 +32,44 @@ struct CalendarSyncView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     accountCard
-                    if isSyncing {
-                        ProgressView()
+
+                    if viewModel.isWorking {
+                        ProgressView("Actualizando calendario…")
                             .tint(PaquitoColors.stateInfoStrong)
-                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    Text("Datos académicos de demostración · horario de Perú. La sincronización es manual y no elimina eventos existentes.")
+
+                    Text("Se usará el calendario principal disponible en este iPhone. La sincronización es manual y no elimina eventos existentes.")
                         .font(PaquitoTypography.bodySmall)
                         .foregroundStyle(PaquitoColors.textSecondary)
-                    Button("Actualizar tareas") {
-                        message = "Tareas demo actualizadas. Revisa las entregas antes de sincronizar."
-                    }
-                    .font(PaquitoTypography.bodyMedium.weight(.semibold))
-                    .foregroundStyle(PaquitoColors.stateInfoStrong)
-                    .disabled(isSyncing)
+
                     Toggle("Mostrar tareas vencidas", isOn: $showPast)
                         .font(PaquitoTypography.bodyMedium)
                         .tint(PaquitoColors.stateInfoStrong)
-                        .disabled(isSyncing)
+                        .disabled(viewModel.isWorking)
+
                     if showPast {
                         Text("Las vencidas se envían con su fecha original y solo si las seleccionas.")
                             .font(PaquitoTypography.caption)
                             .foregroundStyle(PaquitoColors.textSecondary)
                     }
+
                     Text("Elige tus entregas")
                         .font(PaquitoTypography.taskTitle)
                         .foregroundStyle(PaquitoColors.textPrimary)
+
                     if visibleTasks.isEmpty {
-                        Text("No hay tareas futuras pendientes. Activa las vencidas para consultar los datos de demostración.")
-                            .font(PaquitoTypography.bodyMedium)
-                            .foregroundStyle(PaquitoColors.textSecondary)
-                            .paquitoCard()
+                        ContentUnavailableView(
+                            "No hay entregas pendientes",
+                            systemImage: "checkmark.circle",
+                            description: Text("Activa las tareas vencidas para revisar el escenario demo.")
+                        )
                     } else {
                         ForEach(visibleTasks) { task in
                             taskRow(task)
                         }
                     }
-                    if let message {
+
+                    if let message = viewModel.message {
                         VStack(alignment: .leading, spacing: 5) {
                             Text("Estado")
                                 .font(PaquitoTypography.caption.weight(.semibold))
@@ -64,7 +80,8 @@ struct CalendarSyncView: View {
                         }
                         .paquitoCard()
                     }
-                    if let summary {
+
+                    if let summary = viewModel.summary {
                         VStack(alignment: .leading, spacing: 5) {
                             Text("Sincronización completada")
                                 .font(PaquitoTypography.taskTitle)
@@ -72,7 +89,7 @@ struct CalendarSyncView: View {
                             Text("\(summary.created) creados · \(summary.updated) actualizados · \(summary.unchanged) sin cambios")
                                 .font(PaquitoTypography.bodySmall)
                                 .foregroundStyle(PaquitoColors.textSecondary)
-                            Text("Puedes reintentar sin duplicar las tareas ya enviadas.")
+                            Text("Los eventos existentes de PaquitoBot se actualizan por marcador y no se duplican.")
                                 .font(PaquitoTypography.caption)
                                 .foregroundStyle(PaquitoColors.textSecondary)
                         }
@@ -81,49 +98,44 @@ struct CalendarSyncView: View {
                 }
                 .padding(PaquitoSpacing.lg)
             }
-            PaquitoPrimaryButton(title: "Sincronizar \(selected.count) tareas", isLoading: isSyncing, action: sync)
-                .padding(.horizontal, PaquitoSpacing.lg)
-                .padding(.vertical, 10)
-                .disabled(!connected || selected.isEmpty)
+
+            PaquitoPrimaryButton(
+                title: "Sincronizar \(selectedTasks.count) tareas",
+                isLoading: viewModel.isWorking,
+                action: { viewModel.sync(tasks: selectedTasks) }
+            )
+            .padding(.horizontal, PaquitoSpacing.lg)
+            .padding(.vertical, 10)
+            .disabled(!viewModel.isConnected || selectedTasks.isEmpty)
         }
         .background(PaquitoColors.background)
-        .navigationTitle("Google Calendar")
+        .navigationTitle("Calendario")
         .navigationBarTitleDisplayMode(.inline)
     }
 
     private var accountCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label(connected ? "Google Calendar conectado" : "Conecta tu cuenta de Google", systemImage: connected ? "checkmark.circle.fill" : "calendar")
-                .font(PaquitoTypography.taskTitle)
-                .foregroundStyle(connected ? PaquitoColors.stateSuccess : PaquitoColors.textPrimary)
-            if connected {
-                Text("estudiante.demo@tecsup.edu.pe")
-                    .font(PaquitoTypography.bodySmall)
-                    .foregroundStyle(PaquitoColors.stateInfoStrong)
-            }
-            Text("Se crearán o actualizarán las tareas elegidas en tu calendario principal.")
+            Label(
+                viewModel.isConnected ? "Calendario conectado" : "Conecta tu calendario",
+                systemImage: viewModel.isConnected ? "checkmark.circle.fill" : "calendar"
+            )
+            .font(PaquitoTypography.taskTitle)
+            .foregroundStyle(viewModel.isConnected ? PaquitoColors.stateSuccess : PaquitoColors.textPrimary)
+
+            Text("PaquitoBot solicitará permiso para crear y actualizar las entregas elegidas en el calendario principal del dispositivo.")
                 .font(PaquitoTypography.bodySmall)
                 .foregroundStyle(PaquitoColors.textSecondary)
-            if connected {
-                Button("Revocar acceso de Google", role: .destructive) {
-                    connected = false
-                    summary = nil
-                    message = "Acceso revocado. Los eventos ya creados se conservan en Google Calendar."
+
+            if viewModel.isConnected {
+                Button("Dejar de usar el calendario") {
+                    viewModel.disconnect()
                 }
                 .font(PaquitoTypography.bodyMedium)
-                Button("Renovar autorización") {
-                    message = "Autorización demo renovada. Revisa las tareas antes de sincronizar."
-                }
-                .font(PaquitoTypography.bodyMedium.weight(.semibold))
-                .foregroundStyle(PaquitoColors.stateInfoStrong)
-                Text("Revocar el acceso conserva los eventos que ya se crearon. Google solicitará autorización nuevamente al conectar.")
-                    .font(PaquitoTypography.caption)
-                    .foregroundStyle(PaquitoColors.textSecondary)
+                .foregroundStyle(PaquitoColors.stateDanger)
             } else {
-                PaquitoPrimaryButton(title: "Conectar Google Calendar", action: {
-                    connected = true
-                    message = "Cuenta demo conectada. Elige las tareas que quieres enviar."
-                })
+                PaquitoPrimaryButton(title: "Conectar calendario", isLoading: viewModel.isWorking) {
+                    viewModel.connect()
+                }
             }
         }
         .paquitoCard()
@@ -139,9 +151,15 @@ struct CalendarSyncView: View {
                     .foregroundStyle(selected.contains(task.id) ? PaquitoColors.stateInfoStrong : PaquitoColors.textMuted)
                     .font(.title3)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(task.title).font(PaquitoTypography.taskTitle).foregroundStyle(PaquitoColors.textPrimary)
-                    Text(task.course).font(PaquitoTypography.caption).foregroundStyle(PaquitoColors.stateInfoStrong)
-                    Text(task.dueLabel).font(PaquitoTypography.bodySmall).foregroundStyle(PaquitoColors.textSecondary)
+                    Text(task.title)
+                        .font(PaquitoTypography.taskTitle)
+                        .foregroundStyle(PaquitoColors.textPrimary)
+                    Text(task.course)
+                        .font(PaquitoTypography.caption)
+                        .foregroundStyle(PaquitoColors.stateInfoStrong)
+                    Text(task.dueLabel)
+                        .font(PaquitoTypography.bodySmall)
+                        .foregroundStyle(PaquitoColors.textSecondary)
                     if task.isPast {
                         Text("Vencida · se conservará esta fecha")
                             .font(PaquitoTypography.caption)
@@ -154,19 +172,9 @@ struct CalendarSyncView: View {
             .paquitoCard()
         }
         .buttonStyle(.plain)
-        .disabled(isSyncing)
-    }
-
-    private func sync() {
-        guard connected, !selected.isEmpty else { return }
-        isSyncing = true
-        summary = nil
-        Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(350))
-            let count = selected.count
-            summary = CalendarSyncSummary(created: count, updated: 0, unchanged: 0)
-            message = "Sincronización completada. Puedes repetirla sin duplicar tareas."
-            isSyncing = false
-        }
+        .disabled(viewModel.isWorking)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(task.title), \(task.course), \(task.dueLabel)")
+        .accessibilityValue(selected.contains(task.id) ? "Seleccionada" : "No seleccionada")
     }
 }

@@ -23,7 +23,7 @@ struct ScheduleView: View {
                 .padding(.bottom, 8)
 
                 Button(action: onCalendar) {
-                    Label("Sincronizar con Google Calendar", systemImage: "calendar.badge.plus")
+                    Label("Sincronizar calendario", systemImage: "calendar.badge.plus")
                         .font(PaquitoTypography.bodyMedium.weight(.semibold))
                         .foregroundStyle(PaquitoColors.stateInfoStrong)
                         .frame(maxWidth: .infinity, alignment: .leading)
