@@ -17,6 +17,80 @@ struct SystemNotificationPermissionService: NotificationPermissionService {
     }
 }
 
+@MainActor
+protocol NotificationScheduleService: AnyObject {
+    func synchronize(setup: NotificationSetup, tasks: [CalendarTask]) async
+}
+
+@MainActor
+final class LocalNotificationScheduleService: NotificationScheduleService {
+    private let center: UNUserNotificationCenter
+
+    init(center: UNUserNotificationCenter = .current()) {
+        self.center = center
+    }
+
+    func synchronize(setup: NotificationSetup, tasks: [CalendarTask]) async {
+        let taskIdentifiers = tasks.map { Self.taskIdentifier(for: $0) }
+        center.removePendingNotificationRequests(
+            withIdentifiers: taskIdentifiers + [Self.dailySummaryIdentifier]
+        )
+
+        let settings = await center.notificationSettings()
+        guard settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional else {
+            return
+        }
+
+        if setup.enabled.contains(.deadlines) {
+            for task in tasks {
+                guard let dueDate = task.dueDate, dueDate > .now else { continue }
+                let reminderDate = dueDate.addingTimeInterval(-Double(setup.reminderHours) * 3_600)
+                let triggerDate = reminderDate > .now ? reminderDate : Date(timeIntervalSinceNow: 1)
+                let content = UNMutableNotificationContent()
+                content.title = "Entrega próxima"
+                content.body = "(task.title) · (task.course)"
+                content.sound = .default
+                content.userInfo = ["taskID": task.id]
+
+                let components = Calendar.current.dateComponents(
+                    [.year, .month, .day, .hour, .minute],
+                    from: triggerDate
+                )
+                let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+                let request = UNNotificationRequest(
+                    identifier: Self.taskIdentifier(for: task),
+                    content: content,
+                    trigger: trigger
+                )
+                try? await center.add(request)
+            }
+        }
+
+        if setup.dailySummaryEnabled {
+            let content = UNMutableNotificationContent()
+            content.title = "Resumen académico"
+            content.body = "Revisa tus entregas y avisos pendientes en PaquitoBot."
+            content.sound = .default
+            let trigger = UNCalendarNotificationTrigger(
+                dateMatching: DateComponents(hour: setup.summaryHour, minute: setup.summaryMinute),
+                repeats: true
+            )
+            let request = UNNotificationRequest(
+                identifier: Self.dailySummaryIdentifier,
+                content: content,
+                trigger: trigger
+            )
+            try? await center.add(request)
+        }
+    }
+
+    private static let dailySummaryIdentifier = "paquitobot.notification.daily-summary"
+
+    private static func taskIdentifier(for task: CalendarTask) -> String {
+        "paquitobot.notification.deadline.\(task.id)"
+    }
+}
+
 enum NotificationPreferenceStore {
     private static let key = "paquitobot.notificationSetup"
     private static let configuredKey = "\(key).configured"

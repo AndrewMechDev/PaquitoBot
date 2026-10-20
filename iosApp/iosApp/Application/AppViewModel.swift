@@ -24,14 +24,17 @@ final class AppViewModel: ObservableObject {
     let authService: AuthService
     let chatViewModel: ChatViewModel
     private let notificationPermissionService: NotificationPermissionService
+    private let notificationScheduleService: NotificationScheduleService
 
     init(
         authService: AuthService? = nil,
         chatService: ChatService? = nil,
-        notificationPermissionService: NotificationPermissionService = SystemNotificationPermissionService()
+        notificationPermissionService: NotificationPermissionService = SystemNotificationPermissionService(),
+        notificationScheduleService: NotificationScheduleService? = nil
     ) {
         self.authService = authService ?? AuthServiceFactory.makeDefault()
         self.notificationPermissionService = notificationPermissionService
+        self.notificationScheduleService = notificationScheduleService ?? LocalNotificationScheduleService()
         chatViewModel = ChatViewModel(service: chatService ?? ChatServiceFactory.makeDefault())
         notifications = NotificationInboxStore.load()
         if ProcessInfo.processInfo.arguments.contains("-PaquitoDemo") {
@@ -40,6 +43,13 @@ final class AppViewModel: ObservableObject {
             phase = .auth
         } else {
             phase = .onboarding(.intro)
+        }
+
+        Task { [scheduleService = self.notificationScheduleService] in
+            await scheduleService.synchronize(
+                setup: notificationSetup,
+                tasks: AcademicDemoStore.calendarTasks
+            )
         }
     }
 
@@ -87,6 +97,10 @@ final class AppViewModel: ObservableObject {
         Task { [weak self] in
             guard let self else { return }
             _ = await notificationPermissionService.requestAuthorization()
+            await notificationScheduleService.synchronize(
+                setup: setup,
+                tasks: AcademicDemoStore.calendarTasks
+            )
             isRequestingNotificationPermission = false
             advanceOnboarding()
         }
@@ -95,6 +109,12 @@ final class AppViewModel: ObservableObject {
     func updateNotificationSetup(_ setup: NotificationSetup) {
         notificationSetup = setup
         NotificationPreferenceStore.save(setup)
+        Task { [notificationScheduleService] in
+            await notificationScheduleService.synchronize(
+                setup: setup,
+                tasks: AcademicDemoStore.calendarTasks
+            )
+        }
     }
 
     func updateNotifications(_ items: [NotificationItem]) {
