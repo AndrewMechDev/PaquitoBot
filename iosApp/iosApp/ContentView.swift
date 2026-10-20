@@ -90,7 +90,11 @@ struct ContentView: View {
                         case .procedures:
                             ProceduresView()
                         case .procedureDetail(let id):
-                            ProcedureDetailView(procedure: DemoAcademicData.procedure(with: id) ?? DemoAcademicData.procedures[0])
+                            ProcedureDetailView(
+                                procedure: AcademicDemoStore.procedures.first { $0.id == id }
+                                    ?? DemoAcademicData.procedure(with: id)
+                                    ?? DemoAcademicData.procedures[0]
+                            )
                         case .enrollment:
                             EnrollmentGuideView()
                         case .events:

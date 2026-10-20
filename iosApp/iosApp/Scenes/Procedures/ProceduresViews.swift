@@ -5,12 +5,12 @@ struct ProceduresView: View {
     @State private var selectedCategory: String?
 
     private var categories: [String] {
-        Array(Set(DemoAcademicData.procedures.map(\.category))).sorted()
+        Array(Set(AcademicDemoStore.procedures.map(\.category))).sorted()
     }
 
     private var filteredProcedures: [ProcedureItem] {
         let normalizedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        return DemoAcademicData.procedures.filter { procedure in
+        return AcademicDemoStore.procedures.filter { procedure in
             let matchesCategory = selectedCategory == nil || procedure.category == selectedCategory
             let matchesQuery = normalizedQuery.isEmpty
                 || procedure.title.lowercased().contains(normalizedQuery)

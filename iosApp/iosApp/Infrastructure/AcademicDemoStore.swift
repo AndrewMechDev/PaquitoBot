@@ -33,6 +33,8 @@ enum AcademicDemoStore {
         return makeCalendarTasks(from: snapshot)
     }()
 
+    static let procedures: [ProcedureItem] = loadProcedures()
+
     static var isLoaded: Bool { snapshot != nil }
 
     /// Serializa el escenario que la UI iOS muestra para enviarlo al prompt de MiniMax.
@@ -148,6 +150,50 @@ enum AcademicDemoStore {
         }
 
         return Snapshot(catalog: catalog, scenario: scenario)
+    }
+
+    private static func loadProcedures() -> [ProcedureItem] {
+        guard
+            let url = Bundle.main.url(forResource: "procedures", withExtension: "json"),
+            let data = try? Data(contentsOf: url),
+            let catalog = try? JSONDecoder().decode(ProcedureCatalog.self, from: data)
+        else {
+            return DemoAcademicData.procedures
+        }
+
+        return catalog.procedures.map { procedure in
+            ProcedureItem(
+                id: procedure.id,
+                code: procedure.code,
+                title: procedure.title,
+                category: procedure.category.localizedLabel,
+                audience: procedure.audience,
+                summary: procedure.summary,
+                requirements: procedure.requirements,
+                steps: procedure.steps,
+                cost: procedure.cost,
+                responseTime: procedure.responseTime,
+                applicationWindow: procedure.applicationWindow,
+                duration: procedure.duration,
+                responsibleArea: procedure.responsibleArea,
+                channels: procedure.channels.enumerated().map { index, channel in
+                    ProcedureChannel(
+                        id: "\(procedure.id)-channel-\(index)",
+                        label: channel.label,
+                        target: channel.target,
+                        kind: channel.kind == "Email" ? .email : .web
+                    )
+                },
+                notes: procedure.notes,
+                sourcePage: procedure.sourcePage,
+                source: ProcedureSource(
+                    title: catalog.source.title,
+                    url: catalog.source.url.flatMap(URL.init(string:)),
+                    edition: catalog.source.edition,
+                    reviewedOn: catalog.source.reviewedOn
+                )
+            )
+        }
     }
 
     private static func makeCourses(from snapshot: Snapshot) -> [CourseItem] {
@@ -641,4 +687,56 @@ private struct AcademicEvaluation {
 
     let category: Category
     let item: EvaluationItem
+}
+
+private struct ProcedureCatalog: Decodable {
+    let source: ProcedureCatalogSource
+    let procedures: [ProcedureRecord]
+}
+
+private struct ProcedureCatalogSource: Decodable {
+    let title: String
+    let url: String?
+    let edition: String
+    let reviewedOn: String
+}
+
+private struct ProcedureRecord: Decodable {
+    let id: String
+    let code: String
+    let title: String
+    let category: String
+    let audience: String
+    let summary: String
+    let requirements: [String]
+    let steps: [String]
+    let cost: String
+    let responseTime: String
+    let sourcePage: Int?
+    let responsibleArea: String
+    let channels: [ProcedureChannelRecord]
+    let applicationWindow: String?
+    let notes: [String]
+    let duration: String?
+}
+
+private struct ProcedureChannelRecord: Decodable {
+    let label: String
+    let target: String
+    let kind: String
+}
+
+private extension String {
+    var localizedLabel: String {
+        switch self {
+        case "Admission": return "Admisión"
+        case "Documents": return "Documentos"
+        case "Enrollment": return "Matrícula"
+        case "Finance": return "Finanzas"
+        case "Graduation": return "Graduación"
+        case "Practices": return "Prácticas"
+        case "Transfers": return "Traslados"
+        default: return self
+        }
+    }
 }
