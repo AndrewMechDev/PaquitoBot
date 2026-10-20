@@ -150,10 +150,15 @@ final class DemoChatService: ChatService {
 
 enum ChatServiceFactory {
     static func makeDefault() -> ChatService {
+        #if DEBUG
+        let apiKey = Bundle.main.object(forInfoDictionaryKey: "MINIMAX_API_KEY") as? String ?? ""
+        return MiniMaxChatService(apiKey: apiKey)
+        #else
         #if canImport(SharedLogic)
         return SharedLogicChatService()
         #else
         return DemoChatService()
+        #endif
         #endif
     }
 }
