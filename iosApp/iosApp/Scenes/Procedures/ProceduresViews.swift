@@ -337,43 +337,96 @@ private struct ProcedureChannelActionView: View {
 struct EnrollmentGuideView: View {
     @Environment(\.openURL) private var openURL
     var onClose: (() -> Void)? = nil
-    @State private var completed: Set<String> = []
+    @State private var stage = -1
+    @State private var calendarOpen = false
+
+    private var steps: [EnrollmentStep] { DemoAcademicData.enrollmentSteps }
+    private var currentStage: Int { stage.clamped(to: -1...steps.count) }
+    private var progress: Double { Double(currentStage + 1) / Double(steps.count + 1) }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text("Guía de matrícula")
-                    .font(PaquitoTypography.display)
-                    .foregroundStyle(PaquitoColors.textPrimary)
-                Text("Sigue estos pasos y verifica tu avance antes de iniciar el ciclo.")
-                    .font(PaquitoTypography.body)
-                    .foregroundStyle(PaquitoColors.textSecondary)
-                ForEach(DemoAcademicData.enrollmentSteps) { step in
-                    Button {
-                        if completed.contains(step.id) { completed.remove(step.id) }
-                        else { completed.insert(step.id) }
-                    } label: {
-                        HStack(alignment: .top, spacing: 14) {
-                            Image(systemName: completed.contains(step.id) ? "checkmark.circle.fill" : "circle")
-                                .foregroundStyle(completed.contains(step.id) ? PaquitoColors.stateSuccess : PaquitoColors.stateInfoStrong)
-                                .font(.title3)
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(step.title).font(PaquitoTypography.taskTitle).foregroundStyle(PaquitoColors.textPrimary)
-                                ForEach(step.body, id: \.self) { Text($0).font(PaquitoTypography.bodySmall).foregroundStyle(PaquitoColors.textSecondary) }
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .paquitoCard()
-                    }
-                    .buttonStyle(.plain)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Matrícula")
+                        .font(PaquitoTypography.display)
+                        .foregroundStyle(PaquitoColors.textPrimary)
+                    Text("Tu recorrido · Arequipa")
+                        .font(PaquitoTypography.bodyMedium)
+                        .foregroundStyle(PaquitoColors.textSecondary)
                 }
+
+                ProgressView(value: progress)
+                    .tint(PaquitoColors.stateInfoStrong)
+                    .scaleEffect(y: 1.4, anchor: .center)
+
+                Text(stageLabel)
+                    .font(PaquitoTypography.caption)
+                    .foregroundStyle(PaquitoColors.textSecondary)
+
+                Group {
+                    if currentStage < 0 {
+                        enrollmentStart
+                    } else if currentStage == steps.count {
+                        enrollmentComplete
+                    } else {
+                        enrollmentStep(steps[currentStage])
+                    }
+                }
+
                 Button {
-                    if let url = URL(string: "https://campus-cloud.tecsup.edu.pe/auth/login") { openURL(url) }
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        calendarOpen.toggle()
+                    }
                 } label: {
-                    Label("Abrir Intranet Académica", systemImage: "arrow.up.right.square")
+                    HStack {
+                        Text(calendarOpen ? "Ocultar fechas y plazos" : "Consultar fechas y plazos")
+                        Spacer()
+                        Image(systemName: calendarOpen ? "chevron.up" : "chevron.down")
+                    }
+                    .font(PaquitoTypography.bodyMedium.weight(.semibold))
+                    .foregroundStyle(PaquitoColors.stateInfoStrong)
+                }
+                .buttonStyle(.plain)
+
+                if calendarOpen {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Cronograma por confirmar")
+                            .font(PaquitoTypography.taskTitle)
+                            .foregroundStyle(PaquitoColors.textPrimary)
+                        EnrollmentFact(label: "Matrícula regular", value: "Solicita el cronograma de tu sede y período")
+                        EnrollmentFact(label: "Matrícula extraordinaria", value: "Consulta disponibilidad con Servicios Educativos")
+                        EnrollmentFact(label: "Inicio de clases", value: "Fecha sujeta al período académico")
+                        Text("Las fechas dependen de tu sede y período. Confírmalas en el portal oficial antes de realizar pagos.")
+                            .font(PaquitoTypography.bodySmall)
+                            .foregroundStyle(PaquitoColors.textSecondary)
+                    }
+                    .paquitoCard()
+                }
+
+                HStack(spacing: 12) {
+                    if currentStage >= 0 {
+                        Button("Anterior") {
+                            withAnimation(.easeInOut(duration: 0.2)) { stage = currentStage - 1 }
+                        }
                         .font(PaquitoTypography.bodyMedium.weight(.semibold))
                         .foregroundStyle(PaquitoColors.stateInfoStrong)
                         .frame(maxWidth: .infinity, minHeight: 48)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: PaquitoRadius.medium, style: .continuous)
+                                .stroke(PaquitoColors.stateInfoStrong, lineWidth: 1)
+                        )
+                    }
+                    Button(nextButtonTitle) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            stage = currentStage == steps.count ? -1 : currentStage + 1
+                        }
+                    }
+                    .font(PaquitoTypography.button)
+                    .foregroundStyle(PaquitoColors.textOnPrimary)
+                    .frame(maxWidth: .infinity, minHeight: 48)
+                    .background(PaquitoColors.brandPrimary)
+                    .clipShape(RoundedRectangle(cornerRadius: PaquitoRadius.medium, style: .continuous))
                 }
             }
             .padding(PaquitoSpacing.lg)
@@ -388,5 +441,120 @@ struct EnrollmentGuideView: View {
                 }
             }
         }
+    }
+
+    private var stageLabel: String {
+        switch currentStage {
+        case -1: return "Antes de empezar"
+        case steps.count: return "Recorrido revisado"
+        default: return "Paso \(currentStage + 1) de \(steps.count)"
+        }
+    }
+
+    private var nextButtonTitle: String {
+        switch currentStage {
+        case -1: return "Ver pasos"
+        case steps.count: return "Revisar de nuevo"
+        case steps.count - 1: return "Finalizar lectura"
+        default: return "Siguiente"
+        }
+    }
+
+    private var enrollmentStart: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Prepara tu matrícula")
+                .font(PaquitoTypography.headline)
+                .foregroundStyle(PaquitoColors.textPrimary)
+            ProcedureSourceNote()
+            Text("Comprueba antes de empezar")
+                .font(PaquitoTypography.taskTitle)
+                .foregroundStyle(PaquitoColors.textPrimary)
+            ForEach(steps.prefix(2)) { step in
+                Label(step.title, systemImage: "checkmark.circle")
+                    .font(PaquitoTypography.bodyMedium)
+                    .foregroundStyle(PaquitoColors.textSecondary)
+            }
+            Text("Puedes consultar esta guía sin iniciar sesión. No registra pagos ni confirma matrícula.")
+                .font(PaquitoTypography.bodyMedium)
+                .foregroundStyle(PaquitoColors.textSecondary)
+        }
+        .paquitoCard()
+    }
+
+    private func enrollmentStep(_ step: EnrollmentStep) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text(step.title)
+                .font(PaquitoTypography.headline)
+                .foregroundStyle(PaquitoColors.textPrimary)
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(Array(step.body.enumerated()), id: \.offset) { index, body in
+                    Label {
+                        Text("\(index + 1). \(body)")
+                    } icon: {
+                        Image(systemName: "circle.fill")
+                            .font(.system(size: 5))
+                    }
+                    .font(PaquitoTypography.bodyMedium)
+                    .foregroundStyle(PaquitoColors.textSecondary)
+                }
+            }
+            .paquitoCard()
+            if currentStage == steps.count - 1 {
+                Button {
+                    if let url = URL(string: "https://campus-cloud.tecsup.edu.pe/auth/login") { openURL(url) }
+                } label: {
+                    Label("Abrir Intranet Académica", systemImage: "arrow.up.right.square")
+                        .font(PaquitoTypography.bodyMedium.weight(.semibold))
+                        .foregroundStyle(PaquitoColors.stateInfoStrong)
+                }
+            }
+            Text("Confirma las condiciones actuales con Tecsup antes de realizar cualquier pago o solicitud.")
+                .font(PaquitoTypography.bodySmall)
+                .foregroundStyle(PaquitoColors.textSecondary)
+        }
+    }
+
+    private var enrollmentComplete: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(PaquitoColors.stateSuccess)
+            Text("Ya revisaste los pasos")
+                .font(PaquitoTypography.headline)
+                .foregroundStyle(PaquitoColors.textPrimary)
+            Text("Tu matrícula se confirma únicamente en el portal de Tecsup. Llegar aquí no acredita un pago ni una inscripción.")
+                .font(PaquitoTypography.bodyMedium)
+                .foregroundStyle(PaquitoColors.textSecondary)
+            Button {
+                if let url = URL(string: "https://campus-cloud.tecsup.edu.pe/auth/login") { openURL(url) }
+            } label: {
+                Label("Consultar matrícula", systemImage: "arrow.up.right.square")
+                    .font(PaquitoTypography.bodyMedium.weight(.semibold))
+                    .foregroundStyle(PaquitoColors.stateInfoStrong)
+            }
+        }
+        .paquitoCard()
+    }
+}
+
+private struct EnrollmentFact: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(PaquitoTypography.caption)
+                .foregroundStyle(PaquitoColors.textSecondary)
+            Text(value)
+                .font(PaquitoTypography.bodyMedium)
+                .foregroundStyle(PaquitoColors.textPrimary)
+        }
+    }
+}
+
+private extension Int {
+    func clamped(to range: ClosedRange<Int>) -> Int {
+        Swift.min(Swift.max(self, range.lowerBound), range.upperBound)
     }
 }
