@@ -193,26 +193,54 @@ struct ProcedureDetailView: View {
                     .font(PaquitoTypography.body)
                     .foregroundStyle(PaquitoColors.textSecondary)
 
-                detailBlock(title: "Requisitos", items: procedure.requirements, icon: "checkmark.circle")
-                detailBlock(title: "Pasos", items: procedure.steps, icon: "list.number")
+                ProcedureSourceNote()
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Información")
-                        .font(PaquitoTypography.taskTitle)
-                    infoRow("Costo", procedure.cost)
-                    infoRow("Tiempo de respuesta", procedure.responseTime)
-                    infoRow("Área responsable", procedure.responsibleArea)
+                VStack(alignment: .leading, spacing: 14) {
+                    ProcedureFact(label: "Dirigido a", value: procedure.audience)
+                    ProcedureFact(label: "Costo referencial", value: procedure.cost)
+                    ProcedureFact(label: "Tiempo de respuesta indicado", value: procedure.responseTime)
+                    if let applicationWindow = procedure.applicationWindow {
+                        ProcedureFact(label: "Cuándo solicitarlo", value: applicationWindow)
+                    }
+                    if let duration = procedure.duration {
+                        ProcedureFact(label: "Duración del programa", value: duration)
+                    }
+                    ProcedureFact(label: "Área responsable", value: procedure.responsibleArea)
                 }
                 .paquitoCard()
 
+                detailBlock(title: "Requisitos", items: procedure.requirements, icon: "checkmark.circle")
+                detailBlock(title: "Cómo realizarlo", items: procedure.steps, icon: "list.number", numbered: true)
+
+                if !procedure.notes.isEmpty {
+                    detailBlock(title: "Ten en cuenta", items: procedure.notes, icon: "info.circle")
+                }
+
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Canales oficiales")
+                    Text("Canales de atención")
                         .font(PaquitoTypography.taskTitle)
+                        .foregroundStyle(PaquitoColors.textPrimary)
+                    Text("Los enlaces abren servicios externos. Si eliges correo, revisa el destinatario y el asunto antes de enviar.")
+                        .font(PaquitoTypography.bodySmall)
+                        .foregroundStyle(PaquitoColors.textSecondary)
                     ForEach(procedure.channels) { channel in
+                        ProcedureChannelActionView(channel: channel, subject: "Consulta: \(procedure.title)")
+                    }
+                }
+                .paquitoCard()
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Fuente y vigencia")
+                        .font(PaquitoTypography.taskTitle)
+                        .foregroundStyle(PaquitoColors.textPrimary)
+                    Text(sourceDescription)
+                        .font(PaquitoTypography.bodySmall)
+                        .foregroundStyle(PaquitoColors.textSecondary)
+                    if let sourceURL = procedure.source.url {
                         Button {
-                            if let url = URL(string: channel.target) { openURL(url) }
+                            openURL(sourceURL)
                         } label: {
-                            Label(channel.label, systemImage: channel.kind == .email ? "envelope" : "arrow.up.right.square")
+                            Label("Consultar manual oficial", systemImage: "arrow.up.right.square")
                                 .font(PaquitoTypography.bodyMedium.weight(.semibold))
                                 .foregroundStyle(PaquitoColors.stateInfoStrong)
                         }
@@ -227,25 +255,82 @@ struct ProcedureDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private func detailBlock(title: String, items: [String], icon: String) -> some View {
+    private var sourceDescription: String {
+        let page = procedure.sourcePage.map { " · página \($0)" } ?? ""
+        return "\(procedure.source.title) · \(procedure.source.edition)\(page). Contenido revisado el \(procedure.source.reviewedOn); confirma la vigencia de tarifas y contactos con Tecsup."
+    }
+
+    private func detailBlock(title: String, items: [String], icon: String, numbered: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(title).font(PaquitoTypography.taskTitle)
-            ForEach(Array(items.enumerated()), id: \.offset) { _, item in
-                Label(item, systemImage: icon)
+            Text(title)
+                .font(PaquitoTypography.taskTitle)
+                .foregroundStyle(PaquitoColors.textPrimary)
+            ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                Label {
+                    Text(numbered ? "\(index + 1). \(item)" : item)
+                } icon: {
+                    Image(systemName: numbered ? "circle.fill" : icon)
+                        .font(numbered ? .system(size: 5) : .body)
+                }
                     .font(PaquitoTypography.bodyMedium)
                     .foregroundStyle(PaquitoColors.textSecondary)
             }
         }
         .paquitoCard()
     }
+}
 
-    private func infoRow(_ label: String, _ value: String) -> some View {
-        HStack(alignment: .top) {
-            Text(label).foregroundStyle(PaquitoColors.textSecondary)
-            Spacer()
-            Text(value).multilineTextAlignment(.trailing).foregroundStyle(PaquitoColors.textPrimary)
+private struct ProcedureFact: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(PaquitoTypography.caption)
+                .foregroundStyle(PaquitoColors.textSecondary)
+            Text(value)
+                .font(PaquitoTypography.bodyMedium)
+                .foregroundStyle(PaquitoColors.textPrimary)
         }
-        .font(PaquitoTypography.bodySmall)
+    }
+}
+
+private struct ProcedureChannelActionView: View {
+    let channel: ProcedureChannel
+    let subject: String
+    @Environment(\.openURL) private var openURL
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Button {
+                if let url = destinationURL {
+                    openURL(url)
+                }
+            } label: {
+                Label(channel.label, systemImage: channel.kind == .email ? "envelope" : "arrow.up.right.square")
+                    .font(PaquitoTypography.bodyMedium.weight(.semibold))
+                    .foregroundStyle(PaquitoColors.textOnPrimary)
+                    .frame(maxWidth: .infinity, minHeight: 46)
+                    .background(PaquitoColors.brandPrimary)
+                    .clipShape(RoundedRectangle(cornerRadius: PaquitoRadius.medium, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            Text(channel.target)
+                .font(PaquitoTypography.bodySmall)
+                .foregroundStyle(PaquitoColors.textSecondary)
+                .textSelection(.enabled)
+        }
+    }
+
+    private var destinationURL: URL? {
+        switch channel.kind {
+        case .web:
+            return URL(string: channel.target)
+        case .email:
+            let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? subject
+            return URL(string: "mailto:\(channel.target)?subject=\(encodedSubject)")
+        }
     }
 }
 

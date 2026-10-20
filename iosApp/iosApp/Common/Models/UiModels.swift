@@ -180,18 +180,31 @@ struct ProcedureChannel: Identifiable, Hashable {
     let kind: ProcedureChannelKind
 }
 
+struct ProcedureSource: Hashable {
+    let title: String
+    let url: URL?
+    let edition: String
+    let reviewedOn: String
+}
+
 struct ProcedureItem: Identifiable, Hashable {
     let id: String
     let code: String
     let title: String
     let category: String
+    let audience: String
     let summary: String
     let requirements: [String]
     let steps: [String]
     let cost: String
     let responseTime: String
+    let applicationWindow: String?
+    let duration: String?
     let responsibleArea: String
     let channels: [ProcedureChannel]
+    let notes: [String]
+    let sourcePage: Int?
+    let source: ProcedureSource
 }
 
 struct EnrollmentStep: Identifiable, Hashable {

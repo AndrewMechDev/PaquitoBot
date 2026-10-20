@@ -85,32 +85,54 @@ enum DemoAcademicData {
         )
     }
 
+    static let procedureSource = ProcedureSource(
+        title: "Manual de Procesos Académicos · TECSUP N.º 2",
+        url: URL(string: "https://www.tecsup.edu.pe/wp-content/uploads/2024/07/mpa-tecsup-2.pdf"),
+        edition: "Referencia documental 2024",
+        reviewedOn: "18 oct 2026"
+    )
+
     static let procedures: [ProcedureItem] = [
         ProcedureItem(
             id: "constancia-estudios",
             code: "TRM-001",
             title: "Constancia de estudios",
             category: "Académico",
+            audience: "Estudiantes",
             summary: "Solicita una constancia oficial de tu matrícula y condición académica.",
             requirements: ["Documento de identidad vigente", "No tener deuda pendiente"],
             steps: ["Revisa los requisitos", "Ingresa tu solicitud", "Espera la confirmación del área responsable"],
             cost: "Según tarifario institucional",
             responseTime: "Hasta 3 días hábiles",
+            applicationWindow: nil,
+            duration: nil,
             responsibleArea: "Secretaría Académica",
-            channels: [ProcedureChannel(id: "web-constancia", label: "Abrir Intranet Académica", target: "https://campus-cloud.tecsup.edu.pe/auth/login", kind: .web)]
+            channels: [
+                ProcedureChannel(id: "web-constancia", label: "Abrir Intranet Académica", target: "https://campus-cloud.tecsup.edu.pe/auth/login", kind: .web),
+                ProcedureChannel(id: "tarifario-constancia", label: "Consultar tarifario oficial 2026", target: "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf", kind: .web)
+            ],
+            notes: ["La entrega puede ser por correo institucional o presencial.", "Confirma la tarifa vigente y su aplicación a tu programa antes de realizar cualquier pago."],
+            sourcePage: 6,
+            source: procedureSource
         ),
         ProcedureItem(
             id: "justificacion-inasistencia",
             code: "TRM-002",
             title: "Justificación de inasistencia",
             category: "Académico",
+            audience: "Estudiantes",
             summary: "Presenta el sustento de una inasistencia dentro del plazo establecido.",
             requirements: ["Sustento de la inasistencia", "Código y curso involucrado"],
             steps: ["Reúne el documento de sustento", "Contacta al área académica", "Confirma el registro de tu solicitud"],
             cost: "Sin costo",
             responseTime: "Según evaluación del área",
+            applicationWindow: "Dentro del plazo indicado por Coordinación Académica",
+            duration: nil,
             responsibleArea: "Coordinación Académica",
-            channels: [ProcedureChannel(id: "email-justificacion", label: "Enviar correo", target: "mesa.partes@tecsup.edu.pe", kind: .email)]
+            channels: [ProcedureChannel(id: "email-justificacion", label: "Enviar correo", target: "mesa.partes@tecsup.edu.pe", kind: .email)],
+            notes: ["Incluye tu código, curso, fecha de la inasistencia y el sustento correspondiente.", "Verifica el destinatario institucional antes de enviar documentos."],
+            sourcePage: nil,
+            source: procedureSource
         )
     ]
 
