@@ -2,6 +2,12 @@ import SwiftUI
 
 struct ScheduleView: View {
     let data: ScheduleData
+    let onCalendar: () -> Void
+
+    init(data: ScheduleData, onCalendar: @escaping () -> Void = {}) {
+        self.data = data
+        self.onCalendar = onCalendar
+    }
 
     var body: some View {
         ScrollView {
@@ -15,6 +21,15 @@ struct ScheduleView: View {
                         .foregroundStyle(PaquitoColors.textSecondary)
                 }
                 .padding(.bottom, 8)
+
+                Button(action: onCalendar) {
+                    Label("Sincronizar con Google Calendar", systemImage: "calendar.badge.plus")
+                        .font(PaquitoTypography.bodyMedium.weight(.semibold))
+                        .foregroundStyle(PaquitoColors.stateInfoStrong)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .paquitoCard()
+                }
+                .buttonStyle(.plain)
 
                 ForEach(data.days) { day in
                     VStack(alignment: .leading, spacing: 10) {

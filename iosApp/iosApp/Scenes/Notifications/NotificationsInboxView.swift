@@ -5,9 +5,18 @@ struct NotificationsInboxView: View {
     @State private var isCompact = true
     @State private var selectedItem: NotificationItem?
     @State private var showDeleteAllConfirmation = false
+    @State private var showPreferences = false
+    let setup: NotificationSetup
+    let onSaveSetup: (NotificationSetup) -> Void
 
-    init(items: [NotificationItem]) {
+    init(
+        items: [NotificationItem],
+        setup: NotificationSetup = .default,
+        onSaveSetup: @escaping (NotificationSetup) -> Void = { _ in }
+    ) {
         _items = State(initialValue: items)
+        self.setup = setup
+        self.onSaveSetup = onSaveSetup
     }
 
     var body: some View {
@@ -55,6 +64,12 @@ struct NotificationsInboxView: View {
         .navigationTitle("Notificaciones")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Preferencias") {
+                    showPreferences = true
+                }
+                .font(PaquitoTypography.caption)
+            }
             if !items.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Eliminar todo", role: .destructive) {
@@ -67,6 +82,19 @@ struct NotificationsInboxView: View {
         .sheet(item: $selectedItem) { item in
             NotificationDetailView(item: item)
                 .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $showPreferences) {
+            OnboardingNotificationsView(
+                isRequestingPermission: false,
+                initialSetup: setup,
+                onContinue: { updatedSetup in
+                    onSaveSetup(updatedSetup)
+                    showPreferences = false
+                },
+                onCancel: {
+                    showPreferences = false
+                }
+            )
         }
         .confirmationDialog(
             "¿Eliminar todas las notificaciones?",

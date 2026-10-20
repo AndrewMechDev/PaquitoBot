@@ -18,8 +18,11 @@ struct ContentView: View {
             case .onboarding(.welcome):
                 WelcomeView(onContinue: app.advanceOnboarding)
             case .onboarding(.notifications):
-                OnboardingNotificationsView(isRequestingPermission: app.isRequestingNotificationPermission) { preferences in
-                    app.completeNotificationSetup(preferences)
+                OnboardingNotificationsView(
+                    isRequestingPermission: app.isRequestingNotificationPermission,
+                    initialSetup: app.notificationSetup
+                ) { setup in
+                    app.completeNotificationSetup(setup)
                 }
             case .onboarding(.tour):
                 OnboardingTourView(onContinue: app.advanceOnboarding)
@@ -43,13 +46,29 @@ struct ContentView: View {
                             case .chat:
                                 ChatView(viewModel: app.chatViewModel, userName: app.userName)
                             case .notifications:
-                                NotificationsInboxView(items: app.notifications)
+                                NotificationsInboxView(
+                                    items: app.notifications,
+                                    setup: app.notificationSetup,
+                                    onSaveSetup: app.updateNotificationSetup
+                                )
                             case .courseDetail(let id):
                                 if let course = app.course(with: id) {
                                     CourseDetailView(data: DemoAcademicData.detail(for: course))
                                 } else {
                                     ContentUnavailableView("Curso no encontrado", systemImage: "book.closed")
                                 }
+                            case .calendar:
+                                CalendarSyncView()
+                            case .procedures:
+                                ProceduresView()
+                            case .procedureDetail(let id):
+                                ProcedureDetailView(procedure: DemoAcademicData.procedure(with: id) ?? DemoAcademicData.procedures[0])
+                            case .enrollment:
+                                EnrollmentGuideView()
+                            case .events:
+                                EventsView()
+                            case .eventDetail(let id):
+                                EventDetailView(event: DemoAcademicData.event(with: id) ?? DemoAcademicData.events[0])
                             }
                         }
                 }

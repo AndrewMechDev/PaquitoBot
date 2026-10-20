@@ -18,7 +18,7 @@ final class AppViewModel: ObservableObject {
     @Published var authError: String?
     @Published var isUnauthorized = false
     @Published var notifications = DemoAcademicData.notifications
-    @Published private(set) var notificationPreferences = NotificationPreferenceStore.load()
+    @Published private(set) var notificationSetup = NotificationPreferenceStore.load()
     @Published private(set) var isRequestingNotificationPermission = false
 
     let authService: AuthService
@@ -33,9 +33,13 @@ final class AppViewModel: ObservableObject {
         self.authService = authService ?? AuthServiceFactory.makeDefault()
         self.notificationPermissionService = notificationPermissionService
         chatViewModel = ChatViewModel(service: chatService ?? ChatServiceFactory.makeDefault())
-        phase = ProcessInfo.processInfo.arguments.contains("-PaquitoDemo")
-            ? .main
-            : .onboarding(.welcome)
+        if ProcessInfo.processInfo.arguments.contains("-PaquitoDemo") {
+            phase = .main
+        } else if UserDefaults.standard.bool(forKey: "paquitobot.onboardingComplete") {
+            phase = .auth
+        } else {
+            phase = .onboarding(.welcome)
+        }
     }
 
     func synchronizeSession() {
@@ -61,16 +65,17 @@ final class AppViewModel: ObservableObject {
         case .notifications:
             phase = .onboarding(.tour)
         case .tour:
+            UserDefaults.standard.set(true, forKey: "paquitobot.onboardingComplete")
             phase = .auth
         }
     }
 
-    func completeNotificationSetup(_ preferences: Set<NotificationPreference>) {
+    func completeNotificationSetup(_ setup: NotificationSetup) {
         guard case .onboarding(.notifications) = phase, !isRequestingNotificationPermission else { return }
-        notificationPreferences = preferences
-        NotificationPreferenceStore.save(preferences)
+        notificationSetup = setup
+        NotificationPreferenceStore.save(setup)
 
-        guard !preferences.isEmpty else {
+        guard !setup.enabled.isEmpty else {
             advanceOnboarding()
             return
         }
@@ -82,6 +87,11 @@ final class AppViewModel: ObservableObject {
             isRequestingNotificationPermission = false
             advanceOnboarding()
         }
+    }
+
+    func updateNotificationSetup(_ setup: NotificationSetup) {
+        notificationSetup = setup
+        NotificationPreferenceStore.save(setup)
     }
 
     func signIn() {
@@ -135,6 +145,11 @@ final class AppViewModel: ObservableObject {
         path.append(.courseDetail(course.id))
     }
 
+    func openCalendar() { path.append(.calendar) }
+    func openProcedures() { path.append(.procedures) }
+    func openEnrollment() { path.append(.enrollment) }
+    func openEvents() { path.append(.events) }
+
     func course(with id: Int) -> CourseItem? {
         DemoAcademicData.courses.first { $0.id == id }
     }
@@ -158,7 +173,17 @@ struct MainShellView: View {
                 case .courses:
                     CoursesView(courses: DemoAcademicData.courses, onCourseSelected: app.openCourse)
                 case .schedule:
-                    ScheduleView(data: DemoAcademicData.schedule)
+                    ScheduleView(data: DemoAcademicData.schedule, onCalendar: app.openCalendar)
+                case .profile:
+                    ProfileView(
+                        data: ProfileData(name: app.userName, email: app.authService.currentUser?.email ?? "estudiante@tecsup.edu.pe"),
+                        isSigningOut: app.isSigningOut,
+                        errorMessage: app.authError,
+                        onProcedures: app.openProcedures,
+                        onEnrollment: app.openEnrollment,
+                        onEvents: app.openEvents,
+                        onSignOut: app.signOut
+                    )
                 }
             }
             .id(app.selectedTab)

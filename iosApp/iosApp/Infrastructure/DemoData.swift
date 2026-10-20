@@ -70,4 +70,55 @@ enum DemoAcademicData {
             ]
         )
     }
+
+    static let procedures: [ProcedureItem] = [
+        ProcedureItem(
+            id: "constancia-estudios",
+            code: "TRM-001",
+            title: "Constancia de estudios",
+            category: "Académico",
+            summary: "Solicita una constancia oficial de tu matrícula y condición académica.",
+            requirements: ["Documento de identidad vigente", "No tener deuda pendiente"],
+            steps: ["Revisa los requisitos", "Ingresa tu solicitud", "Espera la confirmación del área responsable"],
+            cost: "Según tarifario institucional",
+            responseTime: "Hasta 3 días hábiles",
+            responsibleArea: "Secretaría Académica",
+            channels: [ProcedureChannel(id: "web-constancia", label: "Abrir Intranet Académica", target: "https://campus-cloud.tecsup.edu.pe/auth/login", kind: .web)]
+        ),
+        ProcedureItem(
+            id: "justificacion-inasistencia",
+            code: "TRM-002",
+            title: "Justificación de inasistencia",
+            category: "Académico",
+            summary: "Presenta el sustento de una inasistencia dentro del plazo establecido.",
+            requirements: ["Sustento de la inasistencia", "Código y curso involucrado"],
+            steps: ["Reúne el documento de sustento", "Contacta al área académica", "Confirma el registro de tu solicitud"],
+            cost: "Sin costo",
+            responseTime: "Según evaluación del área",
+            responsibleArea: "Coordinación Académica",
+            channels: [ProcedureChannel(id: "email-justificacion", label: "Enviar correo", target: "mesa.partes@tecsup.edu.pe", kind: .email)]
+        )
+    ]
+
+    static let enrollmentSteps = [
+        EnrollmentStep(id: "requirements", title: "Revisa tus requisitos", body: ["Verifica que no tengas pagos o documentos pendientes.", "Confirma tu situación académica en la intranet."], optional: false),
+        EnrollmentStep(id: "payment", title: "Realiza el pago", body: ["Usa los canales oficiales de TECSUP.", "Conserva la constancia de pago."], optional: false),
+        EnrollmentStep(id: "validation", title: "Espera la validación", body: ["El área responsable revisará tu información.", "Si falta algo, recibirás una indicación por el canal institucional."], optional: false),
+        EnrollmentStep(id: "confirmation", title: "Confirma tu matrícula", body: ["Revisa tus cursos y horarios antes del inicio de clases."], optional: false)
+    ]
+
+    static let events: [CampusEvent] = [
+        CampusEvent(id: "tech-week", title: "Semana de innovación tecnológica", dateLabel: "18 de noviembre · 10:00", location: "Campus TECSUP", description: "Charlas, talleres y proyectos para conectar a estudiantes con la comunidad tecnológica.", sourceName: "TECSUP", sourceURL: URL(string: "https://www.tecsup.edu.pe")),
+        CampusEvent(id: "devfest", title: "DevFest Arequipa 2026", dateLabel: "28 de noviembre · 09:00", location: "Arequipa", description: "Encuentro de desarrolladores con charlas, workshops y espacios para compartir proyectos.", sourceName: "Google Developer Groups", sourceURL: URL(string: "https://gdg.community.dev")),
+        CampusEvent(id: "space-apps", title: "NASA Space Apps Challenge", dateLabel: "4 de octubre · 08:00", location: "Evento virtual", description: "Reto internacional para crear soluciones con datos abiertos y trabajo colaborativo.", sourceName: "NASA Space Apps", sourceURL: URL(string: "https://www.spaceappschallenge.org"))
+    ]
+
+    static let calendarTasks = [
+        CalendarTask(id: "calendar-1", title: "Laboratorio 4", course: "Cálculo II", dueLabel: "Hoy · 23:59", isPast: false),
+        CalendarTask(id: "calendar-2", title: "Práctica calificada 2", course: "Programación II", dueLabel: "Mañana · 12:00", isPast: false),
+        CalendarTask(id: "calendar-3", title: "Foro de la semana", course: "Comunicación", dueLabel: "Ayer · 18:00", isPast: true)
+    ]
+
+    static func procedure(with id: String) -> ProcedureItem? { procedures.first { $0.id == id } }
+    static func event(with id: String) -> CampusEvent? { events.first { $0.id == id } }
 }
