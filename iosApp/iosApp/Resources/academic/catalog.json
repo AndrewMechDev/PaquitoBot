@@ -1,0 +1,818 @@
+{
+  "term": "Ciclo 2026-2",
+  "courses": [
+    {
+      "id": 1,
+      "code": "CALC-II",
+      "name": "Calculo II",
+      "enrollment_count": 32
+    },
+    {
+      "id": 2,
+      "code": "FIS-I",
+      "name": "Fisica I",
+      "enrollment_count": 28
+    },
+    {
+      "id": 3,
+      "code": "ALG-I",
+      "name": "Algoritmos",
+      "enrollment_count": 30
+    },
+    {
+      "id": 4,
+      "code": "EST-I",
+      "name": "Estadistica",
+      "enrollment_count": 26
+    },
+    {
+      "id": 5,
+      "code": "RED-I",
+      "name": "Redes y Comunicaciones",
+      "enrollment_count": 24
+    }
+  ],
+  "assignments": [
+    {
+      "id": 101,
+      "course_id": 1,
+      "name": "Practica 1",
+      "points_possible": 20.0,
+      "due_at": "2026-10-24T23:59:00-05:00"
+    },
+    {
+      "id": 102,
+      "course_id": 1,
+      "name": "Practica 2",
+      "points_possible": 20.0,
+      "due_at": "2026-10-26T23:59:00-05:00"
+    },
+    {
+      "id": 103,
+      "course_id": 1,
+      "name": "Practica 3",
+      "points_possible": 20.0,
+      "due_at": "2026-10-25T23:59:00-05:00"
+    },
+    {
+      "id": 104,
+      "course_id": 1,
+      "name": "Laboratorio 1",
+      "kind": "laboratory",
+      "points_possible": 20.0,
+      "due_at": "2026-10-20T23:59:00-05:00"
+    },
+    {
+      "id": 105,
+      "course_id": 1,
+      "name": "Laboratorio 2",
+      "kind": "laboratory",
+      "points_possible": 20.0,
+      "due_at": "2026-10-19T23:59:00-05:00"
+    },
+    {
+      "id": 106,
+      "course_id": 1,
+      "name": "Laboratorio 3",
+      "kind": "laboratory",
+      "points_possible": 20.0,
+      "due_at": "2026-10-28T23:59:00-05:00"
+    },
+    {
+      "id": 107,
+      "course_id": 1,
+      "name": "Laboratorio 4",
+      "kind": "laboratory",
+      "points_possible": 20.0,
+      "due_at": "2026-11-02T23:59:00-05:00"
+    },
+    {
+      "id": 108,
+      "course_id": 1,
+      "name": "Foro 1",
+      "points_possible": 20.0,
+      "due_at": "2026-11-13T23:59:00-05:00"
+    },
+    {
+      "id": 109,
+      "course_id": 1,
+      "name": "Foro 2",
+      "points_possible": 20.0,
+      "due_at": "2026-10-30T23:59:00-05:00"
+    },
+    {
+      "id": 201,
+      "course_id": 2,
+      "name": "Practica 1",
+      "points_possible": 20.0,
+      "due_at": "2026-10-20T23:59:00-05:00"
+    },
+    {
+      "id": 202,
+      "course_id": 2,
+      "name": "Practica 2",
+      "points_possible": 20.0,
+      "due_at": "2026-10-27T23:59:00-05:00"
+    },
+    {
+      "id": 203,
+      "course_id": 2,
+      "name": "Practica 3",
+      "points_possible": 20.0,
+      "due_at": "2026-10-22T23:59:00-05:00"
+    },
+    {
+      "id": 204,
+      "course_id": 2,
+      "name": "Laboratorio 1",
+      "kind": "laboratory",
+      "points_possible": 20.0,
+      "due_at": "2026-10-24T23:59:00-05:00"
+    },
+    {
+      "id": 205,
+      "course_id": 2,
+      "name": "Laboratorio 2",
+      "kind": "laboratory",
+      "points_possible": 20.0,
+      "due_at": "2026-10-23T23:59:00-05:00"
+    },
+    {
+      "id": 301,
+      "course_id": 3,
+      "name": "Practica 1",
+      "points_possible": 20.0,
+      "due_at": "2026-10-20T23:59:00-05:00"
+    },
+    {
+      "id": 302,
+      "course_id": 3,
+      "name": "Laboratorio 1",
+      "kind": "laboratory",
+      "points_possible": 20.0,
+      "due_at": "2026-10-21T23:59:00-05:00"
+    },
+    {
+      "id": 303,
+      "course_id": 3,
+      "name": "Foro 1",
+      "points_possible": 20.0,
+      "due_at": "2026-10-28T23:59:00-05:00"
+    },
+    {
+      "id": 304,
+      "course_id": 3,
+      "name": "Practica 2",
+      "points_possible": 20.0,
+      "due_at": "2026-10-25T23:59:00-05:00"
+    },
+    {
+      "id": 305,
+      "course_id": 3,
+      "name": "Foro 2",
+      "points_possible": 20.0,
+      "due_at": "2026-11-04T23:59:00-05:00"
+    },
+    {
+      "id": 401,
+      "course_id": 4,
+      "name": "Practica 1",
+      "points_possible": 20.0,
+      "due_at": "2026-10-23T23:59:00-05:00"
+    },
+    {
+      "id": 402,
+      "course_id": 4,
+      "name": "Laboratorio 1",
+      "kind": "laboratory",
+      "points_possible": 20.0,
+      "due_at": "2026-10-22T23:59:00-05:00"
+    },
+    {
+      "id": 403,
+      "course_id": 4,
+      "name": "Practica 2",
+      "points_possible": 20.0,
+      "due_at": "2026-10-24T23:59:00-05:00"
+    },
+    {
+      "id": 501,
+      "course_id": 5,
+      "name": "Laboratorio 1",
+      "kind": "laboratory",
+      "points_possible": 20.0,
+      "due_at": "2026-10-29T23:59:00-05:00"
+    },
+    {
+      "id": 502,
+      "course_id": 5,
+      "name": "Practica 1",
+      "points_possible": 20.0,
+      "due_at": "2026-11-03T23:59:00-05:00"
+    },
+    {
+      "id": 503,
+      "course_id": 5,
+      "name": "Diseño de red",
+      "points_possible": 20.0,
+      "due_at": "2026-11-05T23:59:00-05:00"
+    },
+    {
+      "id": 504,
+      "course_id": 5,
+      "name": "Cuestionario de protocolos",
+      "points_possible": 20.0,
+      "due_at": "2026-11-08T23:59:00-05:00"
+    },
+    {
+      "id": 505,
+      "course_id": 5,
+      "name": "Proyecto de topología",
+      "points_possible": 20.0,
+      "due_at": "2026-10-23T23:59:00-05:00"
+    }
+  ],
+  "class_sessions": [
+    {
+      "id": 1101,
+      "course_id": 1,
+      "start_at": "2026-09-07T08:00:00-05:00",
+      "end_at": "2026-09-07T10:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 5101,
+      "course_id": 5,
+      "start_at": "2026-09-07T16:00:00-05:00",
+      "end_at": "2026-09-07T18:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 2101,
+      "course_id": 2,
+      "start_at": "2026-09-08T10:00:00-05:00",
+      "end_at": "2026-09-08T12:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 3101,
+      "course_id": 3,
+      "start_at": "2026-09-08T14:00:00-05:00",
+      "end_at": "2026-09-08T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 1102,
+      "course_id": 1,
+      "start_at": "2026-09-09T08:00:00-05:00",
+      "end_at": "2026-09-09T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4101,
+      "course_id": 4,
+      "start_at": "2026-09-09T14:00:00-05:00",
+      "end_at": "2026-09-09T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 5102,
+      "course_id": 5,
+      "start_at": "2026-09-09T16:00:00-05:00",
+      "end_at": "2026-09-09T18:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 3102,
+      "course_id": 3,
+      "start_at": "2026-09-10T14:00:00-05:00",
+      "end_at": "2026-09-10T16:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4102,
+      "course_id": 4,
+      "start_at": "2026-09-11T08:00:00-05:00",
+      "end_at": "2026-09-11T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 2102,
+      "course_id": 2,
+      "start_at": "2026-09-11T10:00:00-05:00",
+      "end_at": "2026-09-11T12:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 1103,
+      "course_id": 1,
+      "start_at": "2026-09-14T08:00:00-05:00",
+      "end_at": "2026-09-14T10:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 5103,
+      "course_id": 5,
+      "start_at": "2026-09-14T16:00:00-05:00",
+      "end_at": "2026-09-14T18:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 2103,
+      "course_id": 2,
+      "start_at": "2026-09-15T10:00:00-05:00",
+      "end_at": "2026-09-15T12:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 3103,
+      "course_id": 3,
+      "start_at": "2026-09-15T14:00:00-05:00",
+      "end_at": "2026-09-15T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 1104,
+      "course_id": 1,
+      "start_at": "2026-09-16T08:00:00-05:00",
+      "end_at": "2026-09-16T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4103,
+      "course_id": 4,
+      "start_at": "2026-09-16T14:00:00-05:00",
+      "end_at": "2026-09-16T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 5104,
+      "course_id": 5,
+      "start_at": "2026-09-16T16:00:00-05:00",
+      "end_at": "2026-09-16T18:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 3104,
+      "course_id": 3,
+      "start_at": "2026-09-17T14:00:00-05:00",
+      "end_at": "2026-09-17T16:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4104,
+      "course_id": 4,
+      "start_at": "2026-09-18T08:00:00-05:00",
+      "end_at": "2026-09-18T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 2104,
+      "course_id": 2,
+      "start_at": "2026-09-18T10:00:00-05:00",
+      "end_at": "2026-09-18T12:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 1105,
+      "course_id": 1,
+      "start_at": "2026-09-21T08:00:00-05:00",
+      "end_at": "2026-09-21T10:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 5105,
+      "course_id": 5,
+      "start_at": "2026-09-21T16:00:00-05:00",
+      "end_at": "2026-09-21T18:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 2105,
+      "course_id": 2,
+      "start_at": "2026-09-22T10:00:00-05:00",
+      "end_at": "2026-09-22T12:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 3105,
+      "course_id": 3,
+      "start_at": "2026-09-22T14:00:00-05:00",
+      "end_at": "2026-09-22T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 1106,
+      "course_id": 1,
+      "start_at": "2026-09-23T08:00:00-05:00",
+      "end_at": "2026-09-23T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4105,
+      "course_id": 4,
+      "start_at": "2026-09-23T14:00:00-05:00",
+      "end_at": "2026-09-23T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 5106,
+      "course_id": 5,
+      "start_at": "2026-09-23T16:00:00-05:00",
+      "end_at": "2026-09-23T18:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 3106,
+      "course_id": 3,
+      "start_at": "2026-09-24T14:00:00-05:00",
+      "end_at": "2026-09-24T16:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4106,
+      "course_id": 4,
+      "start_at": "2026-09-25T08:00:00-05:00",
+      "end_at": "2026-09-25T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 2106,
+      "course_id": 2,
+      "start_at": "2026-09-25T10:00:00-05:00",
+      "end_at": "2026-09-25T12:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 1107,
+      "course_id": 1,
+      "start_at": "2026-09-28T08:00:00-05:00",
+      "end_at": "2026-09-28T10:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 5107,
+      "course_id": 5,
+      "start_at": "2026-09-28T16:00:00-05:00",
+      "end_at": "2026-09-28T18:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 2107,
+      "course_id": 2,
+      "start_at": "2026-09-29T10:00:00-05:00",
+      "end_at": "2026-09-29T12:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 3107,
+      "course_id": 3,
+      "start_at": "2026-09-29T14:00:00-05:00",
+      "end_at": "2026-09-29T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 1108,
+      "course_id": 1,
+      "start_at": "2026-09-30T08:00:00-05:00",
+      "end_at": "2026-09-30T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4107,
+      "course_id": 4,
+      "start_at": "2026-09-30T14:00:00-05:00",
+      "end_at": "2026-09-30T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 5108,
+      "course_id": 5,
+      "start_at": "2026-09-30T16:00:00-05:00",
+      "end_at": "2026-09-30T18:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 3108,
+      "course_id": 3,
+      "start_at": "2026-10-01T14:00:00-05:00",
+      "end_at": "2026-10-01T16:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4108,
+      "course_id": 4,
+      "start_at": "2026-10-02T08:00:00-05:00",
+      "end_at": "2026-10-02T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 2108,
+      "course_id": 2,
+      "start_at": "2026-10-02T10:00:00-05:00",
+      "end_at": "2026-10-02T12:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 1001,
+      "course_id": 1,
+      "start_at": "2026-10-05T08:00:00-05:00",
+      "end_at": "2026-10-05T10:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 2001,
+      "course_id": 2,
+      "start_at": "2026-10-06T10:00:00-05:00",
+      "end_at": "2026-10-06T12:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 3001,
+      "course_id": 3,
+      "start_at": "2026-10-06T14:00:00-05:00",
+      "end_at": "2026-10-06T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 1002,
+      "course_id": 1,
+      "start_at": "2026-10-07T08:00:00-05:00",
+      "end_at": "2026-10-07T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4001,
+      "course_id": 4,
+      "start_at": "2026-10-07T14:00:00-05:00",
+      "end_at": "2026-10-07T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 3002,
+      "course_id": 3,
+      "start_at": "2026-10-08T14:00:00-05:00",
+      "end_at": "2026-10-08T16:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4002,
+      "course_id": 4,
+      "start_at": "2026-10-09T08:00:00-05:00",
+      "end_at": "2026-10-09T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 2002,
+      "course_id": 2,
+      "start_at": "2026-10-09T10:00:00-05:00",
+      "end_at": "2026-10-09T12:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 1003,
+      "course_id": 1,
+      "start_at": "2026-10-12T08:00:00-05:00",
+      "end_at": "2026-10-12T10:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 2003,
+      "course_id": 2,
+      "start_at": "2026-10-13T10:00:00-05:00",
+      "end_at": "2026-10-13T12:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 3003,
+      "course_id": 3,
+      "start_at": "2026-10-13T14:00:00-05:00",
+      "end_at": "2026-10-13T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 1004,
+      "course_id": 1,
+      "start_at": "2026-10-14T08:00:00-05:00",
+      "end_at": "2026-10-14T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4003,
+      "course_id": 4,
+      "start_at": "2026-10-14T14:00:00-05:00",
+      "end_at": "2026-10-14T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 3004,
+      "course_id": 3,
+      "start_at": "2026-10-15T14:00:00-05:00",
+      "end_at": "2026-10-15T16:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4004,
+      "course_id": 4,
+      "start_at": "2026-10-16T08:00:00-05:00",
+      "end_at": "2026-10-16T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 2004,
+      "course_id": 2,
+      "start_at": "2026-10-16T10:00:00-05:00",
+      "end_at": "2026-10-16T12:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 1005,
+      "course_id": 1,
+      "start_at": "2026-10-19T08:00:00-05:00",
+      "end_at": "2026-10-19T10:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 2005,
+      "course_id": 2,
+      "start_at": "2026-10-20T10:00:00-05:00",
+      "end_at": "2026-10-20T12:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 3005,
+      "course_id": 3,
+      "start_at": "2026-10-20T14:00:00-05:00",
+      "end_at": "2026-10-20T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 1006,
+      "course_id": 1,
+      "start_at": "2026-10-21T08:00:00-05:00",
+      "end_at": "2026-10-21T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4005,
+      "course_id": 4,
+      "start_at": "2026-10-21T14:00:00-05:00",
+      "end_at": "2026-10-21T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 3006,
+      "course_id": 3,
+      "start_at": "2026-10-22T14:00:00-05:00",
+      "end_at": "2026-10-22T16:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4006,
+      "course_id": 4,
+      "start_at": "2026-10-23T08:00:00-05:00",
+      "end_at": "2026-10-23T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 2006,
+      "course_id": 2,
+      "start_at": "2026-10-23T10:00:00-05:00",
+      "end_at": "2026-10-23T12:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 1007,
+      "course_id": 1,
+      "start_at": "2026-10-26T08:00:00-05:00",
+      "end_at": "2026-10-26T10:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 2007,
+      "course_id": 2,
+      "start_at": "2026-10-27T10:00:00-05:00",
+      "end_at": "2026-10-27T12:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 3007,
+      "course_id": 3,
+      "start_at": "2026-10-27T14:00:00-05:00",
+      "end_at": "2026-10-27T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 1008,
+      "course_id": 1,
+      "start_at": "2026-10-28T08:00:00-05:00",
+      "end_at": "2026-10-28T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4007,
+      "course_id": 4,
+      "start_at": "2026-10-28T14:00:00-05:00",
+      "end_at": "2026-10-28T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 3008,
+      "course_id": 3,
+      "start_at": "2026-10-29T14:00:00-05:00",
+      "end_at": "2026-10-29T16:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4008,
+      "course_id": 4,
+      "start_at": "2026-10-30T08:00:00-05:00",
+      "end_at": "2026-10-30T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 2008,
+      "course_id": 2,
+      "start_at": "2026-10-30T10:00:00-05:00",
+      "end_at": "2026-10-30T12:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 1009,
+      "course_id": 1,
+      "start_at": "2026-11-02T08:00:00-05:00",
+      "end_at": "2026-11-02T10:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 5001,
+      "course_id": 5,
+      "start_at": "2026-11-02T16:00:00-05:00",
+      "end_at": "2026-11-02T18:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 2009,
+      "course_id": 2,
+      "start_at": "2026-11-03T10:00:00-05:00",
+      "end_at": "2026-11-03T12:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 3009,
+      "course_id": 3,
+      "start_at": "2026-11-03T14:00:00-05:00",
+      "end_at": "2026-11-03T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 1010,
+      "course_id": 1,
+      "start_at": "2026-11-04T08:00:00-05:00",
+      "end_at": "2026-11-04T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4009,
+      "course_id": 4,
+      "start_at": "2026-11-04T14:00:00-05:00",
+      "end_at": "2026-11-04T16:00:00-05:00",
+      "kind": "class"
+    },
+    {
+      "id": 5002,
+      "course_id": 5,
+      "start_at": "2026-11-04T16:00:00-05:00",
+      "end_at": "2026-11-04T18:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 3010,
+      "course_id": 3,
+      "start_at": "2026-11-05T14:00:00-05:00",
+      "end_at": "2026-11-05T16:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 4010,
+      "course_id": 4,
+      "start_at": "2026-11-06T08:00:00-05:00",
+      "end_at": "2026-11-06T10:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 2010,
+      "course_id": 2,
+      "start_at": "2026-11-06T10:00:00-05:00",
+      "end_at": "2026-11-06T12:00:00-05:00",
+      "kind": "laboratory"
+    },
+    {
+      "id": 5003,
+      "course_id": 5,
+      "start_at": "2026-11-06T16:00:00-05:00",
+      "end_at": "2026-11-06T18:00:00-05:00",
+      "kind": "laboratory"
+    }
+  ]
+}

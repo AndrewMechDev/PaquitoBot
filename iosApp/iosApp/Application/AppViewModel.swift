@@ -159,7 +159,7 @@ final class AppViewModel: ObservableObject {
     func openEvents() { path.append(.events) }
 
     func course(with id: Int) -> CourseItem? {
-        DemoAcademicData.courses.first { $0.id == id }
+        AcademicDemoStore.courses.first { $0.id == id }
     }
 }
 
@@ -180,9 +180,9 @@ struct MainShellView: View {
                         onSignOut: app.signOut
                     )
                 case .courses:
-                    CoursesView(courses: DemoAcademicData.courses, onCourseSelected: app.openCourse)
+                    CoursesView(courses: AcademicDemoStore.courses, onCourseSelected: app.openCourse)
                 case .schedule:
-                    ScheduleView(data: DemoAcademicData.schedule, onCalendar: app.openCalendar)
+                    ScheduleView(data: AcademicDemoStore.schedule, onCalendar: app.openCalendar)
                 case .profile:
                     ProfileView(
                         data: ProfileData(name: app.userName, email: app.authService.currentUser?.email ?? "estudiante@tecsup.edu.pe"),

@@ -72,7 +72,7 @@ struct ContentView: View {
                             )
                         case .courseDetail(let id):
                             if let course = app.course(with: id) {
-                                CourseDetailView(data: DemoAcademicData.detail(for: course))
+                                CourseDetailView(data: AcademicDemoStore.detail(for: course))
                             } else {
                                 ContentUnavailableView("Curso no encontrado", systemImage: "book.closed")
                             }
