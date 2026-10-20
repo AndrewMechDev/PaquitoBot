@@ -274,7 +274,8 @@ enum AcademicDemoStore {
                     title: assignment.name,
                     course: courseNames[assignment.courseID] ?? "Curso",
                     dueLabel: dateTimeLabel(dueAt),
-                    isPast: date < Date()
+                    isPast: date < Date(),
+                    dueDate: date
                 )
             }
             .sorted { $0.dueLabel < $1.dueLabel }

@@ -238,6 +238,23 @@ struct CalendarTask: Identifiable, Hashable {
     let course: String
     let dueLabel: String
     let isPast: Bool
+    let dueDate: Date?
+
+    init(
+        id: String,
+        title: String,
+        course: String,
+        dueLabel: String,
+        isPast: Bool,
+        dueDate: Date? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.course = course
+        self.dueLabel = dueLabel
+        self.isPast = isPast
+        self.dueDate = dueDate
+    }
 }
 
 struct CalendarSyncSummary: Hashable {
