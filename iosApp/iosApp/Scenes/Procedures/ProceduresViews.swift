@@ -112,6 +112,7 @@ struct ProcedureDetailView: View {
 
 struct EnrollmentGuideView: View {
     @Environment(\.openURL) private var openURL
+    var onClose: (() -> Void)? = nil
     @State private var completed: Set<String> = []
 
     var body: some View {
@@ -156,5 +157,12 @@ struct EnrollmentGuideView: View {
         .background(PaquitoColors.background)
         .navigationTitle("Matrícula")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if let onClose {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cerrar", action: onClose)
+                }
+            }
+        }
     }
 }

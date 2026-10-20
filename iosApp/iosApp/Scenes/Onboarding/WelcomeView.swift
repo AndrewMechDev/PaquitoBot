@@ -2,6 +2,7 @@ import SwiftUI
 
 struct WelcomeView: View {
     let onContinue: () -> Void
+    var onEnrollmentGuide: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,6 +25,13 @@ struct WelcomeView: View {
             Spacer(minLength: 24)
 
             PaquitoPrimaryButton(title: "Continuar", action: onContinue)
+
+            if let onEnrollmentGuide {
+                Button("Consultar guía de matrícula", action: onEnrollmentGuide)
+                    .font(PaquitoTypography.bodyMedium.weight(.semibold))
+                    .foregroundStyle(PaquitoColors.stateInfoStrong)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
         }
         .padding(.horizontal, PaquitoSpacing.lg)
         .padding(.vertical, PaquitoSpacing.lg)

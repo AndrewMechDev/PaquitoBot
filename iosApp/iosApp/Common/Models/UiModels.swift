@@ -28,6 +28,7 @@ enum AppTab: String, CaseIterable, Identifiable {
 }
 
 enum OnboardingStep: Int, CaseIterable {
+    case intro
     case welcome
     case notifications
     case tour

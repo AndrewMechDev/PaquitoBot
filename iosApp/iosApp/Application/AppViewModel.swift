@@ -38,7 +38,7 @@ final class AppViewModel: ObservableObject {
         } else if UserDefaults.standard.bool(forKey: "paquitobot.onboardingComplete") {
             phase = .auth
         } else {
-            phase = .onboarding(.welcome)
+            phase = .onboarding(.intro)
         }
     }
 
@@ -60,6 +60,8 @@ final class AppViewModel: ObservableObject {
     func advanceOnboarding() {
         guard case let .onboarding(step) = phase else { return }
         switch step {
+        case .intro:
+            phase = .onboarding(.welcome)
         case .welcome:
             phase = .onboarding(.notifications)
         case .notifications:
