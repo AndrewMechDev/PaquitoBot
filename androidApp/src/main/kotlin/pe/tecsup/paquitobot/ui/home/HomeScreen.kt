@@ -135,6 +135,7 @@ fun HomeTabContent(
         HomeMessage(
             greeting = data.greeting,
             dateLabel = data.dateLabel,
+            scenarioId = data.scenarioId,
             unreadNotificationsCount = data.unreadNotificationsCount,
             onNotificationsClick = onNotificationsClick,
         )
@@ -373,6 +374,7 @@ private fun SnapshotChip(
 private fun HomeMessage(
     greeting: String,
     dateLabel: String,
+    scenarioId: String?,
     unreadNotificationsCount: Int,
     onNotificationsClick: () -> Unit,
 ) {
@@ -381,6 +383,17 @@ private fun HomeMessage(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            if (scenarioId != null) {
+                Column(
+                    modifier = Modifier
+                        .paquitoSurface(PaquitoShapes.medium)
+                        .padding(horizontal = 12.dp, vertical = 7.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text("CASO DE PRUEBA", style = PaquitoTypography.LabelSmall, color = PaquitoColors.TextOnCardMuted)
+                    Text("Escenario $scenarioId", style = PaquitoTypography.TaskTitle, color = PaquitoColors.StateInfoStrong)
+                }
+            }
             Spacer(Modifier.weight(1f))
             NotificationBellButton(
                 unreadCount = unreadNotificationsCount,
@@ -710,6 +723,7 @@ data class HomeScreenData(
     // muestran juntos en pantalla, pero no deberian ser el mismo numero:
     // implicaria que son el mismo concepto y no lo son.
     val unreadNotificationsCount: Int = 0,
+    val scenarioId: String? = null,
 ) {
     companion object {
         fun default(): HomeScreenData = HomeScreenData(

@@ -236,6 +236,7 @@ private fun AppRoot(notificationRequest: Int = 0) {
             var selectedEventId by rememberSaveable { mutableStateOf<String?>(null) }
             val userFirstName = sessionUiState.userFirstName ?: "estudiante"
             val academicRepository = remember(academicOwner) { (context as PaquitoBotApp).academicRepositoryFor(academicOwner) }
+            val academicScenarioId = remember(academicOwner) { (context as PaquitoBotApp).academicScenarioIdFor(academicOwner) }
 
             AnimatedContent(
                 targetState = rootScreen,
@@ -278,7 +279,7 @@ private fun AppRoot(notificationRequest: Int = 0) {
                         val homeError by homeViewModel.errorMessage.collectAsStateWithLifecycle()
                         LaunchedEffect(homeData.pendingCount) { pendingCount = homeData.pendingCount }
                         HomeTabContent(
-                            data = homeData.copy(greeting = "¡Bienvenido, $userFirstName!"),
+                            data = homeData.copy(greeting = "¡Bienvenido, $userFirstName!", scenarioId = academicScenarioId),
                             onNotificationsClick = { rootScreen = RootScreen.Notifications },
                             onEventsClick = { rootScreen = RootScreen.Events },
                             errorMessage = homeError,

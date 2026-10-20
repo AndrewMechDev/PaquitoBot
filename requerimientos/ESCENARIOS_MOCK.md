@@ -24,4 +24,6 @@ La app incluye un catálogo compartido en `androidApp/src/main/assets/academic/c
 
 `PaquitoBotApp.academicRepositoryFor(userId)` construye el repositorio de la cuenta activa desde catálogo + escenario. Inicio, Cursos, Horarios, detalle, Google Calendar y avisos usan ese repositorio. Los ViewModels se identifican por cuenta para descartar datos anteriores al cambiar de usuario.
 
+Inicio muestra el ID asignado en una tarjeta pequeña, arriba a la izquierda, junto a la campana. La [guía de los 15 escenarios](GUIA_15_ESCENARIOS_ACADEMICOS.docx) permite comparar por ID los promedios, las notas de laboratorio, las faltas y las entregas pendientes de cada caso. Sus pendientes están calculados al 20/10/2026 y varían con la fecha del dispositivo.
+
 Antes de cada consulta, `AcademicContextSnapshot` arma un JSON con tareas, notas, asistencia y faltas desde ese mismo repositorio. `MiniMaxChatRepository` comprueba que la sesión de Clerk siga perteneciendo a la cuenta asignada antes de enviarlo a la IA. El JSON y las respuestas son datos de demostración, no registros institucionales. Para datos reales, el backend debe verificar el token de Clerk y obtener el contexto autorizado en el servidor.
