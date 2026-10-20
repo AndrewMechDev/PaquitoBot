@@ -8,15 +8,18 @@ struct NotificationsInboxView: View {
     @State private var showPreferences = false
     let setup: NotificationSetup
     let onSaveSetup: (NotificationSetup) -> Void
+    let onItemsChanged: ([NotificationItem]) -> Void
 
     init(
         items: [NotificationItem],
         setup: NotificationSetup = .default,
-        onSaveSetup: @escaping (NotificationSetup) -> Void = { _ in }
+        onSaveSetup: @escaping (NotificationSetup) -> Void = { _ in },
+        onItemsChanged: @escaping ([NotificationItem]) -> Void = { _ in }
     ) {
         _items = State(initialValue: items)
         self.setup = setup
         self.onSaveSetup = onSaveSetup
+        self.onItemsChanged = onItemsChanged
     }
 
     var body: some View {
@@ -102,7 +105,10 @@ struct NotificationsInboxView: View {
             titleVisibility: .visible
         ) {
             Button("Eliminar todo", role: .destructive) {
-                withAnimation { items.removeAll() }
+                withAnimation {
+                    items.removeAll()
+                    onItemsChanged(items)
+                }
             }
             Button("Cancelar", role: .cancel) {}
         }
@@ -119,6 +125,7 @@ struct NotificationsInboxView: View {
     private func delete(_ item: NotificationItem) {
         withAnimation {
             items.removeAll { $0.id == item.id }
+            onItemsChanged(items)
         }
     }
 }

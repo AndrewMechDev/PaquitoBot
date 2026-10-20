@@ -67,7 +67,8 @@ struct ContentView: View {
                             NotificationsInboxView(
                                 items: app.notifications,
                                 setup: app.notificationSetup,
-                                onSaveSetup: app.updateNotificationSetup
+                                onSaveSetup: app.updateNotificationSetup,
+                                onItemsChanged: app.updateNotifications
                             )
                         case .courseDetail(let id):
                             if let course = app.course(with: id) {

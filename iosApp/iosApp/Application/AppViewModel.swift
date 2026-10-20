@@ -17,7 +17,7 @@ final class AppViewModel: ObservableObject {
     @Published var isSigningOut = false
     @Published var authError: String?
     @Published var isUnauthorized = false
-    @Published var notifications = DemoAcademicData.notifications
+    @Published var notifications: [NotificationItem]
     @Published private(set) var notificationSetup = NotificationPreferenceStore.load()
     @Published private(set) var isRequestingNotificationPermission = false
 
@@ -33,6 +33,7 @@ final class AppViewModel: ObservableObject {
         self.authService = authService ?? AuthServiceFactory.makeDefault()
         self.notificationPermissionService = notificationPermissionService
         chatViewModel = ChatViewModel(service: chatService ?? ChatServiceFactory.makeDefault())
+        notifications = NotificationInboxStore.load()
         if ProcessInfo.processInfo.arguments.contains("-PaquitoDemo") {
             phase = .main
         } else if UserDefaults.standard.bool(forKey: "paquitobot.onboardingComplete") {
@@ -94,6 +95,11 @@ final class AppViewModel: ObservableObject {
     func updateNotificationSetup(_ setup: NotificationSetup) {
         notificationSetup = setup
         NotificationPreferenceStore.save(setup)
+    }
+
+    func updateNotifications(_ items: [NotificationItem]) {
+        notifications = items
+        NotificationInboxStore.save(items)
     }
 
     func signIn() {

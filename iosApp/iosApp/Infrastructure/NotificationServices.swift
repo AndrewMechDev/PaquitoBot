@@ -47,3 +47,20 @@ enum NotificationPreferenceStore {
         defaults.set(setup.summaryMinute, forKey: "\(key).summaryMinute")
     }
 }
+
+enum NotificationInboxStore {
+    private static let key = "paquitobot.notificationInbox"
+
+    static func load() -> [NotificationItem] {
+        guard let data = UserDefaults.standard.data(forKey: key),
+              let items = try? JSONDecoder().decode([NotificationItem].self, from: data) else {
+            return DemoAcademicData.notifications
+        }
+        return items
+    }
+
+    static func save(_ items: [NotificationItem]) {
+        guard let data = try? JSONEncoder().encode(items) else { return }
+        UserDefaults.standard.set(data, forKey: key)
+    }
+}

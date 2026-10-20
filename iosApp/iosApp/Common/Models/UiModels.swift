@@ -225,12 +225,12 @@ struct CalendarSyncSummary: Hashable {
     let unchanged: Int
 }
 
-enum NotificationSeverity: Hashable {
+enum NotificationSeverity: String, Codable, Hashable {
     case info
     case urgent
 }
 
-struct NotificationItem: Identifiable, Hashable {
+struct NotificationItem: Identifiable, Codable, Hashable {
     let id: String
     let title: String
     let body: String
