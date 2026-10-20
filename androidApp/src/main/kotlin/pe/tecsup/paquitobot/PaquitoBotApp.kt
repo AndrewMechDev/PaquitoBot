@@ -25,12 +25,15 @@ class PaquitoBotApp : Application() {
     private var academicOwner: String? = null
     private var activeAcademicRepository: AcademicRepository? = null
 
+    /** ID visible del mismo escenario que usa el repositorio académico de la cuenta. */
+    fun academicScenarioIdFor(clerkUserId: String): String = scenarioAssignment.scenarioFor(clerkUserId)
+
     /** Una instancia y caché por la cuenta activa; nunca reutiliza datos de otra sesión. */
     @Synchronized
     fun academicRepositoryFor(clerkUserId: String): AcademicRepository {
         require(clerkUserId.isNotBlank())
         if (academicOwner == clerkUserId) activeAcademicRepository?.let { return it }
-        val scenarioId = scenarioAssignment.scenarioFor(clerkUserId)
+        val scenarioId = academicScenarioIdFor(clerkUserId)
         val repository = LocalJsonAcademicRepository {
             withContext(Dispatchers.IO) {
                 val catalog = assets.open("academic/catalog.json").bufferedReader().use { it.readText() }
