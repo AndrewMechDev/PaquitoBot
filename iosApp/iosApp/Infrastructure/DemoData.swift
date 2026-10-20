@@ -122,9 +122,70 @@ enum DemoAcademicData {
     ]
 
     static let events: [CampusEvent] = [
-        CampusEvent(id: "tech-week", title: "Semana de innovación tecnológica", dateLabel: "18 de noviembre · 10:00", location: "Campus TECSUP", description: "Charlas, talleres y proyectos para conectar a estudiantes con la comunidad tecnológica.", sourceName: "TECSUP", sourceURL: URL(string: "https://www.tecsup.edu.pe")),
-        CampusEvent(id: "devfest", title: "DevFest Arequipa 2026", dateLabel: "28 de noviembre · 09:00", location: "Arequipa", description: "Encuentro de desarrolladores con charlas, workshops y espacios para compartir proyectos.", sourceName: "Google Developer Groups", sourceURL: URL(string: "https://gdg.community.dev")),
-        CampusEvent(id: "space-apps", title: "NASA Space Apps Challenge", dateLabel: "4 de octubre · 08:00", location: "Evento virtual", description: "Reto internacional para crear soluciones con datos abiertos y trabajo colaborativo.", sourceName: "NASA Space Apps", sourceURL: URL(string: "https://www.spaceappschallenge.org"))
+        CampusEvent(
+            id: "piu-2026",
+            title: "Encuentro Anual PIU 2026",
+            dateLabel: "20–23 oct",
+            dateRangeLabel: "20 al 23 de octubre de 2026",
+            location: "Arequipa · presencial o virtual",
+            category: "Investigación e innovación",
+            summary: "Congreso de investigación, producción intelectual, innovación y emprendimiento con ponencias, pósteres y talleres.",
+            description: "El Encuentro Anual de Producción Intelectual Universitaria reúne actividades de investigación, desarrollo, innovación y emprendimiento, incluido un simposio sobre fondos concursables, un congreso de producción intelectual y el Premio PIU 2026.",
+            whyWorthIt: "Una oportunidad para presentar proyectos académicos, conocer iniciativas de otras disciplinas y conectar con personas que trabajan en investigación e innovación.",
+            registrationNote: "El registro ordinario cerró el 10 de octubre. Consulta con la organización si aceptan inscripciones tardías.",
+            actionLabel: "Consultar inscripción tardía",
+            actionURL: URL(string: "https://www.encuentroanualpiu.com/"),
+            sourceName: "Sitio oficial de Encuentro Anual PIU",
+            sourceURL: URL(string: "https://www.encuentroanualpiu.com/")
+        ),
+        CampusEvent(
+            id: "devfest-arequipa-2026",
+            title: "DevFest Arequipa 2026",
+            dateLabel: "7 nov",
+            dateRangeLabel: "7 de noviembre de 2026 · jornada presencial",
+            location: "Tecsup Arequipa · presencial",
+            category: "Conferencia y talleres",
+            summary: "Charlas, lightning talks y workshops sobre IA, desarrollo web y móvil, cloud, ciberseguridad y software.",
+            description: "La jornada de GDG Arequipa reunirá a estudiantes, desarrolladores y entusiastas de tecnología con charlas, workshops y un mini hackatón de aplicaciones.",
+            whyWorthIt: "Muy relevante para estudiantes de Software y Redes. La ficha de GDG Arequipa anuncia registro gratuito.",
+            registrationNote: "La página del evento muestra el RSVP para reservar un lugar.",
+            actionLabel: "Ver evento e inscripción",
+            actionURL: URL(string: "https://gdg.community.dev/events/details/google-gdg-arequipa-presents-devfest-arequipa-2026/"),
+            sourceName: "Google Developer Groups · GDG Arequipa",
+            sourceURL: URL(string: "https://gdg.community.dev/events/details/google-gdg-arequipa-presents-devfest-arequipa-2026/")
+        ),
+        CampusEvent(
+            id: "jinis-2026",
+            title: "JINIS 2026",
+            dateLabel: "11–13 nov",
+            dateRangeLabel: "11 al 13 de noviembre de 2026",
+            location: "Universidad Católica de Santa María · Arequipa",
+            category: "Congreso de ingeniería de sistemas",
+            summary: "Jornada internacional sobre inteligencia artificial, gobernanza, ética, regulación y ciberseguridad.",
+            description: "La Jornada Internacional de Ingeniería de Sistemas reúne a investigadores, reguladores, profesionales y estudiantes para tratar IA, ciberseguridad, privacidad, gobernanza y regulación.",
+            whyWorthIt: "Especialmente interesante para Software, Redes y Comunicaciones y para quienes quieran profundizar en las implicaciones de la IA.",
+            registrationNote: "Confirma las condiciones vigentes de inscripción antes de realizar cualquier pago.",
+            actionLabel: "Consultar programa e inscripción",
+            actionURL: URL(string: "https://jinis.ucsm.edu.pe/Jinis/"),
+            sourceName: "Sitio oficial de JINIS · UCSM",
+            sourceURL: URL(string: "https://jinis.ucsm.edu.pe/Jinis/")
+        ),
+        CampusEvent(
+            id: "nasa-space-apps-arequipa-2026",
+            title: "NASA Space Apps Challenge 2026",
+            dateLabel: "14–15 nov",
+            dateRangeLabel: "14 y 15 de noviembre de 2026",
+            location: "Arequipa · convocatoria local",
+            category: "Hackatón interdisciplinaria",
+            summary: "Equipos multidisciplinarios crean soluciones a desafíos globales usando datos abiertos de la NASA.",
+            description: "Durante dos jornadas, participantes de distintas disciplinas trabajan en equipo en desafíos relacionados con la Tierra y el espacio utilizando datos y recursos abiertos de la NASA.",
+            whyWorthIt: "Puede conectar software, electrónica, sensores, análisis de datos y soluciones ambientales.",
+            registrationNote: "La página global permite registrarse y elegir un evento local. Confirma allí los detalles vigentes de Arequipa.",
+            actionLabel: "Consultar convocatoria y registro",
+            actionURL: URL(string: "https://www.spaceappschallenge.org/2026/local-events/arequipa/"),
+            sourceName: "UNSA · anuncio de la sede Arequipa",
+            sourceURL: URL(string: "https://www.unsa.edu.pe/estudiantes-de-la-unsa-podran-participar-en-el-nasa-space-apps-challenge-2026/")
+        )
     ]
 
     static let calendarTasks = [

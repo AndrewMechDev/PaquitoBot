@@ -205,8 +205,15 @@ struct CampusEvent: Identifiable, Hashable {
     let id: String
     let title: String
     let dateLabel: String
+    let dateRangeLabel: String
     let location: String
+    let category: String
+    let summary: String
     let description: String
+    let whyWorthIt: String
+    let registrationNote: String
+    let actionLabel: String
+    let actionURL: URL?
     let sourceName: String
     let sourceURL: URL?
 }
