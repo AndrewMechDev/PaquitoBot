@@ -13,6 +13,11 @@ enum AcademicDemoStore {
         return makeCourses(from: snapshot)
     }()
 
+    static let home: HomeData = {
+        guard let snapshot else { return DemoAcademicData.home }
+        return makeHome(from: snapshot)
+    }()
+
     static let schedule: ScheduleData = {
         guard let snapshot else { return DemoAcademicData.schedule }
         return makeSchedule(from: snapshot)
@@ -98,6 +103,59 @@ enum AcademicDemoStore {
                 } ?? "Sin entregas pendientes"
             )
         }
+    }
+
+    private static func makeHome(from snapshot: Snapshot) -> HomeData {
+        let base = DemoAcademicData.home
+        let gradeIDs = Set(snapshot.scenario.grades.map(\.assignmentID))
+        let courseNames = Dictionary(uniqueKeysWithValues: snapshot.catalog.courses.map { ($0.id, $0.name) })
+        let pending = snapshot.catalog.assignments
+            .filter { !gradeIDs.contains($0.id) }
+            .compactMap { assignment -> (AcademicAssignment, Date)? in
+                guard let date = parseDate(assignment.dueAt) else { return nil }
+                return (assignment, date)
+            }
+            .sorted { $0.1 < $1.1 }
+
+        let selected = Array(pending.prefix(8))
+        let taskDates = Array(Set(selected.map { dayStart($0.1) })).sorted()
+        let days = taskDates.map { date in
+            let dayEvents = selected.filter { dayStart($0.1) == date }
+            return WeekDayItem(
+                id: String(Int(date.timeIntervalSince1970)),
+                shortLabel: weekdayLabel(date),
+                dateLabel: dayNumberLabel(date),
+                isToday: dayStart(Date()) == date,
+                hasTask: !dayEvents.isEmpty,
+                isCritical: dayEvents.contains { $0.1 <= Date().addingTimeInterval(86_400) }
+            )
+        }
+        let tasks = selected.map { assignment, date in
+            let courseName = courseNames[assignment.courseID] ?? "Curso"
+            let kind = assignmentKindLabel(assignment).uppercased()
+            return TaskItem(
+                id: "assignment-\(assignment.id)",
+                label: "\(courseName) · \(kind)",
+                title: assignment.name,
+                timestamp: dueLabel(date),
+                urgency: taskUrgency(for: date),
+                dayID: String(Int(dayStart(date).timeIntervalSince1970))
+            )
+        }
+
+        guard !days.isEmpty, !tasks.isEmpty else { return base }
+        return HomeData(
+            dateLabel: dateLabel(Date()),
+            weekTitle: "\(snapshot.catalog.term) · próximas entregas",
+            days: days,
+            tasks: tasks,
+            overallRanking: base.overallRanking,
+            careerCode: base.careerCode,
+            currentCycle: base.currentCycle,
+            cycleRankings: base.cycleRankings,
+            importantNotices: base.importantNotices,
+            importantNoticeCount: base.importantNoticeCount
+        )
     }
 
     private static func makeSchedule(from snapshot: Snapshot) -> ScheduleData {
@@ -254,6 +312,36 @@ enum AcademicDemoStore {
         formatter.timeZone = academicTimeZone
         formatter.dateFormat = "d MMM"
         return formatter.string(from: date)
+    }
+
+    private static func dateLabel(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "es_PE")
+        formatter.timeZone = academicTimeZone
+        formatter.dateFormat = "EEEE, d 'de' MMMM 'de' yyyy"
+        let value = formatter.string(from: date)
+        guard let first = value.first else { return value }
+        return first.uppercased() + value.dropFirst()
+    }
+
+    private static func dayNumberLabel(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = academicTimeZone
+        formatter.dateFormat = "dd"
+        return formatter.string(from: date)
+    }
+
+    private static func weekdayLabel(_ date: Date) -> String {
+        let labels = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"]
+        return labels[academicCalendar.component(.weekday, from: date) - 1]
+    }
+
+    private static func taskUrgency(for date: Date) -> TaskUrgency {
+        let now = Date()
+        if date <= now.addingTimeInterval(86_400) { return .urgent }
+        if date <= now.addingTimeInterval(259_200) { return .normal }
+        return .future
     }
 
     private static func dateTimeLabel(_ value: String) -> String {
