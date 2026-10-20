@@ -1,0 +1,16 @@
+{
+  "images" : [
+    {
+      "filename" : "paquito_send.svg",
+      "idiom" : "universal",
+      "scale" : "1x"
+    }
+  ],
+  "info" : {
+    "author" : "paquitobot",
+    "version" : 1
+  },
+  "properties" : {
+    "template-rendering-intent" : "template"
+  }
+}

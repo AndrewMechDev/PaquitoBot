@@ -1,33 +1,116 @@
 import SwiftUI
-import SharedLogic
 
+@MainActor
 struct ContentView: View {
-    @State private var showContent = false
-    var body: some View {
-        VStack {
-            Button("Click me!") {
-                withAnimation {
-                    showContent = !showContent
-                }
-            }
+    @StateObject private var app: AppViewModel
+    @State private var showPublicEnrollmentGuide = false
 
-            if showContent {
-                VStack(spacing: 16) {
-                    Image(systemName: "swift")
-                        .font(.system(size: 200))
-                        .foregroundColor(.accentColor)
-                    Text("SwiftUI: \(Greeting().greet())")
-                }
-                .transition(.move(edge: .top).combined(with: .opacity))
+    init() {
+        _app = StateObject(wrappedValue: AppViewModel())
+    }
+
+    init(app: AppViewModel) {
+        _app = StateObject(wrappedValue: app)
+    }
+
+    var body: some View {
+        Group {
+            caseOnboardingAndApp
+        }
+        .sheet(isPresented: $showPublicEnrollmentGuide) {
+            NavigationStack {
+                EnrollmentGuideView(onClose: { showPublicEnrollmentGuide = false })
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .padding()
+        .preferredColorScheme(.light)
+    }
+
+    @ViewBuilder
+    private var caseOnboardingAndApp: some View {
+        switch app.phase {
+        case .onboarding(.intro):
+            LaunchIntroView(onFinished: app.advanceOnboarding)
+        case .onboarding(.welcome):
+            WelcomeView(
+                onContinue: app.advanceOnboarding,
+                onEnrollmentGuide: { showPublicEnrollmentGuide = true }
+            )
+        case .onboarding(.notifications):
+            OnboardingNotificationsView(
+                isRequestingPermission: app.isRequestingNotificationPermission,
+                initialSetup: app.notificationSetup,
+                permissionState: app.notificationPermissionState,
+                onRequestPermission: app.requestNotificationPermission,
+                onOpenSettings: app.openNotificationSettings,
+                onSendTestNotification: app.sendTestNotification
+            ) { setup in
+                app.completeNotificationSetup(setup)
+            }
+        case .onboarding(.tour):
+            OnboardingTourView(onContinue: app.advanceOnboarding)
+        case .auth:
+            if app.authService is ClerkAuthService {
+                ClerkAuthGateView(app: app)
+            } else {
+                AuthGateView(
+                    isSigningIn: app.isSigningIn,
+                    isUnauthorized: app.isUnauthorized,
+                    errorMessage: app.authError,
+                    onSignIn: app.signIn,
+                    onSignOut: app.signOut
+                )
+            }
+        case .main:
+            NavigationStack(path: $app.path) {
+                MainShellView(app: app)
+                    .navigationDestination(for: AppRoute.self) { route in
+                        switch route {
+                        case .chat:
+                            ChatView(viewModel: app.chatViewModel, userName: app.userName)
+                        case .notifications:
+                            NotificationsInboxView(
+                                items: app.notifications,
+                                setup: app.notificationSetup,
+                                permissionState: app.notificationPermissionState,
+                                isRequestingPermission: app.isRequestingNotificationPermission,
+                                onRequestPermission: app.requestNotificationPermission,
+                                onOpenSettings: app.openNotificationSettings,
+                                onSendTestNotification: app.sendTestNotification,
+                                onSaveSetup: app.updateNotificationSetup,
+                                onItemsChanged: app.updateNotifications
+                            )
+                        case .courseDetail(let id):
+                            if let course = app.course(with: id) {
+                                CourseDetailView(data: AcademicDemoStore.detail(for: course))
+                            } else {
+                                ContentUnavailableView("Curso no encontrado", systemImage: "book.closed")
+                            }
+                        case .calendar:
+                            CalendarSyncView()
+                        case .procedures:
+                            ProceduresView()
+                        case .procedureDetail(let id):
+                            ProcedureDetailView(
+                                procedure: AcademicDemoStore.procedures.first { $0.id == id }
+                                    ?? DemoAcademicData.procedure(with: id)
+                                    ?? DemoAcademicData.procedures[0]
+                            )
+                        case .enrollment:
+                            EnrollmentGuideView()
+                        case .events:
+                            EventsView()
+                        case .eventDetail(let id):
+                            EventDetailView(event: DemoAcademicData.event(with: id) ?? DemoAcademicData.events[0])
+                        }
+                    }
+                }
+            }
     }
 }
 
+@MainActor
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        ContentView(app: AppViewModel(authService: DemoAuthService()))
     }
 }

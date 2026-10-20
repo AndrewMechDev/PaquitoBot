@@ -1,0 +1,5 @@
+// Copia este archivo como Config.local.xcconfig y reemplaza solo los valores.
+// Nunca subas Config.local.xcconfig al repositorio.
+
+CLERK_PUBLISHABLE_KEY = pk_test_reemplaza_con_tu_publishable_key
+MINIMAX_API_KEY = reemplaza_con_tu_api_key_de_minimax
