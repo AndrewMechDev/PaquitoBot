@@ -1,0 +1,1614 @@
+{
+  "source": {
+    "title": "Manual de Procesos Académicos · TECSUP N.º 2",
+    "url": "https://www.tecsup.edu.pe/wp-content/uploads/2024/07/mpa-tecsup-2.pdf",
+    "edition": "Referencia documental 2024",
+    "reviewedOn": "2026-10-18"
+  },
+  "procedures": [
+    {
+      "id": "constancia-ingreso",
+      "code": "PE-012",
+      "title": "Constancia de ingreso",
+      "category": "Documents",
+      "audience": "Estudiantes",
+      "summary": "Acredita tu situación académica mediante una constancia.",
+      "requirements": [
+        "Cumplir los requisitos formales de Servicios Educativos.",
+        "Pagar el derecho de la constancia.",
+        "No tener deudas vencidas o exigibles del período solicitado."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 31.50",
+      "responseTime": "7 días hábiles desde la solicitud",
+      "sourcePage": 6,
+      "responsibleArea": "Secretaría Académica",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "La entrega puede ser por correo institucional o presencial. La constancia de egreso está sujeta al Reglamento Institucional.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "constancia-estudios",
+      "code": "PE-012",
+      "title": "Constancia de estudios",
+      "category": "Documents",
+      "audience": "Estudiantes",
+      "summary": "Acredita tu situación académica mediante una constancia.",
+      "requirements": [
+        "Cumplir los requisitos formales de Servicios Educativos.",
+        "Pagar el derecho de la constancia.",
+        "No tener deudas vencidas o exigibles del período solicitado."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 31.50",
+      "responseTime": "7 días hábiles desde la solicitud",
+      "sourcePage": 6,
+      "responsibleArea": "Secretaría Académica",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "La entrega puede ser por correo institucional o presencial. La constancia de egreso está sujeta al Reglamento Institucional.",
+        "Importe contrastado con el tarifario 2026 publicado en el Portal de Transparencia de Tecsup, columna Arequipa (consulta: 18/10/2026). Confirma la aplicación a tu programa antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "constancia-notas",
+      "code": "PE-012",
+      "title": "Constancia de notas con horas y créditos",
+      "category": "Documents",
+      "audience": "Estudiantes",
+      "summary": "Acredita tu situación académica mediante una constancia.",
+      "requirements": [
+        "Cumplir los requisitos formales de Servicios Educativos.",
+        "Pagar el derecho de la constancia.",
+        "No tener deudas vencidas o exigibles del período solicitado."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 100",
+      "responseTime": "7 días hábiles desde la solicitud",
+      "sourcePage": 6,
+      "responsibleArea": "Secretaría Académica",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "La entrega puede ser por correo institucional o presencial. La constancia de egreso está sujeta al Reglamento Institucional.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "constancia-conducta",
+      "code": "PE-012",
+      "title": "Constancia de buena conducta",
+      "category": "Documents",
+      "audience": "Estudiantes",
+      "summary": "Acredita tu situación académica mediante una constancia.",
+      "requirements": [
+        "Cumplir los requisitos formales de Servicios Educativos.",
+        "Pagar el derecho de la constancia.",
+        "No tener deudas vencidas o exigibles del período solicitado."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 31.50",
+      "responseTime": "7 días hábiles desde la solicitud",
+      "sourcePage": 6,
+      "responsibleArea": "Secretaría Académica",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "La entrega puede ser por correo institucional o presencial. La constancia de egreso está sujeta al Reglamento Institucional.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "constancia-merito",
+      "code": "PE-012",
+      "title": "Constancia de orden de mérito y promedio",
+      "category": "Documents",
+      "audience": "Estudiantes",
+      "summary": "Acredita tu situación académica mediante una constancia.",
+      "requirements": [
+        "Cumplir los requisitos formales de Servicios Educativos.",
+        "Pagar el derecho de la constancia.",
+        "No tener deudas vencidas o exigibles del período solicitado."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 31.50",
+      "responseTime": "7 días hábiles desde la solicitud",
+      "sourcePage": 6,
+      "responsibleArea": "Secretaría Académica",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "La entrega puede ser por correo institucional o presencial. La constancia de egreso está sujeta al Reglamento Institucional.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "constancia-egreso",
+      "code": "PE-012",
+      "title": "Constancia de egreso",
+      "category": "Documents",
+      "audience": "Estudiantes",
+      "summary": "Acredita tu situación académica mediante una constancia.",
+      "requirements": [
+        "Cumplir los requisitos formales de Servicios Educativos.",
+        "Pagar el derecho de la constancia.",
+        "No tener deudas vencidas o exigibles del período solicitado."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 31.50",
+      "responseTime": "7 días hábiles desde la solicitud",
+      "sourcePage": 6,
+      "responsibleArea": "Secretaría Académica",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "La entrega puede ser por correo institucional o presencial. La constancia de egreso está sujeta al Reglamento Institucional.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "certificado-estudios",
+      "code": "PE-010",
+      "title": "Certificado de estudios por ciclo",
+      "category": "Documents",
+      "audience": "Estudiantes",
+      "summary": "Obtén la certificación de tus estudios de un ciclo.",
+      "requirements": [
+        "Cumplir los requisitos formales de Servicios Educativos.",
+        "No tener deudas vencidas con Tecsup.",
+        "Pagar el derecho del certificado.",
+        "Foto formal tamaño carné, con fondo blanco."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 52.50",
+      "responseTime": "30 días calendario desde la solicitud",
+      "sourcePage": 5,
+      "responsibleArea": "Secretaría Académica",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "Los envíos a domicilio pueden generar un costo adicional.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "certificado-modular",
+      "code": "PE-010",
+      "title": "Certificado modular",
+      "category": "Documents",
+      "audience": "Estudiantes",
+      "summary": "Certifica la formación de un módulo y sus prácticas.",
+      "requirements": [
+        "Cumplir los requisitos formales de Servicios Educativos.",
+        "No tener deudas vencidas con Tecsup.",
+        "Pagar el derecho del certificado.",
+        "Certificado o constancia de haber cumplido las EFSRT."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 100",
+      "responseTime": "30 días calendario desde la solicitud",
+      "sourcePage": 5,
+      "responsibleArea": "Secretaría Académica",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "rectificacion-constancia",
+      "code": "PE-013",
+      "title": "Rectificación de constancia",
+      "category": "Documents",
+      "audience": "Estudiantes",
+      "summary": "Solicita la corrección de una constancia.",
+      "requirements": [
+        "Presentar la constancia física que se desea corregir, si se requiere ese formato."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "Gastos de envío a cargo del responsable del error",
+      "responseTime": "Hasta 5 días hábiles después de la solicitud",
+      "sourcePage": 6,
+      "responsibleArea": "Secretaría Académica",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "El manual atribuye los gastos de envío al responsable del error; no especifica una tarifa de rectificación. Confirma el importe aplicable.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "rectificacion-certificado",
+      "code": "PE-011",
+      "title": "Rectificación de certificado",
+      "category": "Documents",
+      "audience": "Estudiantes",
+      "summary": "Solicita la corrección de un certificado.",
+      "requirements": [
+        "Presentar el certificado físico que se desea rectificar."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "Gastos de envío a cargo del responsable del error",
+      "responseTime": "10 días hábiles después de la solicitud",
+      "sourcePage": 5,
+      "responsibleArea": "Secretaría Académica",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "Confirma si existe otro importe aplicable; no se presenta el envío como tarifa del trámite.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "silabo-curso",
+      "code": "PE-024",
+      "title": "Sílabo certificado por curso",
+      "category": "Documents",
+      "audience": "Estudiantes",
+      "summary": "Solicita una copia certificada del contenido de tus estudios.",
+      "requirements": [
+        "Preparar una solicitud por correo.",
+        "Pagar el derecho correspondiente.",
+        "No tener deudas vencidas con Tecsup."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 30 por curso",
+      "responseTime": "Hasta 30 días calendario desde la solicitud",
+      "sourcePage": 9,
+      "responsibleArea": "Secretaría Académica",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "El manual menciona solicitud por correo e Intranet como canal. Confirma con Secretaría el destinatario antes de enviar documentos.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "silabo-programa",
+      "code": "PE-024",
+      "title": "Sílabo certificado por programa",
+      "category": "Documents",
+      "audience": "Estudiantes",
+      "summary": "Solicita una copia certificada del contenido de tus estudios.",
+      "requirements": [
+        "Preparar una solicitud por correo.",
+        "Pagar el derecho correspondiente.",
+        "No tener deudas vencidas con Tecsup."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 800 (2 años) o S/ 1300 (3 años)",
+      "responseTime": "Hasta 30 días calendario desde la solicitud",
+      "sourcePage": 9,
+      "responsibleArea": "Secretaría Académica",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "El manual menciona solicitud por correo e Intranet como canal. Confirma con Secretaría el destinatario antes de enviar documentos.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "reserva-matricula",
+      "code": "PE-004",
+      "title": "Reserva de matrícula",
+      "category": "Enrollment",
+      "audience": "Ingresantes",
+      "summary": "Conserva tu vacante si aún no iniciarás tus estudios.",
+      "requirements": [
+        "Haber sido admitido.",
+        "Solicitud con nombre completo, DNI, motivo y períodos que abarcará la reserva (máximo 4).",
+        "Pagar la reserva.",
+        "No tener deudas vencidas con Tecsup."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 300",
+      "responseTime": "7 días hábiles desde la solicitud",
+      "sourcePage": 4,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir formulario de reserva",
+          "target": "https://forms.gle/3iKP3yRerwsWwcMH7",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar proceso de matrícula",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2024/07/proceso-de-matricula.pdf",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": "Dentro de los 7 días hábiles posteriores a la admisión.",
+      "notes": [
+        "No matricularse ni solicitar reserva dentro del plazo puede implicar la pérdida de la vacante.",
+        "Hay diferencias entre el MPA y el documento oficial «Proceso de matrícula»: confirma con Servicios Educativos los plazos y pagos vigentes para tu caso.",
+        "El MPA menciona hasta 4 períodos de reserva; el documento «Proceso de matrícula» indica hasta 1 año. No asumas una duración sin confirmación.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "licencia-estudios",
+      "code": "PE-004",
+      "title": "Licencia de estudios",
+      "category": "Enrollment",
+      "audience": "Estudiantes",
+      "summary": "Solicita una pausa formal en tus estudios.",
+      "requirements": [
+        "Solicitud con nombre completo, DNI, motivo y períodos de licencia.",
+        "Estar al día en el pago de cuotas.",
+        "Máximo 4 períodos académicos; el manual contempla 5 años en caso de discapacidad."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "MPA: sin pago por el trámite; confirmar condición vigente con Tecsup",
+      "responseTime": "7 días hábiles desde la solicitud",
+      "sourcePage": 4,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar proceso de matrícula",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2024/07/proceso-de-matricula.pdf",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": "Confirma el plazo vigente: el MPA indica entre períodos; el documento de matrícula indica durante el proceso de matrícula.",
+      "notes": [
+        "Hay diferencias entre el MPA y el documento oficial «Proceso de matrícula»: confirma con Servicios Educativos los plazos y pagos vigentes para tu caso.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "retiro-periodo",
+      "code": "PE-005",
+      "title": "Retiro del período académico",
+      "category": "Enrollment",
+      "audience": "Estudiantes",
+      "summary": "Formaliza el retiro de un período.",
+      "requirements": [
+        "Solicitud dirigida al Director Académico de Sede."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "Sin pago por el trámite",
+      "responseTime": "7 días hábiles desde la solicitud",
+      "sourcePage": 4,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": "Hasta la semana 10 del período académico.",
+      "notes": [
+        "El manual menciona correo al Director e Intranet. Confirma la presentación con Servicios Educativos.",
+        "Sin retiro formal se considera abandono: permanecen los pagos confirmados y las notas forman parte del récord.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "reincorporacion",
+      "code": "PE-006",
+      "title": "Reincorporación o reingreso",
+      "category": "Enrollment",
+      "audience": "Estudiantes",
+      "summary": "Retoma tus estudios tras una interrupción.",
+      "requirements": [
+        "Solicitud de reincorporación.",
+        "Pagar el derecho y adjuntar el comprobante.",
+        "No estar en causal de pérdida de la condición de estudiante."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 150",
+      "responseTime": "15 días hábiles desde la solicitud",
+      "sourcePage": 4,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": "Antes del inicio del ciclo: primeros 15 días de enero o julio, según el manual.",
+      "notes": [
+        "Después de la aprobación continúa el proceso de matrícula PE-003. Confirma el calendario actual.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "retiro-institucion",
+      "code": "PE-007",
+      "title": "Retiro de la institución",
+      "category": "Enrollment",
+      "audience": "Estudiantes",
+      "summary": "Consulta cómo formalizar el retiro de Tecsup.",
+      "requirements": [
+        "Solicitud al Director Académico a través de la Coordinación de Servicios Educativos."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "Sin pago por el trámite",
+      "responseTime": "7 días hábiles desde la solicitud",
+      "sourcePage": 4,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "Si existe deuda, coordina su situación con Cobranzas. El retiro no equivale a una condonación.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "traslado-interno",
+      "code": "PE-008",
+      "title": "Traslado interno",
+      "category": "Transfers",
+      "audience": "Estudiantes",
+      "summary": "Solicita el cambio de programa dentro de Tecsup.",
+      "requirements": [
+        "Haber concluido el primer ciclo.",
+        "No estar en causal de pérdida de condición ni tener procedimiento o sanción que implique suspensión.",
+        "Cumplir los requisitos de admisión del programa de destino.",
+        "Aprobar entrevista con Psicopedagogía."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 150",
+      "responseTime": "Respuesta hasta 2 días antes del inicio de matrícula",
+      "sourcePage": 4,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": "Según los plazos comunicados por Servicios Educativos.",
+      "notes": [
+        "La evaluación depende de las vacantes disponibles.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "traslado-externo",
+      "code": "PE-008",
+      "title": "Traslado externo",
+      "category": "Transfers",
+      "audience": "Postulantes por traslado",
+      "summary": "Consulta el ingreso desde otra institución de educación superior.",
+      "requirements": [
+        "Acreditar 18 créditos aprobados si procedes de universidad, o todas las unidades de un ciclo si procedes de instituto.",
+        "Acreditar no haber sido separado por sanción disciplinaria.",
+        "Cumplir los requisitos de admisión y aprobar entrevista con el responsable del programa."
+      ],
+      "steps": [
+        "Reúne los certificados y requisitos de admisión.",
+        "Registra la solicitud eligiendo «Traslado Externo».",
+        "Completa la entrevista y consulta la respuesta y tabla de convalidación."
+      ],
+      "cost": "S/ 125 en Arequipa",
+      "responseTime": "Hasta 15 días desde la solicitud (sin tipo de día especificado)",
+      "sourcePage": 5,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir ficha de inscripción",
+          "target": "https://forms.gle/vaSL7JcRMpjD4FVC9",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "Sujeto a disponibilidad de vacantes.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "evaluacion-extraordinaria",
+      "code": "PE-009",
+      "title": "Evaluación extraordinaria",
+      "category": "Graduation",
+      "audience": "Estudiantes",
+      "summary": "Consulta la evaluación de unidades pendientes para culminar el programa.",
+      "requirements": [
+        "Tener como máximo 2 unidades didácticas pendientes.",
+        "Estar dentro de los 3 años desde el último período cursado.",
+        "No estar en causal de pérdida de condición ni tener procedimiento o sanción que implique suspensión.",
+        "Pagar la evaluación."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 300 en Arequipa",
+      "responseTime": "7 días hábiles desde la solicitud",
+      "sourcePage": 5,
+      "responsibleArea": "Secretaría Académica",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "Importe contrastado con el tarifario 2026 publicado en el Portal de Transparencia de Tecsup, columna Arequipa (consulta: 18/10/2026). Confirma la aplicación a tu programa antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "convalidacion-bachiller",
+      "code": "PE-008",
+      "title": "Convalidación para bachiller técnico",
+      "category": "Graduation",
+      "audience": "Egresados hasta 2020-2",
+      "summary": "Consulta el caso especial para quienes culminaron sexto ciclo hasta 2020-2.",
+      "requirements": [
+        "Haber culminado sexto ciclo hasta 2020-2.",
+        "No haber solicitado título profesional técnico a nombre de la Nación.",
+        "Acreditar idioma extranjero nivel B1.",
+        "Solicitud al Director Académico y pago del derecho."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 150",
+      "responseTime": "Consultar con Servicios Educativos",
+      "sourcePage": 5,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "La tabla del manual asocia esta sección a una respuesta antes de matrícula y texto sobre traslados. Confirma con el área el plazo específico de tu caso.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "bachiller-tecnico",
+      "code": "PE-014",
+      "title": "Emisión de bachiller técnico",
+      "category": "Graduation",
+      "audience": "Egresados",
+      "summary": "Solicita la emisión de tu grado de bachiller técnico.",
+      "requirements": [
+        "Ser egresado de un programa de nivel profesional técnico.",
+        "Acreditar idioma extranjero, preferentemente inglés, nivel B1.",
+        "Solicitud, copia de DNI por ambas caras y 2 fotos pasaporte con terno y fondo blanco.",
+        "Pagar el trámite."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 300",
+      "responseTime": "Hasta 7 meses, sujeto a respuesta del MINEDU",
+      "sourcePage": 6,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "titulo-tecnico",
+      "code": "PE-018",
+      "title": "Título técnico (2 años)",
+      "category": "Graduation",
+      "audience": "Egresados",
+      "summary": "Solicita la emisión del título de tu programa.",
+      "requirements": [
+        "Ser egresado.",
+        "Solicitud, copia de DNI por ambas caras y 3 fotos pasaporte con terno y fondo blanco.",
+        "Pagar el trámite."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 400 en Arequipa",
+      "responseTime": "Hasta 7 meses, sujeto a respuesta del MINEDU",
+      "sourcePage": 8,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "La modalidad de titulación se completa antes de solicitar la emisión del título.",
+        "Importe contrastado con el tarifario 2026 publicado en el Portal de Transparencia de Tecsup, columna Arequipa (consulta: 18/10/2026). Confirma la aplicación a tu programa antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "titulo-profesional",
+      "code": "PE-018",
+      "title": "Título profesional técnico (3 años)",
+      "category": "Graduation",
+      "audience": "Egresados",
+      "summary": "Solicita la emisión del título de tu programa.",
+      "requirements": [
+        "Ser egresado.",
+        "Solicitud, copia de DNI por ambas caras y 3 fotos pasaporte con terno y fondo blanco.",
+        "Pagar el trámite.",
+        "Bachiller técnico para egresados desde 2021-1.",
+        "Aprobar trabajo de aplicación profesional o examen de suficiencia."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 400 en Arequipa",
+      "responseTime": "Hasta 7 meses, sujeto a respuesta del MINEDU",
+      "sourcePage": 8,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "La modalidad de titulación se completa antes de solicitar la emisión del título.",
+        "Importe contrastado con el tarifario 2026 publicado en el Portal de Transparencia de Tecsup, columna Arequipa (consulta: 18/10/2026). Confirma la aplicación a tu programa antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "titulacion-integrador",
+      "code": "PE-016",
+      "title": "Proyecto integrador",
+      "category": "Graduation",
+      "audience": "Egresados de programas de 3 años",
+      "summary": "Modalidad de titulación para programas de tres años.",
+      "requirements": [
+        "Haber concluido satisfactoriamente los 6 ciclos.",
+        "No tener deudas vencidas con Tecsup.",
+        "Aprobar y sustentar ante jurado el proyecto desarrollado en quinto y sexto ciclo."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "Sin pago por el trámite",
+      "responseTime": "Aprobación de la sustentación: 3 días hábiles después de sustentar",
+      "sourcePage": 6,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "Sujeto al cronograma y requisitos de Servicios Educativos. Los trabajos escritos se revisan para verificar originalidad.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "titulacion-proyecto",
+      "code": "PE-016",
+      "title": "Titulación por proyecto",
+      "category": "Graduation",
+      "audience": "Egresados de programas de 3 años",
+      "summary": "Modalidad de titulación para programas de tres años.",
+      "requirements": [
+        "Haber concluido satisfactoriamente los 6 ciclos.",
+        "No tener deudas vencidas con Tecsup.",
+        "Contar con 6 meses de experiencia profesional.",
+        "Aprobar la sustentación del proyecto."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 650",
+      "responseTime": "Aprobación de la sustentación: 3 días hábiles después de sustentar",
+      "sourcePage": 7,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "Sujeto al cronograma y requisitos de Servicios Educativos. Los trabajos escritos se revisan para verificar originalidad.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "titulacion-aplicacion",
+      "code": "PE-016",
+      "title": "Programa de titulación por proyecto de aplicación",
+      "category": "Graduation",
+      "audience": "Egresados de programas de 3 años",
+      "summary": "Modalidad de titulación para programas de tres años.",
+      "requirements": [
+        "Haber concluido satisfactoriamente los 6 ciclos.",
+        "No tener deudas vencidas con Tecsup.",
+        "Hasta 2 años de egreso.",
+        "Ficha de inscripción, constancia de egresado y términos firmados."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 1500",
+      "responseTime": "Aprobación de la sustentación: 3 días hábiles después de sustentar",
+      "sourcePage": 7,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "Sujeto al cronograma y requisitos de Servicios Educativos. Los trabajos escritos se revisan para verificar originalidad.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": "10 semanas"
+    },
+    {
+      "id": "titulacion-profesional",
+      "code": "PE-016",
+      "title": "Programa de titulación profesional",
+      "category": "Graduation",
+      "audience": "Egresados de programas de 3 años",
+      "summary": "Modalidad de titulación para programas de tres años.",
+      "requirements": [
+        "Haber concluido satisfactoriamente los 6 ciclos.",
+        "No tener deudas vencidas con Tecsup.",
+        "Más de 2 años de egreso y más de 2 años de experiencia profesional.",
+        "Presentar resumen de experiencia y requisitos de inscripción."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 3500",
+      "responseTime": "Aprobación de la sustentación: 3 días hábiles después de sustentar",
+      "sourcePage": 7,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "Sujeto al cronograma y requisitos de Servicios Educativos. Los trabajos escritos se revisan para verificar originalidad.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": "11 semanas"
+    },
+    {
+      "id": "examen-suficiencia",
+      "code": "PE-017",
+      "title": "Examen de suficiencia profesional",
+      "category": "Graduation",
+      "audience": "Egresados de programas de 3 años",
+      "summary": "Alternativa de titulación mediante evaluación profesional.",
+      "requirements": [
+        "Haber concluido los 6 ciclos.",
+        "No tener deudas vencidas con Tecsup.",
+        "Cumplir las condiciones de evaluación de Servicios Educativos."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 650 en Arequipa",
+      "responseTime": "Según cronograma de evaluación; confirmar con el área",
+      "sourcePage": 7,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "El manual indica evaluación escrita (30%) y demostrativa (70%), con hasta 3 oportunidades.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "practicas-efsrt",
+      "code": "PE-021 / PE-022",
+      "title": "Prácticas y EFSRT",
+      "category": "Practices",
+      "audience": "Estudiantes",
+      "summary": "Consulta la preparación para prácticas en empresa o en Tecsup.",
+      "requirements": [
+        "Aprobar los cursos del módulo formativo.",
+        "Actualizar la hoja de vida y ficha personal en el sistema de prácticas.",
+        "Asistir a los talleres de habilidades blandas."
+      ],
+      "steps": [
+        "Confirma con Desarrollo Profesional el acceso al sistema de prácticas.",
+        "Carga tu hoja de vida y completa la ficha y talleres.",
+        "Consulta el proceso de asignación según empresa o Tecsup."
+      ],
+      "cost": "Sin pago por el trámite",
+      "responseTime": "Depende de selección de empresa o disponibilidad en Tecsup",
+      "sourcePage": 8,
+      "responsibleArea": "Desarrollo Profesional del Estudiante",
+      "channels": [
+        {
+          "label": "Consultar a Servicios Educativos",
+          "target": "scervantes@tecsup.edu.pe",
+          "kind": "Email"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "El manual no proporciona una URL del sistema en esta sección. El correo es un canal de orientación, no de postulación.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "convalidacion-efsrt",
+      "code": "PE-023",
+      "title": "Convalidación de horas de EFSRT",
+      "category": "Practices",
+      "audience": "Estudiantes",
+      "summary": "Solicita el reconocimiento de horas de prácticas realizadas.",
+      "requirements": [
+        "Aprobar los cursos del módulo.",
+        "Tener las prácticas aprobadas por la oficina responsable.",
+        "Aprobar y entregar el informe de prácticas o pasantías.",
+        "Presentar el certificado de prácticas o pasantías."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "Sin pago por el trámite",
+      "responseTime": "Hasta 15 días calendario desde la solicitud",
+      "sourcePage": 9,
+      "responsibleArea": "Desarrollo Profesional del Estudiante",
+      "channels": [
+        {
+          "label": "Preparar consulta por correo",
+          "target": "scarpio@tecsup.edu.pe",
+          "kind": "Email"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "refinanciamiento",
+      "code": "PE-025",
+      "title": "Refinanciamiento de deuda",
+      "category": "Finance",
+      "audience": "Estudiantes",
+      "summary": "Consulta un acuerdo de pago con Cobranzas.",
+      "requirements": [
+        "Estar en período de matrícula.",
+        "No tener deuda vencida mayor a un año.",
+        "No tener 3 refinanciamientos de períodos consecutivos."
+      ],
+      "steps": [
+        "Solicita orientación para contactar a tu asesor de Cobranzas.",
+        "Negocia las condiciones y confirma el importe del pago parcial.",
+        "Revisa el nuevo cronograma en el Sistema Académico."
+      ],
+      "cost": "Pago parcial de la deuda; monto a acordar",
+      "responseTime": "Hasta 7 días hábiles desde la confirmación del pago parcial",
+      "sourcePage": 9,
+      "responsibleArea": "Asesor de Cobranzas",
+      "channels": [
+        {
+          "label": "Consultar a Servicios Educativos",
+          "target": "scervantes@tecsup.edu.pe",
+          "kind": "Email"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": "Durante el período de matrícula.",
+      "notes": [
+        "El correo de Servicios Educativos orienta; la negociación se realiza directamente con Cobranzas.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "becas",
+      "code": "PE-026",
+      "title": "Becas",
+      "category": "Finance",
+      "audience": "Postulantes y estudiantes",
+      "summary": "Consulta las modalidades de apoyo y sus condiciones.",
+      "requirements": [
+        "Cumplir los requisitos de la modalidad: orfandad, mérito, ingresantes o convenio.",
+        "Participar en las evaluaciones cuando correspondan.",
+        "Tras la aprobación, firmar el contrato y Reglamento antes de matricularte."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "Sin pago por postulación y trámite",
+      "responseTime": "Confirmación indicada: 30 días calendario antes de matrícula",
+      "sourcePage": 9,
+      "responsibleArea": "Servicios Financieros",
+      "channels": [
+        {
+          "label": "Abrir Intranet Académica",
+          "target": "https://campus-cloud.tecsup.edu.pe/auth/login",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "Mérito: un período académico. Orfandad: el manual indica cobertura del 100% por el resto de la carrera, bajo sus condiciones.",
+        "Consulta convocatoria y requisitos actuales. La app no evalúa ni garantiza la asignación de becas.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "admision",
+      "code": "PE-001",
+      "title": "Admisión",
+      "category": "Admission",
+      "audience": "Postulantes",
+      "summary": "Consulta los documentos básicos para postular.",
+      "requirements": [
+        "Certificado de educación básica concluida, o declaración/constancia admitida según el caso.",
+        "Copia de DNI, carné de extranjería o pasaporte.",
+        "Pago de admisión y certificado médico si corresponde.",
+        "Cumplir requisitos especiales del programa."
+      ],
+      "steps": [
+        "Reúne los requisitos y confirma las condiciones actuales con el área responsable.",
+        "Presenta la solicitud por el canal indicado y conserva la constancia de envío.",
+        "Consulta la respuesta y las indicaciones de entrega."
+      ],
+      "cost": "S/ 300 en Arequipa si la modalidad incluye examen",
+      "responseTime": "Inscripción: 2 días hábiles; resultados: hasta 2 días hábiles tras última evaluación",
+      "sourcePage": 2,
+      "responsibleArea": "Servicios Educativos",
+      "channels": [
+        {
+          "label": "Abrir ficha de inscripción",
+          "target": "https://forms.gle/vaSL7JcRMpjD4FVC9",
+          "kind": "Web"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    },
+    {
+      "id": "credito-educativo",
+      "code": "PE-002",
+      "title": "Crédito educativo",
+      "category": "Finance",
+      "audience": "Admitidos que solicitan crédito",
+      "summary": "Consulta los documentos y etapas de evaluación del crédito.",
+      "requirements": [
+        "Haber sido admitido.",
+        "DNI del solicitante y padres, foto familiar, recibo de servicios y sustento de ingresos.",
+        "Documentación de 2 avales.",
+        "Expediente y contratos de la carpeta virtual; legalización de contratos físicos según el proceso."
+      ],
+      "steps": [
+        "Consulta con Servicios Financieros el formulario y las condiciones actuales.",
+        "Presenta la documentación para la evaluación inicial.",
+        "Tras la preaprobación, completa la carpeta virtual y después la física según las indicaciones."
+      ],
+      "cost": "Sin pago por las etapas de solicitud descritas",
+      "responseTime": "2 días hábiles por cada etapa",
+      "sourcePage": 2,
+      "responsibleArea": "Servicios Financieros",
+      "channels": [
+        {
+          "label": "Consultar a Servicios Educativos",
+          "target": "scervantes@tecsup.edu.pe",
+          "kind": "Email"
+        },
+        {
+          "label": "Consultar tarifario oficial 2026",
+          "target": "https://www.tecsup.edu.pe/wp-content/uploads/2026/09/TARIFARIO-DE-PROCESOS-Y-TRAMITES-ACADEMICOS-2026.pdf",
+          "kind": "Web"
+        }
+      ],
+      "applicationWindow": null,
+      "notes": [
+        "La aprobación no es automática. Las condiciones financieras se revisan con el área responsable.",
+        "Costo del manual de referencia 2024. Consulta el tarifario oficial 2026 y confirma con Tecsup la equivalencia y el importe de este trámite antes de pagar."
+      ],
+      "duration": null
+    }
+  ],
+  "enrollment": {
+    "tracks": [
+      {
+        "id": "incoming",
+        "title": "Soy ingresante",
+        "description": "Primera matrícula",
+        "checklist": [
+          "No tener deudas vencidas con Tecsup.",
+          "No tener procedimiento o sanción disciplinaria que implique suspensión.",
+          "Contar con navegador actualizado e internet; revisa en el portal los requisitos técnicos actuales.",
+          "Tener el correo de admisión y los documentos solicitados."
+        ],
+        "stepIds": [
+          "admission",
+          "documents",
+          "payment",
+          "validation",
+          "changes",
+          "confirmation",
+          "access"
+        ],
+        "relatedProcedureIds": [
+          "reserva-matricula",
+          "becas",
+          "credito-educativo"
+        ]
+      },
+      {
+        "id": "returning",
+        "title": "Ya soy estudiante",
+        "description": "Ratificación de matrícula",
+        "checklist": [
+          "No tener deudas vencidas con Tecsup.",
+          "No tener procedimiento o sanción disciplinaria que implique suspensión.",
+          "Contar con navegador actualizado e internet; revisa en el portal los requisitos técnicos actuales.",
+          "Cumplir las condiciones académicas del artículo 24 del Reglamento Institucional.",
+          "La ratificación no requiere envío de documentos, según el manual."
+        ],
+        "stepIds": [
+          "payment",
+          "validation",
+          "changes",
+          "confirmation"
+        ],
+        "relatedProcedureIds": [
+          "licencia-estudios",
+          "reincorporacion",
+          "refinanciamiento",
+          "retiro-periodo"
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "id": "admission",
+        "title": "Revisa tu admisión",
+        "body": [
+          "Busca el correo con los resultados de admisión, tu código de estudiante y las claves del portal de matrícula.",
+          "Si vas a postergar el inicio, consulta la reserva de matrícula y su plazo antes de dejar pasar tu vacante."
+        ],
+        "channels": [],
+        "cost": null,
+        "responseTime": null,
+        "optional": false,
+        "sourcePage": 2
+      },
+      {
+        "id": "documents",
+        "title": "Entrega tus documentos",
+        "body": [
+          "Envía al asesor comercial todos los documentos solicitados en la admisión.",
+          "Incluye el certificado médico si tu programa lo exige y los requisitos especiales que te hayan comunicado."
+        ],
+        "channels": [],
+        "cost": null,
+        "responseTime": null,
+        "optional": false,
+        "sourcePage": 3
+      },
+      {
+        "id": "payment",
+        "title": "Matrícula y primera cuota",
+        "body": [
+          "Confirma el tarifario y las instrucciones de pago con Tecsup antes de pagar.",
+          "Realiza el pago de matrícula y primera cuota. El pago habilita la revisión de cursos: todavía debes validar y confirmar."
+        ],
+        "channels": [
+          {
+            "label": "Consultar información oficial",
+            "target": "https://www.tecsup.edu.pe/portal-de-transparencia/",
+            "kind": "Web"
+          }
+        ],
+        "cost": "Matrícula: S/ 300 según referencia 2024, sujeta a promociones. Primera cuota: depende del programa y la sede.",
+        "responseTime": "Ingresantes: hasta 2 días hábiles tras documentos y pago para recibir instrucciones. Estudiantes actuales: continúa con la revisión tras el pago.",
+        "optional": false,
+        "sourcePage": 3
+      },
+      {
+        "id": "validation",
+        "title": "Revisa cursos y horarios",
+        "body": [
+          "Ingresa al portal y verifica los cursos y horarios asignados.",
+          "Si estás de acuerdo, continúa a la confirmación. Si necesitas un cambio, revisa el siguiente paso."
+        ],
+        "channels": [
+          {
+            "label": "Abrir portal de matrícula",
+            "target": "https://app.tecsup.edu.pe/matricula/",
+            "kind": "Web"
+          }
+        ],
+        "cost": "Sin pago por la validación",
+        "responseTime": "Validación en tiempo real",
+        "optional": false,
+        "sourcePage": 3
+      },
+      {
+        "id": "changes",
+        "title": "¿Necesitas un cambio?",
+        "body": [
+          "Este paso solo aplica si no estás de acuerdo con los cursos u horarios.",
+          "Prepara un correo con tus datos personales, programa académico y ciclo.",
+          "Espera la respuesta de Servicios Educativos y revisa el cambio en el portal antes de confirmar."
+        ],
+        "channels": [
+          {
+            "label": "Consultar cambio de cursos u horarios",
+            "target": "scervantes@tecsup.edu.pe",
+            "kind": "Email"
+          }
+        ],
+        "cost": "Sin pago por la solicitud de cambio",
+        "responseTime": "Hasta 4 días hábiles desde el envío del correo",
+        "optional": true,
+        "sourcePage": 3
+      },
+      {
+        "id": "confirmation",
+        "title": "Confirma en el portal",
+        "body": [
+          "Después de revisar tus cursos y horarios, registra la confirmación en el portal de matrícula.",
+          "Comprueba el mensaje de confirmación que muestra la web. Recorrer esta guía no confirma tu matrícula."
+        ],
+        "channels": [
+          {
+            "label": "Abrir portal de matrícula",
+            "target": "https://app.tecsup.edu.pe/matricula/",
+            "kind": "Web"
+          }
+        ],
+        "cost": "Sin pago por la confirmación",
+        "responseTime": "Confirmación inmediata en la web",
+        "optional": false,
+        "sourcePage": 3
+      },
+      {
+        "id": "access",
+        "title": "Revisa tus accesos institucionales",
+        "body": [
+          "Si eres de primer ciclo, revisa tu correo personal para recibir las credenciales del correo institucional.",
+          "Si no llegan, consulta con Servicios Educativos. Nunca compartas tus claves en PaquitoBot."
+        ],
+        "channels": [
+          {
+            "label": "Consultar a Servicios Educativos",
+            "target": "scervantes@tecsup.edu.pe",
+            "kind": "Email"
+          }
+        ],
+        "cost": null,
+        "responseTime": "2 días hábiles después de la confirmación, según el manual",
+        "optional": false,
+        "sourcePage": 3
+      }
+    ],
+    "calendar": {
+      "period": null,
+      "regular": null,
+      "extraordinary": null,
+      "classesStart": null,
+      "officialChannel": {
+        "label": "Consultar publicaciones oficiales",
+        "target": "https://www.tecsup.edu.pe/portal-de-transparencia/",
+        "kind": "Web"
+      }
+    }
+  }
+}

@@ -6,6 +6,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import pe.tecsup.paquitobot.data.local.AcademicJsonDto
 import pe.tecsup.paquitobot.data.local.AttendanceJson
+import pe.tecsup.paquitobot.domain.academic.AcademicAssignmentKind
 import pe.tecsup.paquitobot.domain.academic.AcademicAssignment
 import pe.tecsup.paquitobot.domain.academic.AcademicAttendance
 import pe.tecsup.paquitobot.domain.academic.AcademicClassSession
@@ -13,13 +14,14 @@ import pe.tecsup.paquitobot.domain.academic.AcademicCourse
 import pe.tecsup.paquitobot.domain.academic.AcademicGrade
 import pe.tecsup.paquitobot.domain.academic.AcademicProfile
 import pe.tecsup.paquitobot.domain.academic.AcademicRepository
+import pe.tecsup.paquitobot.domain.academic.AcademicSessionKind
 
 /**
  * Implementacion de [AcademicRepository] que lee un JSON propio incluido en
  * la app (sin HTTP ni backend).
  *
- * [readJson] entrega el texto del JSON; cada plataforma decide de donde sale
- * (en Android, `assets/academic.json`), asi `commonMain` no depende de APIs de
+ * [readJson] entrega el JSON ensamblado; cada plataforma decide de donde sale
+ * (en Android, catálogo + escenario de la cuenta), asi `commonMain` no depende de APIs de
  * plataforma. El JSON se lee y parsea una sola vez con exito; si la lectura o el
  * parseo fallan, el error se devuelve en el [Result] y la siguiente llamada
  * vuelve a intentarlo (nunca se devuelve una lista vacia para ocultar el fallo).
@@ -56,7 +58,12 @@ class LocalJsonAcademicRepository(
     override suspend fun courseAssignments(courseId: Int): Result<List<AcademicAssignment>> = query { dto ->
         dto.assignments
             .filter { it.courseId == courseId }
-            .map { AcademicAssignment(it.id, it.courseId, it.name, it.pointsPossible, it.dueAt) }
+            .map { AcademicAssignment(it.id, it.courseId, it.name, it.pointsPossible, it.dueAt,
+                when (it.kind) {
+                    "laboratory" -> AcademicAssignmentKind.Laboratory
+                    "delivery" -> AcademicAssignmentKind.Delivery
+                    else -> error("Tipo de actividad académica desconocido")
+                }) }
     }
 
     override suspend fun courseGrades(courseId: Int): Result<List<AcademicGrade>> = query { dto ->
@@ -76,7 +83,12 @@ class LocalJsonAcademicRepository(
     override suspend fun courseClassSessions(courseId: Int): Result<List<AcademicClassSession>> = query { dto ->
         dto.classSessions
             .filter { it.courseId == courseId }
-            .map { AcademicClassSession(it.id, it.courseId, it.startAt, it.endAt) }
+            .map { AcademicClassSession(it.id, it.courseId, it.startAt, it.endAt,
+                when (it.kind) {
+                    "class" -> AcademicSessionKind.Class
+                    "laboratory" -> AcademicSessionKind.Laboratory
+                    else -> error("Tipo de sesión académica desconocido")
+                }) }
     }
 
     /**

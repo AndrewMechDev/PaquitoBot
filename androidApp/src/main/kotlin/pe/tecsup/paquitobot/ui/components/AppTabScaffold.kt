@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -90,6 +91,8 @@ fun AppTabScaffold(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val hazeState = rememberHazeState()
+    val contentScroll = rememberScrollState()
+    LaunchedEffect(currentTab) { contentScroll.scrollTo(0) }
     var navbarVisible by remember { mutableStateOf(true) }
     var scrollEventToken by remember { mutableIntStateOf(0) }
     val coroutineScope = rememberCoroutineScope()
@@ -128,7 +131,7 @@ fun AppTabScaffold(
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(nestedScrollConnection)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(contentScroll)
                 .hazeSource(state = hazeState)
                 .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = BOTTOM_CONTENT_PADDING),
             verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -141,7 +144,7 @@ fun AppTabScaffold(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(bottom = 24.dp),
+                .padding(bottom = 10.dp),
         ) {
             Box(
                 modifier = Modifier.fillMaxWidth(),
@@ -170,4 +173,4 @@ private const val SETTLE_DELAY_MS = 300L
  * real ya esta completamente libre del Navbar, sin necesitar el gesto de
  * ocultamiento por velocidad para leerlo.
  */
-private val BOTTOM_CONTENT_PADDING = 112.dp
+private val BOTTOM_CONTENT_PADDING = 100.dp

@@ -2,6 +2,20 @@
 
 Estado vivo de la integración entre el archivo Figma "Paquito (copia)" y el código nativo por plataforma.
 
+Actualización 2026-10-18: la sección de permiso aclara que la cobertura actual son entregas con fecha; laboratorio/asistencia siguen pendientes. Detecta también el canal académico bloqueado y reconcilia programación al regresar desde ajustes o conceder permiso. Sin nuevos colores ni componentes visuales. Los avisos locales abren la app; la bandeja sigue siendo demo.
+
+Actualización 2026-10-17: configuración de notificaciones en tres pasos dentro de la misma vista: categorías → anticipación → resumen diario. Indicador Paso N de 3, progreso celeste y transición horizontal/desvanecimiento de 250 ms, con dirección inversa al retroceder. Atrás conserva las elecciones; Continuar cambia de paso y solo Finalizar/Guardar cambios ejecuta el guardado. Los componentes de horario se reutilizan por sección. Previews de cada etapa en `OnboardingNotificationsScreen.kt`; interacción y animación pendientes de validación visual.
+
+Actualización 2026-10-17: rediseño de horarios conforme a PaquitoBot. Anticipaciones como chips con selección celeste, secciones con superficie gris y radios existentes, tarjeta de hora celeste y switch con colores explícitos. Se reemplaza `android.app.TimePickerDialog` por un selector Compose con reloj/teclado, formato 24 horas, DM Sans, colores de marca y CTA `PaquitoPrimaryButton`. Preview adicional `NotificationTimePickerPreview` (Selector de hora Paquito); revisión visual final pendiente del usuario.
+
+Actualización 2026-10-17: onboarding y edición incluyen anticipación de entregas (24 horas por defecto) y resumen diario (08:00 por defecto), con selección de hora local. Preview específico `NotificationScheduleOptionsPreview` en `ui/notifications/NotificationScheduleOptions.kt`. El permiso Android se gestiona desde una sección independiente: petición explícita en Android 13+, ajustes del sistema y actualización de estado al regresar. Este avance configura las reglas; el programador de avisos sigue pendiente.
+
+Actualización 2026-10-17: la bandeja incluye el acceso Preferencias de notificaciones. Reutiliza el selector del onboarding en un diálogo de pantalla completa con Guardar cambios y Cancelar; Atrás descarta la edición. Preview adicional `NotificationPreferencesPreview` en el mismo archivo del onboarding. Se conserva DM Sans y los componentes existentes; validación visual del editor pendiente.
+
+Actualización 2026-10-17: las tarjetas compactas de notificaciones utilizan texto de 18sp y padding de 16dp para dar espacio a los títulos en la cuadrícula de dos columnas. Pendiente de confirmación visual en la vista previa del usuario.
+
+Actualización 2026-10-17: el onboarding de notificaciones carga y guarda las categorías mediante `SessionViewModel` y `NotificationPreferencesStore`. La selección y la presentación cuadros/lista se restauran al recrear la pantalla. Se conserva el diseño existente; todavía no se programan avisos. Alcance y validación en [SERVICIOS_ACADEMICOS.md](SERVICIOS_ACADEMICOS.md).
+
 > **Fuente de verdad del diseño**: canvas `109:97 - Main` del archivo, NO `112:146 - assets?` (esa página está desactualizada). Si hay conflicto, gana Main.
 
 ## Identificadores
@@ -351,3 +365,100 @@ Layout horizontal (de Figma 365:896):
 - 2026-08-06 — **Teclado tapa el input + chip de conexión eliminado**. (a) El teclado se superponía al campo de texto en vez de desplazar el contenido limpio (comparado con WhatsApp). Fix: `android:windowSoftInputMode="adjustResize"` en `AndroidManifest.xml` + `Modifier.imePadding()` en el Column raíz de `ChatScreen.kt` — con edge-to-edge activado (`enableEdgeToEdge()`), el manifest solo no alcanza, hace falta leer el inset del IME desde Compose. (b) El chip de estado de conexión en el header (agregado hace dos iteraciones, ya simplificado a "Conectado"/"Desconectado") se sacó por completo — el usuario lo consideró ruido visual que rompía el diseño. En su lugar, se agregó `MessageRole.System` a `Message.kt`: un tipo de mensaje centrado y discreto (chip chico, sin burbuja) para avisos como "sin conexión" o "mensaje no entregado", que aparece DENTRO del flujo de la conversación en vez de como chrome fijo — mismo patrón que WhatsApp usa para este tipo de avisos. No hay lógica real de conexión todavía (el usuario indicó que se agrega después); por ahora es solo la capacidad visual, lista para que el ViewModel la dispare cuando exista. `ChatHeader.kt` vuelve a su forma más simple (solo flecha atrás + saludo + subtítulo). Build verificado (`assembleDebug` OK).
 - 2026-08-06 — **Gap del teclado + rediseño de hora/confirmación**. (a) El `imePadding()` de la iteración anterior sí evitaba que el teclado tapara el input, pero el `padding(bottom = 24.dp)` fijo del Column raíz SUMABA por encima (imePadding ya agrega la altura exacta del teclado), dejando un hueco grande entre el input y el teclado. Bajado a `8.dp` — respiro chico cuando el teclado está cerrado, sin duplicar espacio cuando está abierto (comparado contra WhatsApp). (b) El footnote (`"Te aviso otra vez a las 20:00"`, `"Fuente: notas del LMS · 2 ago"`) tenía una caja con borde que se veía "rara/fea" — se sacó el borde, queda como texto simple dentro de la burbuja, sin caja. (c) Se agregó `ChatMessage.timestamp` (hora chica) y `ChatMessage.status: MessageStatus{Sent,Delivered,Read}` (solo para mensajes de usuario): se renderizan abajo a la derecha DE CADA BURBUJA (no de la pantalla), estilo WhatsApp — hora sola en burbujas de bot, hora + palomitas (✓ enviado, ✓✓ gris entregado, ✓✓ celeste leído) en burbujas de usuario. Sin ícono nuevo (no hay asset de Figma para esto, es un patrón nuevo no cubierto por ningún frame) — se usan caracteres de texto (✓/✓✓) en vez de fabricar un vector sin fuente real. Build verificado (`assembleDebug` OK), sin verificación visual en dispositivo (pendiente).
 - 2026-08-06 — **Auditoría pre-commit final (skill `senior-review-paquitobot`)**: `ic_paquito_divider.xml` y `ic_paquito_foro.xml` eliminados por no tener ninguna referencia en el código (huérfanos reales). `ic_paquito_home_fill.xml`/`ic_paquito_book_outline.xml`/`ic_paquito_calendar_default.xml` se dejan sin uso a propósito — son parte del set de íconos con 2 estados (Default/Fill) exportado en batch, no huérfanos de una pantalla descartada. `WelcomeScreen.kt`/`OnboardingNotificationsScreen.kt` no están cableados a `MainActivity`, pero se dejan: es el flujo de Onboarding pendiente de integrar (frames `112:3`/`112:135`/`156:124`, estado "Pendiente" en `ui-integration-map.md`), no una versión descartada como HomeBScreen. Build verificado (`assembleDebug` OK).
+
+
+### Integración de servicios académicos con develop (2026-10-18)
+
+- Los avisos conservan el asistente de tres pasos, preferencias persistentes y edición desde la bandeja.
+- La autorización de avisos usa la sesión activa de Clerk y correo institucional principal verificado. La clave pública se configura únicamente en `local.properties` ignorado por Git.
+- Los avisos leen `PaquitoBotApp.academicRepository` (JSON local), sin dependencia de Canvas ni restricción de red. La planificación utiliza la fecha real del dispositivo, aunque las pantallas académicas usen una fecha fija de demostración.
+- WorkManager actualiza el trabajo periódico existente y lo cancela al perder autorización, permisos o selección de entregas. Se conserva la protección contra duplicados por usuario.
+- No se generan avisos para fechas de demostración vencidas. La bandeja sigue mostrando datos de ejemplo; laboratorio/asistencia, guías y Calendar siguen pendientes.
+
+## Estado de la interfaz — octubre de 2026
+
+- Inicio muestra todas las entregas pendientes sin nota, un calendario semanal que filtra por fecha, próximos eventos y avisos académicos. Los eventos de muestra tienen lista y detalle con enlaces de inscripción.
+- La navegación principal conserva la barra inferior mientras cambia el contenido con desplazamiento según la dirección; las vistas secundarias usan transición de zoom. El chat oculta el teclado al desplazar mensajes.
+- Las pantallas principales, detalles, notificaciones, chat y onboarding usan tarjetas claras con borde sutil (PaquitoColors.SurfaceGlassSoft, BorderDefault, PaquitoShapes.large/card) mediante Modifier.paquitoSurface(). El estado seleccionado usa StateInfoStrong; los estados urgentes conservan sus colores semánticos.
+- La integración local valida compilación y pruebas con JDK 21 y AGP 9.1.1. La comprobación visual y el acceso real a Clerk requieren ejecutar la app.
+
+- Validación de la integración (2026-10-18): APK debug y APK de pruebas generados; pruebas unitarias Android y sharedLogic aprobadas; lint sin errores. No se instalaron APKs ni se verificó el acceso a Clerk en dispositivo. Se conservaron el asistente de avisos y la edición de preferencias junto con eventos y transiciones del nuevo diseño.
+
+
+### Guía de secretaría (2026-10-18)
+
+- Inicio incorpora acceso «Trámites de secretaría». Catálogo y detalle en `ui/procedures`, con 35 fichas locales, 7 categorías, búsqueda sin tildes y consulta de fuente por página.
+- Se reutilizan `paquitoSurface`, `PaquitoShapes`, `PaquitoTypography` (DM Sans), el botón primario y la flecha existentes. Lista de carga/error/vacío y detalle con scroll; regreso conserva consulta y filtro.
+- Canal externo con manejo de aplicación no disponible y dirección seleccionable; correo solo prepara una consulta. No se presentan solicitudes ni se recopilan documentos personales.
+- Tarifas/plazos se muestran como referencia 2024. Modelo y contenido compartidos permiten reutilizarlos en la siguiente guía de matrícula; no hay cronogramas inventados.
+- Plan, decisiones editoriales y pendientes: `requerimientos/SECRETARIA_GUIDE.md`. La revisión visual en dispositivo continúa pendiente.
+
+
+### Guía de matrícula (2026-10-18)
+
+- Inicio añade «Guía de matrícula» usando la misma tarjeta de Secretaría. Bienvenida incorpora acceso al contenido informativo antes de Clerk. Los gates de datos personales no cambian.
+- Dos recorridos con preparación, pasos animados, indicadores de lectura, retroceso y consulta de trámites relacionados. Los canales se comparten con Secretaría mediante GuideChannelAction.
+- Cronograma sin fechas confirmadas; costos y plazos referenciales. Se señalan diferencias entre documentos oficiales para reserva/licencia. Detalles en `ENROLLMENT_GUIDE.md`.
+- El recorrido no registra ni confirma matrícula: el estudiante debe completar los pasos en los canales de Tecsup.
+
+
+### Google Calendar (2026-10-18)
+
+- Horarios incluye acceso a Google Calendar reutilizando la tarjeta de servicios. Conexión Google independiente de Clerk, selección de tareas y sincronización manual con resultado parcial.
+- Tokens solo en memoria; consentimiento y resolución oficial de Google, renovación y revocación de acceso. Estado visible para carga, conexión, envío y errores.
+- Datos de demostración conservan sus fechas originales; las vencidas requieren mostrarse y seleccionarse expresamente. Zona académica Perú.
+- Implementación local y pruebas de lógica; OAuth real y escrituras en Google pendientes de configurar Cloud y validar en dispositivo. Configuración y alcance: `GOOGLE_CALENDAR.md`.
+
+
+### Fechas de demostración octubre/noviembre (2026-10-18)
+
+- Se desplazan entregas y sesiones de academic.json 13 semanas (+91 días), conservando IDs, días de semana, horas y relaciones de notas/asistencia. Entregas y sesiones del 5 de octubre al 11 de noviembre de 2026. Se explicita offset de Perú (-05:00).
+- Inicio, Cursos, Horarios y detalle usan su reloj de dispositivo por defecto; se elimina el anclaje artificial al 3 de agosto. Los previews y contexto mock del chat se actualizan a noviembre.
+- La siguiente sincronización manual de las mismas tareas actualiza los eventos existentes por ID estable; los eventos de Google no cambian solo por instalar el APK. Conservar la misma cuenta y actualizar tareas antes de sincronizar.
+
+
+## Perfil y servicios al estudiante · 18/10/2026
+
+- Nueva pestaña **Perfil** en la barra existente: Inicio, Cursos, Horarios, Perfil y acceso a Paquito. Áreas táctiles de 52dp y tipografía DM Sans; ancho total 318dp con márgenes. El contenido vuelve arriba al cambiar de pestaña.
+- `ui/profile/ProfileScreen.kt`: estado de identidad recibido desde `SessionUiState` y eventos de navegación/cierre. Nombre y correo principal provienen de la sesión autorizada de Clerk; las iniciales se calculan localmente. No se muestra el perfil del JSON como identidad de la cuenta conectada.
+- Secretaría y matrícula se trasladan de Inicio a **Perfil → Servicios al estudiante**. Regresar de las guías conserva Perfil como destino. Mis notificaciones mantiene acceso a preferencias.
+- Cerrar sesión se traslada de Inicio a Perfil, con confirmación, estado de progreso y error reintentable. Se reutiliza `SessionViewModel.signOut`; no se añade un segundo proveedor de autenticación.
+- Se reutilizan `ProcedureEntryCard`, superficies, colores y tipografía existentes. Perfil no añade scroll anidado: lo proporciona `AppTabScaffold`.
+- **Decisión del usuario:** cursos, notas, tareas y horarios continúan siendo datos locales de demostración hasta nuevo aviso. Inicio y Perfil lo indican; el título de los avisos del sistema incorpora «Demo».
+
+
+## Bandeja de avisos · diseño actualizado 18/10/2026
+
+Referencia proporcionada por el usuario: centro de notificaciones con filas ligeras, iconos circulares y separadores. Se mantienen blanco/celeste y DM Sans de PaquitoBot. La lista elimina las tarjetas rosadas, usa más espacio para el contenido, metadatos discretos y detalle completo al tocar. Se conserva la alternativa de cuadros con superficies claras, sin altura fija que recorte texto ampliado.
+
+Filtros: Todos, Hoy, Semana (lunes hasta hoy) y Anteriores (antes del lunes), calculados con la fecha real de recepción y zona local del celular. El historial persiste por cuenta, con borrado y Deshacer; no se modifica el registro que evita repetir entregas. Los avisos del sistema abren esta bandeja con sesión válida y configuración completada. Preferencias permite enviar un aviso explícito de prueba en 30 segundos, sujeto a la programación de Android.
+
+Pruebas anteriores de esta sesión: 74 pruebas JVM y 11 comprobaciones instrumentadas aprobadas en el celular Android 16; incluyen envío en segundo plano, deduplicación, historial separado por cuenta, preferencias y presentación nativa privada. El último cambio visual se verifica mediante compilación; el usuario realiza la revisión manual del diseño. No se ejecutan más pruebas físicas por su indicación.
+
+
+### Correcciones de reapertura y Perfil · 18/10/2026
+
+La configuración inicial se restaura desde `NotificationPreferencesStore.hasCompletedSetup()` al crear SessionViewModel. Salir de la app o cerrar/perder la sesión no borra ese avance: una sesión ausente sigue mostrando ClerkAuthGate, sin repetir el selector de preferencias. Se elimina la excepción anterior limitada a aperturas desde notificaciones, pues la persistencia aplica a toda reapertura.
+
+Se retira Mis notificaciones de Perfil; la bandeja y sus preferencias siguen accesibles desde la campana de Inicio. Los iconos de la lista de avisos se centran verticalmente respecto al contenido de cada fila. Los avisos actuales siguen siendo de demostración; abrirlos lleva a la bandeja. No se afirma que exista sincronización con una fuente académica real.
+
+
+## Animación de apertura · PaquitoBot
+
+Inspiración: video adjunto del usuario con entradas de marca sobre lienzo blanco y formas translúcidas. Implementación Android nativa en `ui/onboarding/LaunchIntroScreen.kt`: halo celeste, aro con reflejos, mascota existente y cuatro iconos académicos que se reúnen alrededor. Nombre y subtítulo aparecen progresivamente con DM Sans; duración aproximada 2.2 s y transición de 240 ms hacia el flujo existente. Omitir permite entrar antes.
+
+Se ejecuta al crear una apertura normal de la app, conserva su finalización durante recreaciones con rememberSaveable y no reaparece al volver del segundo plano dentro de esa Activity. Las aperturas desde un aviso la saltan. La animación no modifica preferencias, sesión ni onboarding. Animatable respeta la escala de animación del sistema. No se agregan SDK, videos ni nuevos assets gráficos: se reutilizan el personaje y los iconos de PaquitoBot. iOS conserva su interfaz nativa existente.
+
+
+### Apertura · segunda dirección visual
+
+A petición del usuario se sustituye la composición de mascota e iconos por una pieza tridimensional de cristal celeste, con perspectiva y reflejos calculados sobre la malla. Un solo gesto de entrada y giro presenta la escultura; el nombre aparece después con contraste de pesos DM Sans y el subtítulo «Tu mundo académico, en orden.». Lienzo blanco y luz tenue, sin tarjetas flotantes ni indicadores de carga decorativos. Duración 2.85 s; conserva Omitir, escala de movimiento del sistema y apertura directa desde notificaciones. La malla se conserva en memoria y se dibuja en una llamada nativa de vértices, sin texturas, nuevos assets ni SDK. Se comprobó compilación; revisión visual final a cargo del usuario.
+
+
+### Ajustes solicitados: personaje, arranque y matrícula
+
+La entrada vuelve a mostrar `paquito_personaje` centrado, con halo y sombra suaves, aparición progresiva y movimiento breve. Se retira la pieza abstracta y se recuperan exactamente PaquitoTypography.DisplayLarge/BodyLarge y los colores de Welcome, sin dividir el nombre en estilos distintos. Conserva Omitir y dura 2.3 s.
+
+El tema nativo Theme.PaquitoBot conserva el fondo blanco. Desde API 31 el icono de la ventana de arranque se configura con un drawable transparente y su salida se retira al estar disponible el primer frame. Android mantiene su ventana nativa mientras inicia el proceso; no se promete eliminar ese tiempo ni se añade una espera artificial. El icono del launcher no se modifica.
+
+En Matrícula la flecha del encabezado usa la salida de la guía, mientras Anterior mantiene el retroceso de un paso. Con sesión autorizada, salir lleva a Inicio; el acceso público desde Welcome vuelve a la entrada pública sin eludir la autenticación. Los pasos se deslizan en dirección de avance/retroceso y la barra de progreso se anima durante 300 ms.

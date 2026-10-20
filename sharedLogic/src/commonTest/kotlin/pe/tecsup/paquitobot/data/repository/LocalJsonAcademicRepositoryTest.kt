@@ -134,16 +134,61 @@ class LocalJsonAcademicRepositoryTest {
         assertEquals(1, calls)
     }
 
-    // --- Asset real (androidApp/src/main/assets/academic.json) ---
+    // --- Catálogo y escenarios reales de Android ---
 
-    private fun readRealAsset(): String {
-        val relative = "androidApp/src/main/assets/academic.json"
+    private fun readAsset(relative: String): String {
+        val assetPath = "androidApp/src/main/assets/academic/$relative"
         // Gradle ejecuta los tests con el directorio del modulo (sharedLogic) como cwd.
-        val path = listOf("../$relative", relative)
+        val path = listOf("../$assetPath", assetPath)
             .map { Path(it) }
             .firstOrNull { SystemFileSystem.exists(it) }
-            ?: error("No se encontro $relative desde el directorio de trabajo del test")
+            ?: error("No se encontro $assetPath desde el directorio de trabajo del test")
         return SystemFileSystem.source(path).buffered().use { it.readString() }
+    }
+
+    private fun readRealAsset(scenarioId: String = "01"): String =
+        pe.tecsup.paquitobot.data.local.assembleAcademicScenario(
+            readAsset("catalog.json"), readAsset("scenarios/scenario-$scenarioId.json"))
+
+    @Test
+    fun allFifteenScenariosAreDistinctAndReferentiallyConsistent() = runTest {
+        val fingerprints = mutableSetOf<String>()
+        (1..15).forEach { number ->
+            val repo = LocalJsonAcademicRepository(readJson = { readRealAsset(number.toString().padStart(2, '0')) })
+            val courses = repo.courses().getOrThrow()
+            val assignments = courses.flatMap { repo.courseAssignments(it.id).getOrThrow() }
+            val sessions = courses.flatMap { repo.courseClassSessions(it.id).getOrThrow() }
+            val grades = repo.grades().getOrThrow()
+            val attendance = repo.attendance().getOrThrow()
+            assertTrue(grades.all { grade -> assignments.any { it.id == grade.assignmentId } })
+            assertTrue(attendance.all { record -> sessions.any { it.id == record.classSessionId } })
+            val signature = grades.joinToString { "${it.assignmentId}:${it.score}" } + "|" +
+                attendance.joinToString { "${it.classSessionId}:${it.isPresent}" } + "|" +
+                assignments.joinToString { "${it.id}:${it.dueAt}" }
+            assertTrue(fingerprints.add(signature), "escenario duplicado: $number")
+        }
+        assertEquals(15, fingerprints.size)
+    }
+
+    @Test
+    fun criticalScenariosKeepTheirAcademicMeaning() = runTest {
+        fun scenario(id: String) = LocalJsonAcademicRepository(readJson = { readRealAsset(id) })
+
+        val labAbsences = scenario("04")
+        val physicsLabs = labAbsences.courseClassSessions(2).getOrThrow()
+            .filter { it.kind == pe.tecsup.paquitobot.domain.academic.AcademicSessionKind.Laboratory }
+            .map { it.id }.toSet()
+        assertEquals(4, labAbsences.courseAttendance(2).getOrThrow().count { !it.isPresent && it.classSessionId in physicsLabs })
+
+        assertEquals(8, scenario("07").courseAttendance(2).getOrThrow().count { !it.isPresent })
+        assertEquals(9, scenario("08").courseAttendance(1).getOrThrow().count { !it.isPresent })
+
+        val pendingLabs = scenario("13")
+        val gradedIds = pendingLabs.grades().getOrThrow().map { it.assignmentId }.toSet()
+        assertTrue(pendingLabs.courses().getOrThrow().flatMap { pendingLabs.courseAssignments(it.id).getOrThrow() }
+            .any { it.kind == pe.tecsup.paquitobot.domain.academic.AcademicAssignmentKind.Laboratory && it.id !in gradedIds })
+        assertEquals("2026-10-16T23:59:00-05:00",
+            scenario("09").courseAssignments(1).getOrThrow().first { it.id == 103 }.dueAt)
     }
 
     @Test
@@ -188,8 +233,8 @@ class LocalJsonAcademicRepositoryTest {
         val gradedIds = repo.grades().getOrThrow().map { it.assignmentId }.toSet()
         val assignments = repo.courses().getOrThrow().flatMap { repo.courseAssignments(it.id).getOrThrow() }
 
-        // Fecha "hoy" del demo: lunes 3 de agosto de 2026 (igual que HomeScreenData.default()).
-        val today = "2026-08-03T00:00:00"
+        // Referencia fija para verificar variedad del dataset: lunes 2 de noviembre de 2026.
+        val today = "2026-11-02T00:00:00"
         assertTrue(assignments.any { it.id in gradedIds }, "falta una asignacion calificada")
         assertTrue(
             assignments.any { it.id !in gradedIds && it.dueAt != null && it.dueAt >= today },
@@ -200,12 +245,22 @@ class LocalJsonAcademicRepositoryTest {
             "falta una asignacion vencida",
         )
 
-        // Sesiones repartidas en la semana del 3 al 9 de agosto.
+        // Sesiones repartidas en la semana del 2 al 8 de noviembre.
         val sessionDays = repo.courses().getOrThrow()
             .flatMap { repo.courseClassSessions(it.id).getOrThrow() }
             .mapNotNull { it.startAt?.take(10) }
-            .filter { it in "2026-08-03".."2026-08-09" }
+            .filter { it in "2026-11-02".."2026-11-08" }
             .toSet()
         assertTrue(sessionDays.size >= 4, "las sesiones de la semana cubren solo ${sessionDays.size} dias")
+    }
+
+    @Test fun assignmentCategoryIsExplicitAndNeverInferredFromTitle() = runTest {
+        val defaultTask = LocalJsonAcademicRepository { fixture }.courseAssignments(2).getOrThrow().single()
+        assertEquals(pe.tecsup.paquitobot.domain.academic.AcademicAssignmentKind.Delivery, defaultTask.kind)
+        val typed = fixture.replace("\"name\": \"Lab 1\"", "\"name\": \"Actividad\", \"kind\": \"laboratory\"")
+        val lab = LocalJsonAcademicRepository { typed }.courseAssignments(2).getOrThrow().single()
+        assertEquals(pe.tecsup.paquitobot.domain.academic.AcademicAssignmentKind.Laboratory, lab.kind)
+        val invalid = typed.replace("\"kind\": \"laboratory\"", "\"kind\": \"unknown\"")
+        assertTrue(LocalJsonAcademicRepository { invalid }.courseAssignments(2).isFailure)
     }
 }

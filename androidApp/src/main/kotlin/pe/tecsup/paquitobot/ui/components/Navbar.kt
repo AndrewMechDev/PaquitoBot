@@ -50,33 +50,11 @@ enum class NavTab(val label: String) {
     Inicio("Inicio"),
     Cursos("Cursos"),
     Horarios("Horarios"),
+    Perfil("Perfil"),
 }
 
-/**
- * Navbar inferior compartido por las pantallas Home, Chat, Cursos, Horarios.
- *
- * Iteracion 2026-08-06:
- *   - Padding lateral eliminado del wrapper externo; el Navbar ya no usa
- *     fillMaxWidth() en el Row principal. Esto evita que el Row estire los
- *     elementos y los mueva cuando cambia el contenido (ej. badge vs sin badge).
- *     Ahora el Row ocupa solo su ancho intrinseco y se centra dentro del Box
- *     que provee el caller (HomeScreen/ChatScreen/etc).
- *   - Tamaños fijos y constantes:
- *       * tab width 72dp (no flex, no weight, no spread).
- *       * pill group gap 6dp entre tabs.
- *       * pill <-> FAB gap 12dp.
- *       * FAB container 72x72dp (para dar espacio al badge arriba).
- *       * FAB circulo 56x56dp centrado dentro del container.
- *       * Badge 20x20dp en top-end del container, offset 2dp,-2dp.
- *     Como todos los anchos son fijos, la Navbar mantiene EXACTAMENTE la misma
- *     posicion horizontal en cualquier pantalla que la renderice, siempre que
- *     el caller la centre.
- *
- * Como queda:
- *   Ancho total = 3 * 72dp (tabs) + 2 * 6dp (gaps entre tabs) + 8dp (padding
- *   pill horizontal) + 12dp (gap pill<->FAB) + 72dp (FAB container) = 320dp.
- *   En una pantalla de 360dp, sobra 20dp a cada lado (centrado).
- *   En una de 411dp, sobra 45.5dp a cada lado.
+/** Barra flotante: cuatro destinos de 52dp y acceso a Paquito.
+ * Margen de 8dp para conservar todas las acciones en pantallas desde 320dp.
  */
 @OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
@@ -87,7 +65,7 @@ fun Navbar(
     notificationCount: Int? = null,
     hazeState: HazeState? = null,
     modifier: Modifier = Modifier,
-    horizontalPadding: Dp = 16.dp,
+    horizontalPadding: Dp = 8.dp,
 ) {
     Row(
         // Importante: NO usamos fillMaxWidth() para que el Row ocupe solo el
@@ -96,7 +74,7 @@ fun Navbar(
         // horizontal en todas las pantallas (Home, Chat, Cursos, Horarios).
         modifier = modifier.padding(horizontal = horizontalPadding),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         // Grupo de tabs con estilo GLASS (referencia Samsung Health, pedido
         // explicito del usuario 2026-08-06 - no viene de Figma, es una
@@ -126,7 +104,7 @@ fun Navbar(
         // `AppTabScaffold`, que marca el contenido scrolleable como
         // `hazeSource`. Si `hazeState` es null (ej. Preview aislado sin
         // fuente detras) cae al fallback de opacidad plana de antes.
-        // Width fijo: 3 tabs * 72dp + 2 gaps * 6dp + padding 4dp * 2 = 232dp.
+        // Cuatro destinos con áreas táctiles de al menos 48dp.
         Row(
             modifier = Modifier
                 .shadow(
@@ -156,11 +134,12 @@ fun Navbar(
                 )
                 .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             NavTab.Inicio.let { NavTabItem(it, currentTab == it) { onTabSelected(it) } }
             NavTab.Cursos.let { NavTabItem(it, currentTab == it) { onTabSelected(it) } }
             NavTab.Horarios.let { NavTabItem(it, currentTab == it) { onTabSelected(it) } }
+            NavTab.Perfil.let { NavTabItem(it, currentTab == it) { onTabSelected(it) } }
         }
 
         // Boton Paquito con badge opcional encima. Circular, GLASS OSCURO:
@@ -295,12 +274,12 @@ fun Navbar(
  */
 @Composable
 private fun NavTabItem(tab: NavTab, selected: Boolean, onClick: () -> Unit) {
-    val contentColor = if (selected) PaquitoColors.BrandPrimary else PaquitoColors.TextOnSurface
+    val contentColor = if (selected) PaquitoColors.StateInfoStrong else PaquitoColors.TextOnSurface
     Column(
         modifier = Modifier
-            .width(72.dp)
+            .width(52.dp)
             .clip(RoundedCornerShape(if (selected) 50 else 35))
-            .background(if (selected) PaquitoColors.BrandPrimary.copy(alpha = 0.16f) else Color.Transparent)
+            .background(if (selected) PaquitoColors.OverlayInfoSubtle else Color.Transparent)
             .clickable(onClick = onClick)
             .padding(vertical = 6.dp, horizontal = 4.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
@@ -312,12 +291,13 @@ private fun NavTabItem(tab: NavTab, selected: Boolean, onClick: () -> Unit) {
                     NavTab.Inicio -> R.drawable.ic_paquito_home_outline
                     NavTab.Cursos -> R.drawable.ic_paquito_book_fill
                     NavTab.Horarios -> R.drawable.ic_paquito_calendar_fill
+                    NavTab.Perfil -> R.drawable.ic_paquito_frame_person
                 }
             ),
             contentDescription = tab.label,
             modifier = Modifier.size(22.dp),
             contentScale = ContentScale.Fit,
-            colorFilter = if (selected) ColorFilter.tint(PaquitoColors.BrandPrimary) else null,
+            colorFilter = if (selected) ColorFilter.tint(PaquitoColors.StateInfoStrong) else null,
         )
         Text(
             text = tab.label,

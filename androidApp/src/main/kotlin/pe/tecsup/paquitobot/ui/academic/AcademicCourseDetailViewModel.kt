@@ -3,6 +3,7 @@ package pe.tecsup.paquitobot.ui.academic
 import pe.tecsup.paquitobot.domain.academic.AcademicAssignment
 import pe.tecsup.paquitobot.domain.academic.AcademicGrade
 import pe.tecsup.paquitobot.domain.academic.AcademicRepository
+import pe.tecsup.paquitobot.domain.academic.AcademicSessionKind
 import pe.tecsup.paquitobot.ui.courses.AttendanceEntry
 import pe.tecsup.paquitobot.ui.courses.CourseCardData
 import pe.tecsup.paquitobot.ui.courses.CourseDetailData
@@ -53,15 +54,17 @@ private fun initialDetail(course: CourseCardData) = CourseDetailData(
 
 internal fun buildCourseDetail(course: CourseCardData, records: CourseRecords, today: String): CourseDetailData {
     val gradeByAssignment = records.grades.associateBy { it.assignmentId }
-    val sessionDateById = records.sessions.associate { it.id to it.startAt?.let(::dateKeyOf) }
+    val sessionById = records.sessions.associateBy { it.id }
 
     val attendanceEntries = records.attendance
         .mapNotNull { record ->
-            val dateKey = sessionDateById[record.classSessionId] ?: return@mapNotNull null
-            dateKey to record.isPresent
+            val session = sessionById[record.classSessionId] ?: return@mapNotNull null
+            val dateKey = session.startAt?.let(::dateKeyOf) ?: return@mapNotNull null
+            Triple(dateKey, record.isPresent, session.kind)
         }
         .sortedBy { it.first }
-        .map { (dateKey, isPresent) -> AttendanceEntry(AcademicDateUtils.shortDateLabel(dateKey), isPresent) }
+        .map { (dateKey, isPresent, kind) -> AttendanceEntry(AcademicDateUtils.shortDateLabel(dateKey), isPresent,
+            if (kind == AcademicSessionKind.Laboratory) "Laboratorio" else null) }
 
     val pendingCount = pendingAssignments(records.assignments, records.grades, today).size
 

@@ -3,6 +3,7 @@ package pe.tecsup.paquitobot.ui.academic
 import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.domain.academic.AcademicRepository
 import pe.tecsup.paquitobot.ui.home.HomeScreenData
+import pe.tecsup.paquitobot.ui.home.HomeFocusItem
 import pe.tecsup.paquitobot.ui.home.TaskEntry
 import pe.tecsup.paquitobot.ui.home.TaskUrgency
 import pe.tecsup.paquitobot.ui.home.WeekDayData
@@ -11,7 +12,8 @@ import pe.tecsup.paquitobot.util.AcademicDateUtils
 /**
  * Arma [HomeScreenData] a partir del [AcademicRepository]: el calendario
  * semanal es la semana (lunes a domingo) que contiene [today], y las tareas
- * son las entregas PENDIENTES (sin nota y con fecha >= hoy) de esa semana.
+ * son todas las entregas pendientes sin nota desde [today], incluidas las
+ * de semanas posteriores. El calendario permite filtrar la lista por dia.
  *
  * Las cards de ranking (`overallRanking`/`careerCode`/`currentCycle`/
  * `cycleRankings`) son DATO DEMO fijo que se hereda de
@@ -44,11 +46,12 @@ private fun initialHome(): HomeScreenData = HomeScreenData.default().copy(
     days = emptyList(),
     tasks = emptyList(),
     pendingCount = 0,
+    importantNotices = emptyList(),
+    importantNoticeCount = 0,
 )
 
 internal fun buildHomeData(base: HomeScreenData, all: List<CourseWithRecords>, today: String): HomeScreenData {
     val week = weekOf(today)
-    val weekDates = week.toSet()
 
     // Dias con al menos una falta (sesion de clase con asistencia en `false`).
     val absenceDates = all.flatMap { (_, records) ->
@@ -65,6 +68,7 @@ internal fun buildHomeData(base: HomeScreenData, all: List<CourseWithRecords>, t
             dateLabel = AcademicDateUtils.shortDateLabel(dateKey),
             isToday = dateKey == today,
             isCritical = dateKey in absenceDates,
+            dateKey = dateKey,
         )
     }
 
@@ -75,18 +79,46 @@ internal fun buildHomeData(base: HomeScreenData, all: List<CourseWithRecords>, t
         .sortedBy { (_, item) -> item.dueDate }
     val earliestDueDate = pending.firstOrNull()?.second?.dueDate
 
-    val tasks = pending
-        .filter { (_, item) -> item.dueDate in weekDates }
-        .map { (course, item) ->
-            TaskEntry(
-                label = "${course.code} · tarea",
-                title = item.assignment.name,
-                timestamp = AcademicDateUtils.shortDateLabel(item.dueDate),
-                urgency = if (item.dueDate == earliestDueDate) TaskUrgency.Urgent else TaskUrgency.Normal,
-                dayNumber = AcademicDateUtils.dayNumber(item.dueDate),
-                iconRes = R.drawable.ic_paquito_docs_default,
-            )
+    val tasks = pending.map { (course, item) ->
+        TaskEntry(
+            label = "${course.code} · tarea",
+            title = item.assignment.name,
+            timestamp = AcademicDateUtils.shortDateLabel(item.dueDate),
+            urgency = if (item.dueDate == earliestDueDate) {
+                TaskUrgency.Urgent
+            } else {
+                TaskUrgency.Normal
+            },
+            dateKey = item.dueDate,
+            iconRes = R.drawable.ic_paquito_docs_default,
+        )
+    }
+
+    val attendanceNotices = all.mapNotNull { (course, records) ->
+        val absences = absenceCount(records.attendance)
+        if (absences < 3) null else {
+            HomeFocusItem("Asistencia a vigilar", "$absences faltas registradas · ${course.code}")
         }
+    }
+    val lowestGradeNotice = all
+        .flatMap { (course, records) ->
+            val assignmentById = records.assignments.associateBy { it.id }
+            records.grades
+                .filter { it.score <= 12.0 }
+                .mapNotNull { grade ->
+                    val assignment = assignmentById[grade.assignmentId] ?: return@mapNotNull null
+                    Triple(grade.score, course.code, assignment.name)
+                }
+        }
+        .minByOrNull { it.first }
+        ?.let { (score, courseCode, assignmentName) ->
+            HomeFocusItem("Nota por mejorar", "$assignmentName · $courseCode · ${score.toInt()}/20")
+        }
+    val allImportantNotices = buildList {
+        addAll(attendanceNotices)
+        if (lowestGradeNotice != null) add(lowestGradeNotice)
+    }
+    val importantNotices = allImportantNotices.take(2)
 
     return base.copy(
         dateLabel = AcademicDateUtils.fullDateLabel(today),
@@ -98,5 +130,7 @@ internal fun buildHomeData(base: HomeScreenData, all: List<CourseWithRecords>, t
         days = days,
         tasks = tasks,
         pendingCount = pending.size,
+        importantNotices = importantNotices,
+        importantNoticeCount = allImportantNotices.size,
     )
 }

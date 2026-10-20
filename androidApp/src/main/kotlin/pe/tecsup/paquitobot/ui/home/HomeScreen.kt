@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,12 +14,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,10 +42,13 @@ import pe.tecsup.paquitobot.ui.components.AcademicErrorBanner
 import pe.tecsup.paquitobot.ui.components.AppTabScaffold
 import pe.tecsup.paquitobot.ui.components.NavTab
 import pe.tecsup.paquitobot.ui.components.NotificationBellButton
+import pe.tecsup.paquitobot.ui.events.EventMockData
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoFont
+import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
+import pe.tecsup.paquitobot.ui.theme.paquitoSurface
 
 /**
  * Pantalla Home de PaquitoBot, fiel al frame Figma `351:644` del archivo
@@ -53,7 +57,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
  * Estructura (de arriba hacia abajo):
  *   1. Header / saludo     ("¡Bienvenido, {nombre}!" + fecha completa) — alineado a izquierda
  *   2. Snapshot academico de 3 cards (ranking general / ranking por ciclo / carrera)
- *   3. Calendario semanal  ("Semana 10" + card oscura con 7 dias en 1 sola fila)
+ *   3. Calendario semanal  (7 dias en una tarjeta clara)
  *   4. Tareas pendientes   (lista unificada: foros, labs, practicas)
  *   5. Navbar inferior     (3 tabs + boton Paquito + badge)
  *
@@ -82,35 +86,48 @@ fun HomeScreen(
     onTabSelected: (NavTab) -> Unit = {},
     onPaquitoClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
-    onSignOutClick: () -> Unit = {},
-    isSigningOut: Boolean = false,
-    signOutError: String? = null,
+    onEventsClick: () -> Unit = {},
     errorMessage: String? = null,
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    // Iteracion 2026-08-13 (filtro por dia): que dia esta seleccionado en el
-    // calendario semanal ahora vive como estado de UI (antes `WeekDayData.selected`
-    // era estatico, ni siquiera clickeable). Arranca en el dia marcado `isToday`.
-    var selectedDayNumber by remember(data) {
-        mutableStateOf(data.days.firstOrNull { it.isToday }?.dayNumber ?: data.days.firstOrNull()?.dayNumber.orEmpty())
-    }
-    val selectedDay = data.days.firstOrNull { it.dayNumber == selectedDayNumber }
-    val tasksForSelectedDay = data.tasks.filter { it.dayNumber == selectedDayNumber }
-
-    // Iteracion 2026-08-19 (card de ranking por ciclo, funcional): que ciclo
-    // se esta mostrando en la card verde vive como estado de UI, arranca en
-    // el ciclo completado MAS RECIENTE (el anterior al actual - el JSON
-    // academico local no tiene el concepto de "ciclo" en absoluto, ver
-    // comentario en `PainSnapshotRow`).
-    var selectedCycleIndex by remember(data) { mutableStateOf(data.cycleRankings.lastIndex) }
-
     AppTabScaffold(
         currentTab = currentTab,
         onTabSelected = onTabSelected,
         onPaquitoClick = onPaquitoClick,
         notificationCount = data.pendingCount,
         modifier = modifier,
+    ) {
+        HomeTabContent(
+            data = data,
+            onNotificationsClick = onNotificationsClick,
+            onEventsClick = onEventsClick,
+            errorMessage = errorMessage,
+            onRetry = onRetry,
+        )
+    }
+}
+
+/** Contenido de Inicio sin su scaffold, para que la navegación persista fuera de la transición. */
+@Composable
+fun HomeTabContent(
+    data: HomeScreenData,
+    onNotificationsClick: () -> Unit,
+    onEventsClick: () -> Unit,
+    errorMessage: String?,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var selectedDayNumber by remember(data) { mutableStateOf<String?>(null) }
+    val selectedDay = data.days.firstOrNull { it.dayNumber == selectedDayNumber }
+    val tasksForSelectedDay = selectedDay?.let { day ->
+        data.tasks.filter { it.dateKey == day.dateKey }
+    } ?: data.tasks
+    var selectedCycleIndex by remember(data) { mutableStateOf(data.cycleRankings.lastIndex) }
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         if (errorMessage != null) {
             AcademicErrorBanner(message = errorMessage, onRetry = onRetry)
@@ -120,10 +137,8 @@ fun HomeScreen(
             dateLabel = data.dateLabel,
             unreadNotificationsCount = data.unreadNotificationsCount,
             onNotificationsClick = onNotificationsClick,
-            onSignOutClick = onSignOutClick,
-            isSigningOut = isSigningOut,
-            signOutError = signOutError,
         )
+        Text("Datos académicos de demostración", style = PaquitoTypography.Caption, color = PaquitoColors.StateInfoStrong)
         PainSnapshotRow(
             overallRanking = data.overallRanking,
             careerCode = data.careerCode,
@@ -138,6 +153,11 @@ fun HomeScreen(
                 }
             },
         )
+        HomeHighlights(
+            importantNotices = data.importantNotices,
+            importantNoticeCount = data.importantNoticeCount,
+            onEventsClick = onEventsClick,
+        )
         HomeWeekSection(
             title = data.weekTitle,
             days = data.days,
@@ -148,7 +168,96 @@ fun HomeScreen(
             title = data.tasksHeader,
             dateLabel = selectedDay?.dateLabel,
             items = tasksForSelectedDay,
+            onShowAll = { selectedDayNumber = null },
         )
+    }
+}
+
+/** Tarjetas compactas de prioridad para consultar lo urgente sin abrir otras pestañas. */
+@Composable
+private fun HomeHighlights(
+    importantNotices: List<HomeFocusItem>,
+    importantNoticeCount: Int,
+    onEventsClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        HomeHighlightCard(
+            title = "Próximos eventos",
+            count = EventMockData.events.size,
+            items = EventMockData.events.take(2).map { event ->
+                HomeFocusItem(event.title, "${event.dateLabel} · ${event.venue}")
+            },
+            accent = PaquitoColors.StateInfoStrong,
+            actionLabel = "Ver todos",
+            onClick = onEventsClick,
+        )
+        HomeHighlightCard("Avisos importantes", importantNoticeCount, importantNotices, PaquitoColors.StateDanger)
+    }
+}
+
+@Composable
+private fun HomeHighlightCard(
+    title: String,
+    count: Int,
+    items: List<HomeFocusItem>,
+    accent: Color,
+    actionLabel: String? = null,
+    onClick: (() -> Unit)? = null,
+) {
+    Column(
+        modifier = Modifier
+            .width(252.dp)
+            .heightIn(min = 172.dp)
+            .paquitoSurface()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = title,
+                style = PaquitoTypography.TaskTitle,
+                color = PaquitoColors.TextOnCardStrong,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = actionLabel ?: count.toString(),
+                style = PaquitoTypography.TaskTitle,
+                color = if (actionLabel != null) PaquitoColors.TextLink else accent,
+            )
+        }
+        HorizontalDivider(color = PaquitoColors.BorderDefault)
+        if (items.isEmpty()) {
+            Text(
+                text = "Todo al día por ahora",
+                style = PaquitoTypography.BodyMedium,
+                color = PaquitoColors.TextOnCardMuted,
+            )
+        } else {
+            items.take(2).forEach { item ->
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = item.title,
+                        style = PaquitoTypography.BodyMedium,
+                        color = PaquitoColors.TextOnCardStrong,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = item.detail,
+                        style = PaquitoTypography.Caption,
+                        color = PaquitoColors.TextOnCardMuted,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -215,8 +324,7 @@ private fun SnapshotChip(
 ) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(PaquitoColors.SurfaceElevated)
+            .paquitoSurface()
             .then(
                 if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
             )
@@ -241,8 +349,8 @@ private fun SnapshotChip(
         )
         Text(
             text = hint,
-            fontSize = 11.sp,
-            lineHeight = 13.sp,
+            fontSize = 12.sp,
+            lineHeight = 15.sp,
             fontFamily = PaquitoFont.DMSans,
             color = PaquitoColors.TextOnCardMuted,
             maxLines = 2,
@@ -267,9 +375,6 @@ private fun HomeMessage(
     dateLabel: String,
     unreadNotificationsCount: Int,
     onNotificationsClick: () -> Unit,
-    onSignOutClick: () -> Unit,
-    isSigningOut: Boolean,
-    signOutError: String?,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(
@@ -281,19 +386,7 @@ private fun HomeMessage(
                 unreadCount = unreadNotificationsCount,
                 onClick = onNotificationsClick,
             )
-            Button(
-                onClick = onSignOutClick,
-                enabled = !isSigningOut,
-                colors = ButtonDefaults.buttonColors(containerColor = PaquitoColors.StateDanger),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.padding(start = 8.dp),
-            ) {
-                Text(
-                    text = if (isSigningOut) "Cerrando…" else "Cerrar sesión",
-                    style = PaquitoTypography.BodySmall,
-                    color = Color.White,
-                )
-            }
+
         }
         Text(
             text = greeting,
@@ -307,28 +400,22 @@ private fun HomeMessage(
             style = PaquitoTypography.HeadlineSmall,
             color = PaquitoColors.TextHomeMuted,
         )
-        if (signOutError != null) {
-            Text(
-                text = signOutError,
-                style = PaquitoTypography.BodySmall,
-                color = PaquitoColors.StateDanger,
-            )
-        }
+
     }
 }
 
 /* -----------------------------------------------------------
- * 2. Semana: titulo + card oscura con 7 dias en 1 sola fila (Lu..Do)
+ * 2. Semana: calendario compacto con los 7 dias (Lu..Do)
  * ----------------------------------------------------------- */
 
 @Composable
 private fun HomeWeekSection(
     title: String,
     days: List<WeekDayData>,
-    selectedDayNumber: String,
+    selectedDayNumber: String?,
     onDaySelected: (String) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
             text = title,
             fontSize = 20.sp,
@@ -338,16 +425,12 @@ private fun HomeWeekSection(
             color = PaquitoColors.TextHomeStrong,
         )
 
-        // Card oscura `SurfaceHomeWeekBg` con los 7 dias en UNA sola fila
-        // (tira de calendario semanal). Evita el dia "huerfano" que quedaba
-        // solo en una tercera fila con el grid 3x3 anterior.
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(35.dp))
-                .background(PaquitoColors.SurfaceHomeWeekBg)
-                .padding(horizontal = 8.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                .paquitoSurface(PaquitoShapes.card)
+                .padding(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             days.forEach { day ->
@@ -369,24 +452,7 @@ private fun HomeWeekSection(
  */
 private fun shortDayLabel(dayOfWeek: String): String = dayOfWeek.take(2)
 
-/**
- * Celda de un dia en el calendario semanal del Home A.
- *
- * Variantes visuales (sacadas de Figma 351:644):
- *   - dia seleccionado:  bg rgba(211,211,211,0.28), label blanco translucido.
- *   - dia normal:        bg rgba(255,255,255,0.9), label gris translucido.
- *   - numero: 24sp (compactado para caber en el cell); color rojo translucido
- *     si es critico, cyan translucido en otro caso.
- *
- * Iteracion 2026-08-06: los 7 dias (incluyendo Domingo) van en UNA sola fila
- * en vez de un grid 3x3 (el grid dejaba el Domingo huerfano, solo, en una
- * tercera fila descentrada). Con 7 celdas en fila no entra el nombre
- * completo del dia, por eso se abrevia a 2 letras via [shortDayLabel].
- *
- * Iteracion 2026-08-13 (filtro por dia): la celda pasa de ser puramente
- * visual a interactiva - [onClick] filtra "Tareas Pendientes" por el dia
- * tocado (antes ningun dia era clickeable).
- */
+/** Un dia se destaca en azul cuando filtra las tareas; el punto marca hoy o una falta. */
 @Composable
 private fun WeekDayCell(
     day: WeekDayData,
@@ -394,223 +460,186 @@ private fun WeekDayCell(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val cellBg = if (selected) {
-        androidx.compose.ui.graphics.Color(0x47D3D3D3) // rgba(211,211,211,0.28)
-    } else {
-        androidx.compose.ui.graphics.Color(0xE6FFFFFF) // rgba(255,255,255,0.9)
-    }
-    val labelColor = if (selected) {
-        PaquitoColors.TextHomeDayActiveLabel
-    } else {
-        PaquitoColors.TextHomeDayLabel
-    }
-    val numberColor = if (day.isCritical) {
-        PaquitoColors.TextHomeDayNumberCritical
-    } else {
-        PaquitoColors.TextHomeDayNumber
-    }
-    // Cell compacto: 64dp de altura minima, ancho flexible (weight 1f) para
-    // que las 7 celdas de la fila unica se repartan el ancho disponible.
-    // El contenido del cell esta centrado horizontalmente para evitar que
-    // los labels cortos ("Lunes", "Jueves") queden pegados a la izquierda
-    // con un hueco blanco visible a la derecha cuando el cell se estira
-    // con weight(1f). El Figma real muestra el "03" centrado dentro del
-    // cell, no alineado a Start.
+    val shape = RoundedCornerShape(16.dp)
     Column(
         modifier = modifier
-            .defaultMinSize(minHeight = 64.dp)
-            .clip(RoundedCornerShape(18.dp))
-            .background(cellBg)
+            .defaultMinSize(minHeight = 72.dp)
+            .clip(shape)
+            .background(if (selected) PaquitoColors.StateInfoStrong else PaquitoColors.Background)
             .clickable(onClick = onClick)
-            .padding(horizontal = 4.dp, vertical = 8.dp),
+            .padding(horizontal = 2.dp, vertical = 9.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = shortDayLabel(day.dayOfWeek),
-            fontSize = 11.sp,
-            lineHeight = 13.sp,
+            fontSize = 12.sp,
+            lineHeight = 15.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
-            color = labelColor,
+            color = if (selected) PaquitoColors.TextOnWhite else PaquitoColors.TextOnCardMuted,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
         Text(
             text = day.dayNumber,
-            fontSize = 20.sp,
+            fontSize = 18.sp,
             lineHeight = 24.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = PaquitoFont.DMSans,
-            color = numberColor,
+            color = if (selected) PaquitoColors.TextOnWhite else PaquitoColors.TextOnCardStrong,
             maxLines = 1,
+        )
+        Box(
+            modifier = Modifier
+                .size(5.dp)
+                .clip(CircleShape)
+                .background(
+                    when {
+                        day.isCritical -> PaquitoColors.StateDanger
+                        day.isToday && selected -> PaquitoColors.TextOnWhite
+                        day.isToday -> PaquitoColors.StateInfoStrong
+                        else -> Color.Transparent
+                    },
+                ),
         )
     }
 }
 
 /* -----------------------------------------------------------
- * 3. Tareas pendientes: titulo + icono foro + card translucida con lista
+ * 3. Tareas pendientes: tarjetas legibles dentro del scroll de Inicio
  * ----------------------------------------------------------- */
 
 /**
- * Iteracion 2026-08-13 (filtro por dia): [title] ahora se completa con la
- * fecha numerica del dia seleccionado ("Tareas Pendientes — 03/08/26"), y
- * la lista se filtra a las tareas de ESE dia. Si no hay ninguna (caso
- * esperable un Domingo), se muestra un estado vacio en vez de un card sin
- * contenido.
+ * La lista muestra todas las entregas sin calificar por defecto. Al tocar
+ * un dia del calendario se filtra a esa fecha; el control "Ver todas"
+ * restablece la lista completa.
  */
 @Composable
-private fun HomeTasksSection(title: String, dateLabel: String?, items: List<TaskEntry>) {
-    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        // Header de la seccion: solo el titulo.
-        // Iteracion 2026-08-06: el icono de foro (2 burbujas de chat) que
-        // habia al costado del titulo se elimina - el frame Figma actual
-        // (re-extraido de "Paquito-v2") ya NO lo tiene, era de una
-        // iteracion vieja del diseno.
-        Text(
-            text = if (dateLabel != null) "$title — $dateLabel" else title,
-            fontSize = 20.sp,
-            lineHeight = 24.sp,
-            fontWeight = FontWeight.SemiBold,
-            fontFamily = PaquitoFont.DMSans,
-            color = PaquitoColors.TextHomeStrong,
+private fun HomeTasksSection(
+    title: String,
+    dateLabel: String?,
+    items: List<TaskEntry>,
+    onShowAll: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
             modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = title,
+                fontSize = 20.sp,
+                lineHeight = 24.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = PaquitoFont.DMSans,
+                color = PaquitoColors.TextHomeStrong,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = if (dateLabel == null) "${items.size} en total" else "Ver todas",
+                style = PaquitoTypography.Caption,
+                color = PaquitoColors.TextLink,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(PaquitoColors.OverlayInfoSubtle)
+                    .then(if (dateLabel != null) Modifier.clickable(onClick = onShowAll) else Modifier)
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+            )
+        }
+        Text(
+            text = if (dateLabel == null) "Todas las entregas próximas" else "Entregas del $dateLabel",
+            style = PaquitoTypography.BodyMedium,
+            color = PaquitoColors.TextOnCardMuted,
         )
-
-        // Card wrapper translucida con la lista adentro.
-        // Iteracion 2026-08-06 01:51: se RESTAURA el wrapper del card que
-        // habia sido eliminado por error en la iteracion anterior. El card
-        // debe existir (es parte del diseno Figma) y debe tener un BORDE
-        // sutil blanco + fondo blanco translucido. El feedback del usuario
-        // decia "agregar el contorno del card de tareas", NO eliminarlo.
-        //
-        //   fondo: rgba(245,245,245,0.2)  = #33F5F5F5
-        //   borde: rgba(255,255,255,0.4)  = #66FFFFFF (sutil, fino, 1dp)
-        //   radio: 28dp (mismo que el card de la semana)
-        //   padding interno: 6dp
-        val taskScroll = rememberScrollState()
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .defaultMinSize(minHeight = 80.dp)
-                .heightIn(max = 280.dp)
-                .clip(RoundedCornerShape(35.dp))
-                .background(PaquitoColors.SurfaceHomeTaskListBg)
-                .border(
-                    width = 1.dp,
-                    color = androidx.compose.ui.graphics.Color(0x66FFFFFF),
-                    shape = RoundedCornerShape(35.dp),
-                )
-                .verticalScroll(taskScroll)
-                .padding(6.dp),
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             if (items.isEmpty()) {
                 Text(
-                    text = "No hay tareas pendientes",
-                    fontSize = 14.sp,
-                    fontFamily = PaquitoFont.DMSans,
+                    text = "No hay entregas pendientes para esta fecha",
+                    style = PaquitoTypography.BodyMedium,
                     color = PaquitoColors.TextOnCardMuted,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 10.dp, vertical = 20.dp),
+                        .clip(PaquitoShapes.card)
+                        .background(PaquitoColors.SurfaceGlassSoft)
+                        .padding(20.dp),
                 )
             } else {
-                items.forEachIndexed { index, item ->
-                    if (index > 0) {
-                        TaskDivider()
-                    }
-                    TaskInfoRow(item = item)
-                }
+                items.forEach { item -> TaskInfoRow(item = item) }
             }
         }
     }
 }
 
-/**
- * Divider horizontal de 1dp con opacidad 50% sobre #1C1B1F, fiel al asset
- * SVG `535d4587-4140-4f80-8565-f69031d6d538.svg` del frame original.
- */
-@Composable
-private fun TaskDivider() {
-    HorizontalDivider(
-        thickness = 1.dp,
-        color = androidx.compose.ui.graphics.Color(0x801C1B1F), // rgba(28,27,31,0.5)
-    )
-}
-
-/**
- * Fila de tarea del Home A.
- *
- * Layout horizontal (Figma 365:896):
- *   [icono 18x18] [col (label "Curso" + titulo "Nombre Tarea")] [timestamp 24sp]
- *
- * El timestamp cambia de color segun la urgencia:
- *   - normal:  TextTimestampLarge      #29617B
- *   - urgente: TextTimestampLargeAccent  rgba(34,204,255,0.7)
- *   - futuro:  TextTimestampLargeMuted   rgba(0,201,251,0.5)
- *
- * Layout en Compose:
- *   - El bloque izquierdo usa `weight(1f)` para tomar todo el ancho disponible
- *     (excepto el timestamp) en vez de un width fijo. Asi el titulo puede usar
- *     el espacio real y el timestamp queda alineado a la derecha sin overflow.
- *   - `softWrap = false` en el timestamp evita que "12 h" se parta en dos lineas.
- *   - Compactado (padding 10/6dp, fuentes 11/14sp, timestamp 24sp) para que el
- *     item no se sienta ancho en la nueva card con padding 6dp.
- */
+/** Una entrega por tarjeta, con el curso, el título y la fecha claramente separados. */
 @Composable
 private fun TaskInfoRow(item: TaskEntry) {
+    val accent = when (item.urgency) {
+        TaskUrgency.Urgent -> PaquitoColors.StateDanger
+        TaskUrgency.Normal -> PaquitoColors.StateInfoStrong
+        TaskUrgency.Future -> PaquitoColors.StateNeutral
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 10.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .paquitoSurface()
+            .padding(horizontal = 14.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Image(
-            painter = painterResource(id = item.iconRes),
-            contentDescription = null,
-            modifier = Modifier.size(18.dp),
-            contentScale = ContentScale.Fit,
-        )
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(PaquitoColors.OverlayInfoSubtle),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                painter = painterResource(id = item.iconRes),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                contentScale = ContentScale.Fit,
+            )
+        }
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(1.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
             horizontalAlignment = Alignment.Start,
         ) {
             Text(
                 text = item.label,
-                fontSize = 11.sp,
-                lineHeight = 13.sp,
-                fontWeight = FontWeight.Medium,
-                fontFamily = PaquitoFont.DMSans,
+                style = PaquitoTypography.Caption,
                 color = PaquitoColors.TextHomeTaskLabel,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = item.title,
-                fontSize = 14.sp,
-                lineHeight = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = PaquitoFont.DMSans,
-                color = PaquitoColors.TextOnSurface,
-                maxLines = 1,
+                style = PaquitoTypography.TaskTitle.copy(fontSize = 15.sp, lineHeight = 19.sp),
+                color = PaquitoColors.TextOnCardStrong,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        Text(
-            text = item.timestamp,
-            fontSize = 24.sp,
-            lineHeight = 28.sp,
-            softWrap = false,
-            fontWeight = FontWeight.SemiBold,
-            fontFamily = PaquitoFont.DMSans,
-            color = when (item.urgency) {
-                TaskUrgency.Normal  -> PaquitoColors.TextTimestampLarge
-                TaskUrgency.Urgent  -> PaquitoColors.TextTimestampLargeAccent
-                TaskUrgency.Future  -> PaquitoColors.TextTimestampLargeMuted
-            },
-        )
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = "Vence",
+                style = PaquitoTypography.Caption,
+                color = PaquitoColors.TextOnCardMuted,
+            )
+            Text(
+                text = item.timestamp,
+                style = PaquitoTypography.ButtonLabel,
+                color = accent,
+                maxLines = 1,
+            )
+        }
     }
 }
 
@@ -621,10 +650,11 @@ private fun TaskInfoRow(item: TaskEntry) {
 /** Datos de un dia del calendario semanal. */
 data class WeekDayData(
     val dayOfWeek: String, // "Lunes", "Martes", "Miercoles", ...
-    val dayNumber: String, // "03", "04", ... - clave para filtrar tareas (ver [TaskEntry.dayNumber])
+    val dayNumber: String, // "03", "04", ... - numero mostrado en el calendario semanal
     val dateLabel: String, // "03/08/26" - se muestra en el header de "Tareas Pendientes" al seleccionar este dia
-    val isToday: Boolean,  // dia con el que arranca seleccionado el calendario (antes se llamaba `selected`, ahora eso es estado de UI)
+    val isToday: Boolean,  // identifica el dia actual en el calendario
     val isCritical: Boolean,
+    val dateKey: String = "", // "yyyy-MM-dd", evita filtrar tareas por numero de dia solamente
 )
 
 /** Urgencia de una tarea, determina el color del timestamp grande. */
@@ -636,8 +666,14 @@ data class TaskEntry(
     val title: String,    // "Nombre Tarea"
     val timestamp: String, // "12 h"
     val urgency: TaskUrgency,
-    val dayNumber: String, // coincide con [WeekDayData.dayNumber] del dia al que pertenece esta tarea
     @androidx.annotation.DrawableRes val iconRes: Int,
+    val dateKey: String = "", // "yyyy-MM-dd", permite distinguir fechas de meses distintos
+)
+
+/** Elemento breve que alimenta los widgets de prioridad en Inicio. */
+data class HomeFocusItem(
+    val title: String,
+    val detail: String,
 )
 
 /**
@@ -666,37 +702,31 @@ data class HomeScreenData(
     val careerCode: String,
     val currentCycle: Int,
     val cycleRankings: List<CycleRanking>,
+    val importantNotices: List<HomeFocusItem> = emptyList(),
+    val importantNoticeCount: Int = 0,
     // `pendingCount` de arriba es el badge del FAB de Paquito (tareas
     // pendientes) - este es un contador DISTINTO para la campana del header
     // (avisos generales: vencimientos, notas nuevas, sync de datos). Se
     // muestran juntos en pantalla, pero no deberian ser el mismo numero:
     // implicaria que son el mismo concepto y no lo son.
     val unreadNotificationsCount: Int = 0,
-    // LEGADO: las cards de promedio/faltas/entregas ya no se dibujan en Home
-    // (las reemplazo el ranking), pero `MockAcademicContext` (contexto del
-    // chat, que sigue con datos demo) todavia los lee desde `default()`.
-    // Borrar junto con ese uso cuando el chat lea el JSON local.
-    val trackValue: String = "—",
-    val absencesUsed: Int = 0,
-    val absencesLimit: Int = 0,
-    val dueThisWeek: Int = 0,
 ) {
     companion object {
         fun default(): HomeScreenData = HomeScreenData(
             greeting = "¡Bienvenido, estudiante!",
-            dateLabel = "Lunes, 3 de agosto de 2026",
+            dateLabel = "Lunes, 2 de noviembre de 2026",
             weekTitle = "Semana 10",
             days = listOf(
-                WeekDayData("Lunes",     "03", "03/08/26", isToday = true,  isCritical = false),
-                WeekDayData("Martes",    "04", "04/08/26", isToday = false, isCritical = false),
-                WeekDayData("Miercoles", "05", "05/08/26", isToday = false, isCritical = false),
-                WeekDayData("Jueves",    "06", "06/08/26", isToday = false, isCritical = false),
-                WeekDayData("Viernes",   "07", "07/08/26", isToday = false, isCritical = false),
-                WeekDayData("Sabado",    "08", "08/08/26", isToday = false, isCritical = true),
-                WeekDayData("Domingo",   "09", "09/08/26", isToday = false, isCritical = false),
+                WeekDayData("Lunes", "02", "02/11/26", isToday = true,  isCritical = false, dateKey = "2026-11-02"),
+                WeekDayData("Martes", "03", "03/11/26", isToday = false, isCritical = false, dateKey = "2026-11-03"),
+                WeekDayData("Miercoles", "04", "04/11/26", isToday = false, isCritical = false, dateKey = "2026-11-04"),
+                WeekDayData("Jueves", "05", "05/11/26", isToday = false, isCritical = false, dateKey = "2026-11-05"),
+                WeekDayData("Viernes", "06", "06/11/26", isToday = false, isCritical = false, dateKey = "2026-11-06"),
+                WeekDayData("Sabado", "07", "07/11/26", isToday = false, isCritical = true, dateKey = "2026-11-07"),
+                WeekDayData("Domingo", "08", "08/11/26", isToday = false, isCritical = false, dateKey = "2026-11-08"),
             ),
             tasksHeader = "Tareas Pendientes",
-            // Domingo (09) queda a proposito sin ninguna tarea, para probar
+            // Domingo (08) queda a proposito sin ninguna tarea, para probar
             // el estado vacio "No hay tareas pendientes".
             tasks = listOf(
                 TaskEntry(
@@ -704,35 +734,35 @@ data class HomeScreenData(
                     title = "Laboratorio 4",
                     timestamp = "12 h",
                     urgency = TaskUrgency.Urgent,
-                    dayNumber = "03",
                     iconRes = R.drawable.ic_paquito_lab_profile,
+                    dateKey = "2026-11-02",
                 ),
                 TaskEntry(
                     label = "Algoritmos · foro",
                     title = "Foro 2",
                     timestamp = "2 d",
                     urgency = TaskUrgency.Urgent,
-                    dayNumber = "05",
                     iconRes = R.drawable.ic_paquito_docs_default,
+                    dateKey = "2026-11-04",
                 ),
                 TaskEntry(
                     label = "Fisica I · practica",
                     title = "Practica 3",
                     timestamp = "3 d",
                     urgency = TaskUrgency.Normal,
-                    dayNumber = "06",
                     iconRes = R.drawable.ic_paquito_docs_default,
+                    dateKey = "2026-11-05",
                 ),
                 TaskEntry(
                     label = "Calculo II · practica",
                     title = "Practica 3",
                     timestamp = "7 d",
                     urgency = TaskUrgency.Future,
-                    dayNumber = "08",
                     iconRes = R.drawable.ic_paquito_docs_default,
+                    dateKey = "2026-11-07",
                 ),
             ),
-            pendingCount = 3,
+            pendingCount = 4,
             overallRanking = 15.0,
             careerCode = "C-24",
             currentCycle = 6,
@@ -743,11 +773,12 @@ data class HomeScreenData(
                 CycleRanking(cycle = 4, ranking = 16.4),
                 CycleRanking(cycle = 5, ranking = 15.1),
             ),
+            importantNotices = listOf(
+                HomeFocusItem("Asistencia en riesgo", "Revisa tus faltas en Redes I"),
+                HomeFocusItem("Nota por mejorar", "Laboratorio 1 · Redes y Comunicaciones · 9/20"),
+            ),
+            importantNoticeCount = 2,
             unreadNotificationsCount = 2,
-            trackValue = "14.8",
-            absencesUsed = 2,
-            absencesLimit = 5,
-            dueThisWeek = 3,
         )
     }
 }

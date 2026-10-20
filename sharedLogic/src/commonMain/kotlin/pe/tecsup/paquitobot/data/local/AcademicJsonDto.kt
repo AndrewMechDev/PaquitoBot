@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Forma del JSON academico incluido en la app (`academic.json`). Son tablas
+ * Forma del JSON academico ensamblado desde catalogo y escenario. Son tablas
  * planas relacionadas por id: las notas apuntan a una asignacion y la
  * asistencia a una sesion de clase; el repository deriva el curso de cada una.
  * Solo es un detalle de la capa de datos: nunca sale de `data/`.
@@ -43,6 +43,7 @@ data class AssignmentJson(
     @SerialName("points_possible") val pointsPossible: Double,
     /** ISO `yyyy-MM-dd'T'HH:mm:ss`; `null` si la asignacion no tiene fecha limite. */
     @SerialName("due_at") val dueAt: String? = null,
+    val kind: String = "delivery",
 )
 
 @Serializable
@@ -57,6 +58,7 @@ data class ClassSessionJson(
     @SerialName("course_id") val courseId: Int,
     @SerialName("start_at") val startAt: String? = null,
     @SerialName("end_at") val endAt: String? = null,
+    val kind: String = "class",
 )
 
 @Serializable

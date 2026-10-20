@@ -39,6 +39,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoSpacing
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
+import pe.tecsup.paquitobot.ui.theme.paquitoSurface
 
 /**
  * Detalle de un curso: promedio proyectado + asistencia + practicas/labs +
@@ -71,7 +72,7 @@ fun CourseDetailScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(PaquitoColors.SurfaceHomeCanvas)
+            .background(PaquitoColors.Background)
             .systemBarsPadding()
             .padding(horizontal = PaquitoSpacing.lg)
             .padding(top = 8.dp, bottom = PaquitoSpacing.lg),
@@ -128,20 +129,19 @@ private fun GradeHero(data: CourseDetailData) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(PaquitoShapes.large)
-            .background(PaquitoColors.SurfaceHomeWeekBg)
+            .paquitoSurface(PaquitoShapes.card)
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             text = data.course.projectedGrade,
             style = PaquitoTypography.Greeting,
-            color = PaquitoColors.TextOnWhite,
+            color = PaquitoColors.StateInfoStrong,
         )
         Text(
             text = data.projectionHint,
             style = PaquitoTypography.BodySmall,
-            color = PaquitoColors.TextOnDarkMuted,
+            color = PaquitoColors.TextOnCardMuted,
         )
     }
 }
@@ -202,8 +202,7 @@ private fun AttendanceSection(used: Int, limit: Int, entries: List<AttendanceEnt
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(PaquitoShapes.large)
-            .background(PaquitoColors.SurfaceElevated)
+            .paquitoSurface()
             .animateContentSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -234,7 +233,7 @@ private fun AttendanceSection(used: Int, limit: Int, entries: List<AttendanceEnt
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Text(
-                            text = entry.dateLabel,
+                            text = listOfNotNull(entry.dateLabel, entry.sessionLabel).joinToString(" · "),
                             style = PaquitoTypography.Caption,
                             color = PaquitoColors.TextOnCardMuted,
                         )
@@ -273,8 +272,7 @@ private fun EvaluationSection(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(PaquitoShapes.medium)
-                        .background(PaquitoColors.SurfaceHomeTaskListBg)
+                        .paquitoSurface()
                         .clickable(onClick = { onItemClick(item) })
                         .padding(horizontal = 14.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -359,6 +357,7 @@ private fun stateLabel(state: EvaluationState): String = when (state) {
 data class AttendanceEntry(
     val dateLabel: String,
     val isPresent: Boolean,
+    val sessionLabel: String? = null,
 )
 
 data class EvaluationItem(
@@ -386,11 +385,6 @@ data class CourseDetailData(
     // `AcademicCourseDetailViewModel`).
     val pendingTitle: String = "Pendientes",
 ) {
-    // LEGADO: antes la lista se llamaba `forums`; `MockAcademicContext`
-    // (contexto del chat, aun con datos demo) todavia la lee con ese nombre.
-    // Borrar junto con ese uso cuando el chat lea el JSON academico local.
-    val forums: List<EvaluationItem> get() = pending
-
     companion object {
         fun forCourse(course: CourseCardData): CourseDetailData =
             if (course.id == "calculo-ii") calculoIi() else generic(course)
@@ -402,11 +396,11 @@ data class CourseDetailData(
                 headline = "4 practicas · 8 labs · a mitad de ciclo",
                 projectionHint = "Si entregas el Lab 4 completo subes a ~15.6. Punto debil: practicos (11 y 13).",
                 attendance = listOf(
-                    AttendanceEntry("03/08/26", isPresent = true),
-                    AttendanceEntry("05/08/26", isPresent = true),
-                    AttendanceEntry("10/08/26", isPresent = false),
-                    AttendanceEntry("12/08/26", isPresent = true),
-                    AttendanceEntry("17/08/26", isPresent = false),
+                    AttendanceEntry("02/11/26", isPresent = true),
+                    AttendanceEntry("04/11/26", isPresent = true),
+                    AttendanceEntry("09/11/26", isPresent = false),
+                    AttendanceEntry("11/11/26", isPresent = true),
+                    AttendanceEntry("16/11/26", isPresent = false),
                 ),
                 practices = listOf(
                     EvaluationItem(
@@ -428,7 +422,7 @@ data class CourseDetailData(
                 ),
                 labs = listOf(
                     EvaluationItem("Lab 1", "5%", "18 / 17", EvaluationState.Graded, detail = "Corregido el 05/08."),
-                    EvaluationItem("Lab 2", "5%", "14 / 15", EvaluationState.Graded, detail = "Corregido el 08/08."),
+                    EvaluationItem("Lab 2", "5%", "14 / 15", EvaluationState.Graded, detail = "Corregido el 07/11."),
                     EvaluationItem(
                         "Lab 3", "5%", "12 / —", EvaluationState.Graded,
                         detail = "Corregido el 12/08. Falta la nota de exposicion oral.",
@@ -445,7 +439,7 @@ data class CourseDetailData(
                 pending = listOf(
                     EvaluationItem(
                         "Foro 1", "2%", "Entregado", EvaluationState.Graded,
-                        detail = "Participaste el 06/08 - cumple el minimo de 2 respuestas.",
+                        detail = "Participaste el 05/11 - cumple el minimo de 2 respuestas.",
                     ),
                     EvaluationItem(
                         "Foro 2", "2%", "Falta", EvaluationState.Missing,
@@ -460,8 +454,8 @@ data class CourseDetailData(
             headline = "Notas y faltas de este curso",
             projectionHint = course.trackHint,
             attendance = listOf(
-                AttendanceEntry("04/08/26", isPresent = true),
-                AttendanceEntry("11/08/26", isPresent = course.absences == 0),
+                AttendanceEntry("03/11/26", isPresent = true),
+                AttendanceEntry("10/11/26", isPresent = course.absences == 0),
             ),
             practices = listOf(
                 EvaluationItem("Practica 1", "10%", "15 / 16", EvaluationState.Graded),

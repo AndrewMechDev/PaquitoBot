@@ -15,6 +15,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import pe.tecsup.paquitobot.R
+import pe.tecsup.paquitobot.ui.procedures.ProcedureEntryCard
 import pe.tecsup.paquitobot.ui.components.AcademicErrorBanner
 import pe.tecsup.paquitobot.ui.components.AppTabScaffold
 import pe.tecsup.paquitobot.ui.components.NavTab
@@ -22,6 +24,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoShapes
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
+import pe.tecsup.paquitobot.ui.theme.paquitoSurface
 
 /**
  * Pestaña Horarios. Frame Figma `351:719` solo tiene navbar.
@@ -49,6 +52,7 @@ fun ScheduleScreen(
     onPaquitoClick: () -> Unit = {},
     errorMessage: String? = null,
     onRetry: () -> Unit = {},
+    onCalendarClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     AppTabScaffold(
@@ -57,6 +61,23 @@ fun ScheduleScreen(
         onPaquitoClick = onPaquitoClick,
         notificationCount = data.pendingCount,
         modifier = modifier,
+    ) {
+        ScheduleTabContent(data, errorMessage, onRetry, onCalendarClick = onCalendarClick)
+    }
+}
+
+/** Contenido de Horarios sin su scaffold para compartir la navbar persistente. */
+@Composable
+fun ScheduleTabContent(
+    data: ScheduleScreenData,
+    errorMessage: String?,
+    onRetry: () -> Unit,
+    onCalendarClick: () -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         if (errorMessage != null) {
             AcademicErrorBanner(message = errorMessage, onRetry = onRetry)
@@ -73,6 +94,8 @@ fun ScheduleScreen(
                 color = PaquitoColors.TextHomeMuted,
             )
         }
+        ProcedureEntryCard(onClick = onCalendarClick, title = "Google Calendar",
+            subtitle = "Sincroniza las entregas que elijas", iconRes = R.drawable.ic_paquito_calendar_fill)
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             data.days.forEach { day ->
                 DayBlock(day = day)
@@ -93,22 +116,21 @@ private fun DayBlock(day: ScheduleDay) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(PaquitoShapes.medium)
-                    .background(PaquitoColors.SurfaceElevated)
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                    .paquitoSurface()
+                    .padding(horizontal = 14.dp, vertical = 14.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = event.time,
                     style = PaquitoTypography.Caption,
-                    color = PaquitoColors.TextTimestampLarge,
+                    color = PaquitoColors.TextOnCardMuted,
                     modifier = Modifier.width(56.dp),
                 )
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = event.title,
-                        style = PaquitoTypography.TaskTitle,
+                        style = PaquitoTypography.BodyMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold),
                         color = PaquitoColors.TextOnCardStrong,
                     )
                     Text(
@@ -121,6 +143,10 @@ private fun DayBlock(day: ScheduleDay) {
                     text = event.kind.label,
                     style = PaquitoTypography.ChipLabel,
                     color = event.kind.color(),
+                    modifier = Modifier
+                        .clip(PaquitoShapes.pill)
+                        .background(event.kind.color().copy(alpha = 0.12f))
+                        .padding(horizontal = 8.dp, vertical = 5.dp),
                 )
             }
         }
@@ -160,32 +186,32 @@ data class ScheduleScreenData(
 ) {
     companion object {
         fun default(): ScheduleScreenData = ScheduleScreenData(
-            weekLabel = "Semana 10 · 3 al 9 ago",
+            weekLabel = "Semana de muestra · 2 al 8 nov",
             pendingCount = 3,
             days = listOf(
                 ScheduleDay(
-                    label = "Lunes 3",
+                    label = "Lunes 2",
                     events = listOf(
                         ScheduleEvent("08:00", "Calculo II", "Aula 302", ScheduleKind.Clase),
                         ScheduleEvent("23:59", "Lab 4 — Calculo II", "Aula virtual", ScheduleKind.Entrega),
                     ),
                 ),
                 ScheduleDay(
-                    label = "Martes 4",
+                    label = "Martes 3",
                     events = listOf(
                         ScheduleEvent("10:00", "Fisica I", "Lab B", ScheduleKind.Clase),
                         ScheduleEvent("10:00", "Fisica I", "No marcaste asistencia", ScheduleKind.Falta),
                     ),
                 ),
                 ScheduleDay(
-                    label = "Jueves 6",
+                    label = "Jueves 5",
                     events = listOf(
                         ScheduleEvent("14:00", "Algoritmos", "Aula 110", ScheduleKind.Clase),
                         ScheduleEvent("23:59", "Practica 3 — Fisica I", "Correo del docente", ScheduleKind.Entrega),
                     ),
                 ),
                 ScheduleDay(
-                    label = "Viernes 7",
+                    label = "Viernes 6",
                     events = listOf(
                         ScheduleEvent("18:00", "Foro 2 — Algoritmos", "Aula virtual", ScheduleKind.Entrega),
                     ),

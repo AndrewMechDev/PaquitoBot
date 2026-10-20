@@ -155,10 +155,10 @@ class AcademicLogicTest {
     }
 
     @Test
-    fun homeData_tasksAreOnlyPendingOnesInTheWeek() {
+    fun homeData_tasksArePendingOnesWithFullDates() {
         val data = buildHomeData(HomeScreenData.default(), allCourses, TODAY)
         assertEquals(listOf("Tarea 102", "Tarea 104", "Tarea 106"), data.tasks.map { it.title })
-        assertEquals(listOf("03", "06", "09"), data.tasks.map { it.dayNumber })
+        assertEquals(listOf("2026-08-03", "2026-08-06", "2026-08-09"), data.tasks.map { it.dateKey })
         assertEquals(TaskUrgency.Urgent, data.tasks.first().urgency)
         assertEquals(TaskUrgency.Normal, data.tasks.last().urgency)
         assertEquals(3, data.pendingCount)

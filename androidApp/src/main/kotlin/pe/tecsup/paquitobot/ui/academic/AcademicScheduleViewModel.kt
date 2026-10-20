@@ -1,6 +1,7 @@
 package pe.tecsup.paquitobot.ui.academic
 
 import pe.tecsup.paquitobot.domain.academic.AcademicRepository
+import pe.tecsup.paquitobot.domain.academic.AcademicSessionKind
 import pe.tecsup.paquitobot.ui.schedule.ScheduleDay
 import pe.tecsup.paquitobot.ui.schedule.ScheduleEvent
 import pe.tecsup.paquitobot.ui.schedule.ScheduleKind
@@ -12,9 +13,8 @@ import pe.tecsup.paquitobot.util.AcademicDateUtils
  * sesiones de clase, entregas (assignments con fecha) y faltas (asistencia)
  * de TODOS los cursos del estudiante en una sola linea de tiempo por dia.
  *
- * El dia de [today] se marca con `isToday`; el contador de pendientes solo
- * cuenta entregas sin nota y con fecha >= hoy (ver `pendingAssignments`),
- * aunque la linea de tiempo muestre tambien las ya pasadas.
+ * El dia de [today] se marca con `isToday`; el contador de pendientes cuenta
+ * entregas sin nota con fecha de hoy o posterior.
  */
 class AcademicScheduleViewModel(
     private val repository: AcademicRepository,
@@ -52,7 +52,12 @@ internal fun buildScheduleData(all: List<CourseWithRecords>, today: String): Sch
                 dateKey = dateKeyOf(startAt),
                 time = timeOf(startAt),
                 title = course.name,
-                subtitle = if (isAbsent) "Falta marcada" else course.code,
+                subtitle = when {
+                    isAbsent && session.kind == AcademicSessionKind.Laboratory -> "Falta en laboratorio"
+                    isAbsent -> "Falta marcada"
+                    session.kind == AcademicSessionKind.Laboratory -> "Laboratorio · ${course.code}"
+                    else -> course.code
+                },
                 kind = if (isAbsent) ScheduleKind.Falta else ScheduleKind.Clase,
             )
         }

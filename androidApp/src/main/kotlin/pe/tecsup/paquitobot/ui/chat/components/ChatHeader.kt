@@ -41,39 +41,55 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTypography
  * usan todos `PaquitoTypography.DisplayLarge`, 34sp). Mismo patron con el
  * subtitulo (`HeadlineSmall`, en vez de 16sp suelto). Se unifica al mismo
  * token para que la tipografia se sienta igual en toda la app.
+ *
+ * Iteracion 2026-08-19 (bug real, captura del usuario): el saludo completo
+ * (flecha + "Hola, {nombre}" + subtitulo) vivia FIJO fuera del scroll de
+ * mensajes - en pantallas chicas consumia una porcion grande y permanente
+ * de la vista, dejando muy poco alto para la conversacion (mismo problema
+ * de fondo que el header "pegado" de Cursos/Horarios, aunque la causa aca
+ * no era doble-scroll sino que el saludo nunca se iba). Se separa en dos
+ * piezas:
+ *   - [ChatTopBar]: SOLO la flecha atras, chica, fija arriba - el usuario
+ *     siempre necesita poder volver, sin importar cuanto scrolleo.
+ *   - [ChatGreeting]: el saludo + subtitulo, que ahora vive como primer
+ *     item DENTRO de la lista scrolleable de mensajes en `ChatScreen` - se
+ *     va con el scroll al leer el historial, liberando espacio real.
  */
 @Composable
-fun ChatHeader(
-    userName: String,
+fun ChatTopBar(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    Image(
+        painter = painterResource(id = R.drawable.ic_paquito_arrow_back),
+        contentDescription = "Volver",
         modifier = modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+            .padding(top = 8.dp)
+            .size(21.dp)
+            .clickable(onClick = onBackClick),
+        contentScale = ContentScale.Fit,
+    )
+}
+
+@Composable
+fun ChatGreeting(
+    userName: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_paquito_arrow_back),
-            contentDescription = "Volver",
-            modifier = Modifier
-                .size(21.dp)
-                .clickable(onClick = onBackClick),
-            contentScale = ContentScale.Fit,
+        Text(
+            text = "Hola, $userName",
+            style = PaquitoTypography.DisplayLarge,
+            color = PaquitoColors.TextHomeStrong,
         )
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                text = "Hola, $userName",
-                style = PaquitoTypography.DisplayLarge,
-                color = PaquitoColors.TextHomeStrong,
-            )
-            Text(
-                text = "Puedes consultarme lo que quieras",
-                style = PaquitoTypography.HeadlineSmall,
-                color = PaquitoColors.TextHomeMuted,
-            )
-        }
+        Text(
+            text = "Puedes consultarme lo que quieras",
+            style = PaquitoTypography.HeadlineSmall,
+            color = PaquitoColors.TextHomeMuted,
+        )
     }
 }
 
@@ -81,6 +97,9 @@ fun ChatHeader(
 @Composable
 private fun ChatHeaderPreview() {
     PaquitoTheme {
-        ChatHeader(userName = "Andrea", onBackClick = {})
+        Column {
+            ChatTopBar(onBackClick = {})
+            ChatGreeting(userName = "Andrea")
+        }
     }
 }

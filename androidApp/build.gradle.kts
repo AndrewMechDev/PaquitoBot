@@ -24,6 +24,8 @@ kotlin {
 dependencies {
     implementation(project(":sharedLogic"))
 
+    implementation(libs.google.auth)
+    implementation(libs.kotlinx.coroutines.playServices)
     implementation(libs.clerk.android.api)
     implementation(libs.clerk.android.ui)
 
@@ -37,6 +39,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.androidx.work.runtime)
+    coreLibraryDesugaring(libs.desugar.jdk)
 
     // Glassmorphism real (blur de fondo) para el Navbar flotante - reemplaza
     // la opacidad simulada sin blur que habia antes.
@@ -47,6 +51,8 @@ dependencies {
     debugImplementation(libs.compose.uiTooling)
 
     testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.testExt.junit)
+    androidTestImplementation(libs.androidx.test.runner)
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${libs.versions.kotlinx.coroutines.get()}")
 }
 
@@ -60,6 +66,7 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField(
             "String",
@@ -74,6 +81,7 @@ android {
     }
     buildTypes {
         debug {
+            applicationIdSuffix = ".debug"
             // Solo para prototipos locales: la clave queda dentro del APK debug.
             buildConfigField("String", "MINIMAX_API_KEY", "\"${miniMaxApiKey.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
         }
@@ -87,6 +95,7 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }

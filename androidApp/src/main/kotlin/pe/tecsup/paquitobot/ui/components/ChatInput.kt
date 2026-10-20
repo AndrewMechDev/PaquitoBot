@@ -19,7 +19,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -30,6 +29,7 @@ import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoFont
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
+import pe.tecsup.paquitobot.ui.theme.paquitoSurface
 
 /**
  * Input inferior del Chat con boton de enviar, fiel al frame Figma
@@ -37,9 +37,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  *
  *   [_____________input_______________] [Boton enviar]
  *
- * Estilo del input: fondo plano `#F6F6F6`, rounded 20dp, sin borde ni
- * sombra (el frame actual no los tiene - antes tenia border + shadow sutil
- * de una iteracion vieja).
+ * El campo comparte la superficie clara y el contorno de las tarjetas.
  *
  * Estilo del boton enviar: 47x47, fondo plano `PaquitoColors.BrandPrimary`
  * (`#00C9FB`), rounded 20dp, sin gradiente ni sombra.
@@ -63,8 +61,7 @@ fun ChatInput(
             modifier = Modifier
                 .weight(1f)
                 .height(47.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(Color(0xFFF6F6F6))
+                .paquitoSurface()
                 .padding(horizontal = 17.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
