@@ -28,6 +28,11 @@ enum AcademicDemoStore {
         return makeNotifications(from: snapshot)
     }()
 
+    static let calendarTasks: [CalendarTask] = {
+        guard let snapshot else { return DemoAcademicData.calendarTasks }
+        return makeCalendarTasks(from: snapshot)
+    }()
+
     static var isLoaded: Bool { snapshot != nil }
 
     static func detail(for course: CourseItem) -> CourseDetailData {
@@ -185,6 +190,24 @@ enum AcademicDemoStore {
                 severity: isUrgent ? .urgent : .info
             )
         }
+    }
+
+    private static func makeCalendarTasks(from snapshot: Snapshot) -> [CalendarTask] {
+        let gradeIDs = Set(snapshot.scenario.grades.map(\.assignmentID))
+        let courseNames = Dictionary(uniqueKeysWithValues: snapshot.catalog.courses.map { ($0.id, $0.name) })
+        return snapshot.catalog.assignments
+            .filter { !gradeIDs.contains($0.id) }
+            .compactMap { assignment in
+                guard let dueAt = assignment.dueAt, let date = parseDate(dueAt) else { return nil }
+                return CalendarTask(
+                    id: "academic-calendar-\(assignment.id)",
+                    title: assignment.name,
+                    course: courseNames[assignment.courseID] ?? "Curso",
+                    dueLabel: dateTimeLabel(dueAt),
+                    isPast: date < Date()
+                )
+            }
+            .sorted { $0.dueLabel < $1.dueLabel }
     }
 
     private static func makeSchedule(from snapshot: Snapshot) -> ScheduleData {

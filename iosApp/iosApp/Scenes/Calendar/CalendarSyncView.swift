@@ -3,13 +3,13 @@ import SwiftUI
 struct CalendarSyncView: View {
     @State private var connected = false
     @State private var showPast = false
-    @State private var selected: Set<String> = Set(DemoAcademicData.calendarTasks.filter { !$0.isPast }.map(\.id))
+    @State private var selected: Set<String> = Set(AcademicDemoStore.calendarTasks.filter { !$0.isPast }.map(\.id))
     @State private var isSyncing = false
     @State private var summary: CalendarSyncSummary?
     @State private var message: String?
 
     private var visibleTasks: [CalendarTask] {
-        DemoAcademicData.calendarTasks.filter { showPast || !$0.isPast }
+        AcademicDemoStore.calendarTasks.filter { showPast || !$0.isPast }
     }
 
     var body: some View {
