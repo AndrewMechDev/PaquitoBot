@@ -15,7 +15,7 @@ El chat usa [Chat Completions de MiniMax](https://platform.minimax.io/docs/api-r
 
 ## iOS (Debug)
 
-1. Copia `iosApp/Configuration/Config.local.xcconfig.example` como `iosApp/Configuration/Config.local.xcconfig` si todavía no existe.
+1. Copia `iosApp/Configuration/Config.local.template.xcconfig` como `iosApp/Configuration/Config.local.xcconfig` si todavía no existe.
 2. Conserva tu `CLERK_PUBLISHABLE_KEY` y añade la clave de MiniMax:
 
    ```text
