@@ -170,6 +170,7 @@ struct MainShellView: View {
                         data: DemoAcademicData.home,
                         unreadNotifications: app.notifications.count,
                         onNotifications: app.openNotifications,
+                        onEvents: app.openEvents,
                         onSignOut: app.signOut
                     )
                 case .courses:

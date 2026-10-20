@@ -3,9 +3,7 @@ import Foundation
 enum DemoAcademicData {
     static let home = HomeData(
         dateLabel: "Lunes, 5 de enero de 2026",
-        average: "15.8",
-        absences: "2 / 6",
-        dueThisWeek: "4",
+        weekTitle: "Semana del 5 al 11 de enero",
         days: [
             WeekDayItem(id: "mon", shortLabel: "Lu", dateLabel: "05", isToday: true, hasTask: true, isCritical: false),
             WeekDayItem(id: "tue", shortLabel: "Ma", dateLabel: "06", isToday: false, hasTask: true, isCritical: false),
@@ -16,10 +14,26 @@ enum DemoAcademicData {
             WeekDayItem(id: "sun", shortLabel: "Do", dateLabel: "11", isToday: false, hasTask: false, isCritical: false)
         ],
         tasks: [
-            TaskItem(id: "task-1", label: "Cálculo II · LAB", title: "Laboratorio 4", timestamp: "Hoy 23:59", urgency: .urgent),
-            TaskItem(id: "task-2", label: "Comunicación · FORO", title: "Debate de la semana", timestamp: "Mañana", urgency: .normal),
-            TaskItem(id: "task-3", label: "Programación · TAREA", title: "Práctica calificada 2", timestamp: "En 3 días", urgency: .future)
-        ]
+            TaskItem(id: "task-1", label: "Cálculo II · LAB", title: "Laboratorio 4", timestamp: "Hoy 23:59", urgency: .urgent, dayID: "mon"),
+            TaskItem(id: "task-2", label: "Comunicación · FORO", title: "Debate de la semana", timestamp: "Mañana", urgency: .normal, dayID: "tue"),
+            TaskItem(id: "task-3", label: "Programación · TAREA", title: "Práctica calificada 2", timestamp: "En 3 días", urgency: .future, dayID: "thu"),
+            TaskItem(id: "task-4", label: "Cálculo II · PRÁCTICA", title: "Práctica 3", timestamp: "En 5 días", urgency: .future, dayID: "sat")
+        ],
+        overallRanking: 15.0,
+        careerCode: "C-24",
+        currentCycle: 6,
+        cycleRankings: [
+            CycleRanking(cycle: 1, ranking: 14.2),
+            CycleRanking(cycle: 2, ranking: 15.6),
+            CycleRanking(cycle: 3, ranking: 13.8),
+            CycleRanking(cycle: 4, ranking: 16.4),
+            CycleRanking(cycle: 5, ranking: 15.1)
+        ],
+        importantNotices: [
+            HomeFocusItem(id: "notice-attendance", title: "Asistencia a vigilar", detail: "3 faltas registradas · C24"),
+            HomeFocusItem(id: "notice-grade", title: "Nota por mejorar", detail: "Laboratorio 1 · Redes · 9/20")
+        ],
+        importantNoticeCount: 2
     )
 
     static let courses = [

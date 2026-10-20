@@ -67,15 +67,33 @@ struct TaskItem: Identifiable, Hashable {
     let title: String
     let timestamp: String
     let urgency: TaskUrgency
+    let dayID: String?
 }
 
 struct HomeData: Hashable {
     let dateLabel: String
-    let average: String
-    let absences: String
-    let dueThisWeek: String
+    let weekTitle: String
     let days: [WeekDayItem]
     let tasks: [TaskItem]
+    let overallRanking: Double
+    let careerCode: String
+    let currentCycle: Int
+    let cycleRankings: [CycleRanking]
+    let importantNotices: [HomeFocusItem]
+    let importantNoticeCount: Int
+}
+
+struct HomeFocusItem: Identifiable, Hashable {
+    let id: String
+    let title: String
+    let detail: String
+}
+
+struct CycleRanking: Identifiable, Hashable {
+    let cycle: Int
+    let ranking: Double
+
+    var id: Int { cycle }
 }
 
 struct CourseItem: Identifiable, Hashable {
