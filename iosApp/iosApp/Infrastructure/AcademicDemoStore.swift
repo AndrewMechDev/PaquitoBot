@@ -35,6 +35,76 @@ enum AcademicDemoStore {
 
     static var isLoaded: Bool { snapshot != nil }
 
+    /// Serializa el escenario que la UI iOS muestra para enviarlo al prompt de MiniMax.
+    /// La forma coincide con `AcademicContextSnapshot` de Android.
+    static func minimaxContextJSON() -> String {
+        let today = todayKey()
+        let courses: [[String: Any]] = snapshot?.catalog.courses.map { course in
+            let assignments = snapshot?.catalog.assignments.filter { $0.courseID == course.id } ?? []
+            let grades = Dictionary(
+                uniqueKeysWithValues: (snapshot?.scenario.grades ?? []).map { ($0.assignmentID, $0.score) }
+            )
+            let sessions = Dictionary(
+                uniqueKeysWithValues: (snapshot?.catalog.classSessions ?? [])
+                    .filter { $0.courseID == course.id }
+                    .map { ($0.id, $0) }
+            )
+            let attendance = (snapshot?.scenario.attendance ?? []).compactMap { record -> [String: Any]? in
+                guard let session = sessions[record.classSessionID] else { return nil }
+                return [
+                    "sesion_id": session.id,
+                    "fecha": session.startAt ?? NSNull(),
+                    "tipo": session.kind,
+                    "estado": record.status == "absent" ? "falta" : "presente"
+                ]
+            }
+            let tasks = assignments.map { assignment -> [String: Any] in
+                let dueDay = assignment.dueAt?.prefix(10)
+                let status: String
+                if grades[assignment.id] != nil {
+                    status = "calificada"
+                } else if let dueDay, String(dueDay) < today {
+                    status = "vencida"
+                } else if assignment.dueAt == nil {
+                    status = "sin_fecha"
+                } else {
+                    status = "pendiente"
+                }
+
+                return [
+                    "id": assignment.id,
+                    "nombre": assignment.name,
+                    "tipo": assignment.kind ?? "other",
+                    "fecha_entrega": assignment.dueAt ?? NSNull(),
+                    "estado": status,
+                    "nota": grades[assignment.id] ?? NSNull(),
+                    "nota_maxima": assignment.pointsPossible
+                ]
+            }
+
+            return [
+                "codigo": course.code,
+                "nombre": course.name,
+                "faltas": attendance.filter { ($0["estado"] as? String) == "falta" }.count,
+                "limite_faltas_demo": 8,
+                "tareas_y_notas": tasks,
+                "asistencia": attendance
+            ]
+        } ?? []
+
+        let payload: [String: Any] = [
+            "fuente": "Escenario académico de demostración asignado a esta cuenta de Clerk",
+            "fecha_actual": today,
+            "cursos": courses
+        ]
+
+        guard JSONSerialization.isValidJSONObject(payload),
+              let data = try? JSONSerialization.data(withJSONObject: payload, options: []) else {
+            return "{}"
+        }
+        return String(data: data, encoding: .utf8) ?? "{}"
+    }
+
     static func detail(for course: CourseItem) -> CourseDetailData {
         guard let snapshot else { return DemoAcademicData.detail(for: course) }
 
@@ -419,6 +489,14 @@ enum AcademicDemoStore {
 
     private static func numberLabel(_ value: Double) -> String {
         value.rounded() == value ? String(format: "%.0f", value) : String(format: "%.1f", value)
+    }
+
+    private static func todayKey() -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = academicTimeZone
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: Date())
     }
 
     private static let academicTimeZone = TimeZone(identifier: "America/Lima")!
