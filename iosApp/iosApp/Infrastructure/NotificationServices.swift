@@ -1,16 +1,64 @@
 import Foundation
+import UIKit
 import UserNotifications
 
+enum NotificationAuthorizationState: Equatable {
+    case notDetermined
+    case denied
+    case authorized
+    case provisional
+}
+
 protocol NotificationPermissionService {
-    func requestAuthorization() async -> Bool
+    @MainActor func requestAuthorization() async -> Bool
+    @MainActor func authorizationState() async -> NotificationAuthorizationState
+    @MainActor func openSettings()
+    @MainActor func sendTestNotification() async -> Bool
 }
 
 struct SystemNotificationPermissionService: NotificationPermissionService {
+    @MainActor
     func requestAuthorization() async -> Bool {
         do {
             return try await UNUserNotificationCenter.current().requestAuthorization(
                 options: [.alert, .badge, .sound]
             )
+        } catch {
+            return false
+        }
+    }
+
+    @MainActor
+    func authorizationState() async -> NotificationAuthorizationState {
+        switch await UNUserNotificationCenter.current().notificationSettings().authorizationStatus {
+        case .authorized: return .authorized
+        case .provisional: return .provisional
+        case .denied: return .denied
+        default: return .notDetermined
+        }
+    }
+
+    @MainActor
+    func openSettings() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
+    }
+
+    @MainActor
+    func sendTestNotification() async -> Bool {
+        let content = UNMutableNotificationContent()
+        content.title = "Aviso de prueba"
+        content.body = "Las notificaciones de PaquitoBot están activas en este iPhone."
+        content.sound = .default
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let request = UNNotificationRequest(
+            identifier: "paquitobot.notification.test",
+            content: content,
+            trigger: trigger
+        )
+        do {
+            try await UNUserNotificationCenter.current().add(request)
+            return true
         } catch {
             return false
         }
@@ -31,24 +79,27 @@ final class LocalNotificationScheduleService: NotificationScheduleService {
     }
 
     func synchronize(setup: NotificationSetup, tasks: [CalendarTask]) async {
-        let taskIdentifiers = tasks.map { Self.taskIdentifier(for: $0) }
-        center.removePendingNotificationRequests(
-            withIdentifiers: taskIdentifiers + [Self.dailySummaryIdentifier]
-        )
+        let pending = await center.pendingNotificationRequests()
+        let managedIdentifiers = pending.map(\.identifier).filter {
+            $0.hasPrefix(Self.taskIdentifierPrefix) || $0 == Self.dailySummaryIdentifier
+        }
+        center.removePendingNotificationRequests(withIdentifiers: managedIdentifiers)
 
         let settings = await center.notificationSettings()
         guard settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional else {
             return
         }
 
-        if setup.enabled.contains(.deadlines) {
+        if !setup.enabled.isEmpty {
             for task in tasks {
-                guard let dueDate = task.dueDate, dueDate > .now else { continue }
+                guard setup.enabled.contains(task.notificationCategory),
+                      let dueDate = task.dueDate,
+                      dueDate > .now else { continue }
                 let reminderDate = dueDate.addingTimeInterval(-Double(setup.reminderHours) * 3_600)
                 let triggerDate = reminderDate > .now ? reminderDate : Date(timeIntervalSinceNow: 1)
                 let content = UNMutableNotificationContent()
-                content.title = "Entrega próxima"
-                content.body = "(task.title) · (task.course)"
+                content.title = task.notificationCategory == .laboratories ? "Laboratorio próximo" : "Entrega próxima"
+                content.body = "\(task.title) · \(task.course)"
                 content.sound = .default
                 content.userInfo = ["taskID": task.id]
 
@@ -66,10 +117,15 @@ final class LocalNotificationScheduleService: NotificationScheduleService {
             }
         }
 
-        if setup.dailySummaryEnabled {
+        if setup.dailySummaryEnabled && !setup.enabled.isEmpty {
             let content = UNMutableNotificationContent()
             content.title = "Resumen académico"
-            content.body = "Revisa tus entregas y avisos pendientes en PaquitoBot."
+            let pendingCount = tasks.filter {
+                !$0.isPast && setup.enabled.contains($0.notificationCategory)
+            }.count
+            content.body = pendingCount > 0
+                ? "Tienes \(pendingCount) entregas o laboratorios pendientes en PaquitoBot."
+                : "Revisa tus avisos académicos en PaquitoBot."
             content.sound = .default
             let trigger = UNCalendarNotificationTrigger(
                 dateMatching: DateComponents(hour: setup.summaryHour, minute: setup.summaryMinute),
@@ -85,6 +141,7 @@ final class LocalNotificationScheduleService: NotificationScheduleService {
     }
 
     private static let dailySummaryIdentifier = "paquitobot.notification.daily-summary"
+    private static let taskIdentifierPrefix = "paquitobot.notification.deadline."
 
     private static func taskIdentifier(for task: CalendarTask) -> String {
         "paquitobot.notification.deadline.\(task.id)"

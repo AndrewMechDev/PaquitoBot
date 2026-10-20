@@ -11,17 +11,32 @@ struct NotificationsInboxView: View {
     @State private var deletedIndex: Int?
     @State private var showUndo = false
     let setup: NotificationSetup
+    let permissionState: NotificationAuthorizationState
+    let isRequestingPermission: Bool
+    let onRequestPermission: () -> Void
+    let onOpenSettings: () -> Void
+    let onSendTestNotification: () -> Void
     let onSaveSetup: (NotificationSetup) -> Void
     let onItemsChanged: ([NotificationItem]) -> Void
 
     init(
         items: [NotificationItem],
         setup: NotificationSetup = .default,
+        permissionState: NotificationAuthorizationState = .notDetermined,
+        isRequestingPermission: Bool = false,
+        onRequestPermission: @escaping () -> Void = {},
+        onOpenSettings: @escaping () -> Void = {},
+        onSendTestNotification: @escaping () -> Void = {},
         onSaveSetup: @escaping (NotificationSetup) -> Void = { _ in },
         onItemsChanged: @escaping ([NotificationItem]) -> Void = { _ in }
     ) {
         _items = State(initialValue: items)
         self.setup = setup
+        self.permissionState = permissionState
+        self.isRequestingPermission = isRequestingPermission
+        self.onRequestPermission = onRequestPermission
+        self.onOpenSettings = onOpenSettings
+        self.onSendTestNotification = onSendTestNotification
         self.onSaveSetup = onSaveSetup
         self.onItemsChanged = onItemsChanged
     }
@@ -120,8 +135,12 @@ struct NotificationsInboxView: View {
         }
         .sheet(isPresented: $showPreferences) {
             OnboardingNotificationsView(
-                isRequestingPermission: false,
+                isRequestingPermission: isRequestingPermission,
                 initialSetup: setup,
+                permissionState: permissionState,
+                onRequestPermission: onRequestPermission,
+                onOpenSettings: onOpenSettings,
+                onSendTestNotification: onSendTestNotification,
                 onContinue: { updatedSetup in
                     onSaveSetup(updatedSetup)
                     showPreferences = false
@@ -207,6 +226,20 @@ private enum NotificationPeriod: String, CaseIterable, Identifiable {
     }
 
     func matches(_ item: NotificationItem) -> Bool {
+        if let date = item.date {
+            let calendar = Calendar.current
+            switch self {
+            case .all: return true
+            case .today: return calendar.isDateInToday(date)
+            case .week:
+                guard let interval = calendar.dateInterval(of: .weekOfYear, for: Date()) else { return false }
+                return interval.contains(date)
+            case .older:
+                guard let interval = calendar.dateInterval(of: .weekOfYear, for: Date()) else { return false }
+                return date < interval.start
+            }
+        }
+
         let timestamp = item.timestamp.lowercased()
         let isToday = timestamp.contains("hoy") || timestamp.contains(" h") || timestamp.contains("min") || timestamp.contains("ahora")
         let isWeek = isToday || timestamp.contains("mañana") || timestamp.contains("ayer") || timestamp.contains(" d")

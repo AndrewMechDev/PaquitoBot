@@ -211,7 +211,7 @@ enum DemoAcademicData {
     ]
 
     static let calendarTasks = [
-        CalendarTask(id: "calendar-1", title: "Laboratorio 4", course: "Cálculo II", dueLabel: "Hoy · 23:59", isPast: false),
+        CalendarTask(id: "calendar-1", title: "Laboratorio 4", course: "Cálculo II", dueLabel: "Hoy · 23:59", isPast: false, notificationCategory: .laboratories),
         CalendarTask(id: "calendar-2", title: "Práctica calificada 2", course: "Programación II", dueLabel: "Mañana · 12:00", isPast: false),
         CalendarTask(id: "calendar-3", title: "Foro de la semana", course: "Comunicación", dueLabel: "Ayer · 18:00", isPast: true)
     ]

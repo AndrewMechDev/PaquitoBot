@@ -3,6 +3,10 @@ import SwiftUI
 struct OnboardingNotificationsView: View {
     let isRequestingPermission: Bool
     let initialSetup: NotificationSetup
+    let permissionState: NotificationAuthorizationState
+    let onRequestPermission: () -> Void
+    let onOpenSettings: () -> Void
+    let onSendTestNotification: () -> Void
     let onContinue: (NotificationSetup) -> Void
     var onCancel: (() -> Void)? = nil
 
@@ -12,15 +16,24 @@ struct OnboardingNotificationsView: View {
     @State private var reminderHours: Int
     @State private var dailySummaryEnabled: Bool
     @State private var summaryDate: Date
+    @State private var testNotificationSent = false
 
     init(
         isRequestingPermission: Bool,
         initialSetup: NotificationSetup = .default,
+        permissionState: NotificationAuthorizationState = .notDetermined,
+        onRequestPermission: @escaping () -> Void = {},
+        onOpenSettings: @escaping () -> Void = {},
+        onSendTestNotification: @escaping () -> Void = {},
         onContinue: @escaping (NotificationSetup) -> Void,
         onCancel: (() -> Void)? = nil
     ) {
         self.isRequestingPermission = isRequestingPermission
         self.initialSetup = initialSetup
+        self.permissionState = permissionState
+        self.onRequestPermission = onRequestPermission
+        self.onOpenSettings = onOpenSettings
+        self.onSendTestNotification = onSendTestNotification
         self.onContinue = onContinue
         self.onCancel = onCancel
         _selected = State(initialValue: initialSetup.enabled)
@@ -149,16 +162,50 @@ struct OnboardingNotificationsView: View {
                 }
             }
             .paquitoCard()
-            VStack(alignment: .leading, spacing: 8) {
-                Label("Permiso de notificaciones", systemImage: "bell.badge")
-                    .font(PaquitoTypography.taskTitle)
-                    .foregroundStyle(PaquitoColors.textPrimary)
-                Text("iOS te pedirá permiso para mostrar recordatorios y el resumen de Paquito.")
+            permissionCard
+        }
+    }
+
+    private var permissionCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Permiso de notificaciones", systemImage: "bell.badge")
+                .font(PaquitoTypography.taskTitle)
+                .foregroundStyle(PaquitoColors.textPrimary)
+
+            switch permissionState {
+            case .notDetermined:
+                Text("Activa los avisos para recibir recordatorios y el resumen de Paquito.")
                     .font(PaquitoTypography.bodySmall)
                     .foregroundStyle(PaquitoColors.textSecondary)
+                Button("Permitir notificaciones", action: onRequestPermission)
+                    .font(PaquitoTypography.bodyMedium.weight(.semibold))
+                    .foregroundStyle(PaquitoColors.stateInfoStrong)
+                    .disabled(isRequestingPermission)
+            case .denied:
+                Text("Las notificaciones están bloqueadas. Puedes habilitarlas desde Ajustes.")
+                    .font(PaquitoTypography.bodySmall)
+                    .foregroundStyle(PaquitoColors.textSecondary)
+                Button("Abrir ajustes de notificaciones", action: onOpenSettings)
+                    .font(PaquitoTypography.bodyMedium.weight(.semibold))
+                    .foregroundStyle(PaquitoColors.stateInfoStrong)
+            case .authorized, .provisional:
+                Text("Permiso concedido en este iPhone.")
+                    .font(PaquitoTypography.bodySmall)
+                    .foregroundStyle(PaquitoColors.stateSuccess)
+                Button("Enviar aviso de prueba") {
+                    testNotificationSent = true
+                    onSendTestNotification()
+                }
+                .font(PaquitoTypography.bodyMedium.weight(.semibold))
+                .foregroundStyle(PaquitoColors.stateInfoStrong)
+                if testNotificationSent {
+                    Text("El aviso de prueba llegará en unos segundos.")
+                        .font(PaquitoTypography.caption)
+                        .foregroundStyle(PaquitoColors.textSecondary)
+                }
             }
-            .paquitoCard()
         }
+        .paquitoCard()
     }
 
     private var footer: some View {

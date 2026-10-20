@@ -239,6 +239,7 @@ struct CalendarTask: Identifiable, Hashable {
     let dueLabel: String
     let isPast: Bool
     let dueDate: Date?
+    let notificationCategory: NotificationPreference
 
     init(
         id: String,
@@ -246,7 +247,8 @@ struct CalendarTask: Identifiable, Hashable {
         course: String,
         dueLabel: String,
         isPast: Bool,
-        dueDate: Date? = nil
+        dueDate: Date? = nil,
+        notificationCategory: NotificationPreference = .deadlines
     ) {
         self.id = id
         self.title = title
@@ -254,6 +256,7 @@ struct CalendarTask: Identifiable, Hashable {
         self.dueLabel = dueLabel
         self.isPast = isPast
         self.dueDate = dueDate
+        self.notificationCategory = notificationCategory
     }
 }
 
@@ -274,9 +277,44 @@ struct NotificationItem: Identifiable, Codable, Hashable {
     let body: String
     let timestamp: String
     let severity: NotificationSeverity
+    let category: NotificationPreference
+    let date: Date?
+
+    init(
+        id: String,
+        title: String,
+        body: String,
+        timestamp: String,
+        severity: NotificationSeverity,
+        category: NotificationPreference = .deadlines,
+        date: Date? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.body = body
+        self.timestamp = timestamp
+        self.severity = severity
+        self.category = category
+        self.date = date
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, title, body, timestamp, severity, category, date
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        body = try container.decode(String.self, forKey: .body)
+        timestamp = try container.decode(String.self, forKey: .timestamp)
+        severity = try container.decode(NotificationSeverity.self, forKey: .severity)
+        category = try container.decodeIfPresent(NotificationPreference.self, forKey: .category) ?? .deadlines
+        date = try container.decodeIfPresent(Date.self, forKey: .date)
+    }
 }
 
-enum NotificationPreference: String, CaseIterable, Hashable {
+enum NotificationPreference: String, CaseIterable, Codable, Hashable {
     case laboratories = "Laboratorios calificados"
     case deadlines = "Plazos de entrega"
     case attendance = "Asistencias"

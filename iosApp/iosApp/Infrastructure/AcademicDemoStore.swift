@@ -241,6 +241,7 @@ enum AcademicDemoStore {
     private static func makeNotifications(from snapshot: Snapshot) -> [NotificationItem] {
         let gradeIDs = Set(snapshot.scenario.grades.map(\.assignmentID))
         let courseNames = Dictionary(uniqueKeysWithValues: snapshot.catalog.courses.map { ($0.id, $0.name) })
+        let createdAt = Date()
         let pending = snapshot.catalog.assignments
             .filter { !gradeIDs.contains($0.id) }
             .compactMap { assignment -> (AcademicAssignment, Date)? in
@@ -249,7 +250,7 @@ enum AcademicDemoStore {
             }
             .sorted { $0.1 < $1.1 }
 
-        return pending.prefix(6).map { assignment, date in
+        let pendingNotifications = pending.prefix(6).map { assignment, date in
             let courseName = courseNames[assignment.courseID] ?? "Curso"
             let isUrgent = date <= Date().addingTimeInterval(86_400)
             return NotificationItem(
@@ -257,9 +258,47 @@ enum AcademicDemoStore {
                 title: isUrgent ? "Entrega próxima" : "Nueva entrega pendiente",
                 body: "\(assignment.name) de \(courseName) vence \(dueLabel(date).lowercased()).",
                 timestamp: notificationTimestamp(for: date),
-                severity: isUrgent ? .urgent : .info
+                severity: isUrgent ? .urgent : .info,
+                category: assignment.kind == "laboratory" ? .laboratories : .deadlines,
+                date: createdAt
             )
         }
+
+        let laboratoryGrades = snapshot.scenario.grades.compactMap { grade -> NotificationItem? in
+            guard
+                let assignment = snapshot.catalog.assignments.first(where: { $0.id == grade.assignmentID }),
+                assignment.kind == "laboratory"
+            else { return nil }
+            let courseName = courseNames[assignment.courseID] ?? "Curso"
+            return NotificationItem(
+                id: "academic-lab-grade-\(assignment.id)",
+                title: "Laboratorio calificado",
+                body: "\(assignment.name) de \(courseName) tiene una calificación disponible: \(numberLabel(grade.score))/\(numberLabel(assignment.pointsPossible)).",
+                timestamp: "Reciente",
+                severity: .info,
+                category: .laboratories,
+                date: createdAt
+            )
+        }
+
+        let sessions = Dictionary(uniqueKeysWithValues: snapshot.catalog.classSessions.map { ($0.id, $0) })
+        let attendanceNotices = snapshot.scenario.attendance.compactMap { record -> NotificationItem? in
+            guard record.status == "absent", let session = sessions[record.classSessionID] else { return nil }
+            let courseName = courseNames[session.courseID] ?? "Curso"
+            let sessionDate = parseDate(session.endAt ?? session.startAt)
+            return NotificationItem(
+                id: "academic-absence-\(record.classSessionID)",
+                title: "Inasistencia registrada",
+                body: "Se registró una inasistencia en \(courseName). Revisa tu asistencia en PaquitoBot.",
+                timestamp: sessionDate.map(notificationTimestamp(for:)) ?? "Reciente",
+                severity: .urgent,
+                category: .attendance,
+                date: createdAt
+            )
+        }
+
+        return (pendingNotifications + laboratoryGrades + attendanceNotices)
+            .sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }
     }
 
     private static func makeCalendarTasks(from snapshot: Snapshot) -> [CalendarTask] {
@@ -275,7 +314,8 @@ enum AcademicDemoStore {
                     course: courseNames[assignment.courseID] ?? "Curso",
                     dueLabel: dateTimeLabel(dueAt),
                     isPast: date < Date(),
-                    dueDate: date
+                    dueDate: date,
+                    notificationCategory: assignment.kind == "laboratory" ? .laboratories : .deadlines
                 )
             }
             .sorted { $0.dueLabel < $1.dueLabel }
@@ -551,12 +591,14 @@ private struct AcademicClassSession: Decodable {
     let id: Int
     let courseID: Int
     let startAt: String?
+    let endAt: String?
     let kind: String
 
     enum CodingKeys: String, CodingKey {
         case id, kind
         case courseID = "course_id"
         case startAt = "start_at"
+        case endAt = "end_at"
     }
 }
 

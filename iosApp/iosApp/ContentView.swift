@@ -38,7 +38,11 @@ struct ContentView: View {
         case .onboarding(.notifications):
             OnboardingNotificationsView(
                 isRequestingPermission: app.isRequestingNotificationPermission,
-                initialSetup: app.notificationSetup
+                initialSetup: app.notificationSetup,
+                permissionState: app.notificationPermissionState,
+                onRequestPermission: app.requestNotificationPermission,
+                onOpenSettings: app.openNotificationSettings,
+                onSendTestNotification: app.sendTestNotification
             ) { setup in
                 app.completeNotificationSetup(setup)
             }
@@ -67,6 +71,11 @@ struct ContentView: View {
                             NotificationsInboxView(
                                 items: app.notifications,
                                 setup: app.notificationSetup,
+                                permissionState: app.notificationPermissionState,
+                                isRequestingPermission: app.isRequestingNotificationPermission,
+                                onRequestPermission: app.requestNotificationPermission,
+                                onOpenSettings: app.openNotificationSettings,
+                                onSendTestNotification: app.sendTestNotification,
                                 onSaveSetup: app.updateNotificationSetup,
                                 onItemsChanged: app.updateNotifications
                             )

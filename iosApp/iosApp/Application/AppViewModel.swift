@@ -20,6 +20,7 @@ final class AppViewModel: ObservableObject {
     @Published var notifications: [NotificationItem]
     @Published private(set) var notificationSetup = NotificationPreferenceStore.load()
     @Published private(set) var isRequestingNotificationPermission = false
+    @Published private(set) var notificationPermissionState: NotificationAuthorizationState = .notDetermined
 
     let authService: AuthService
     let chatViewModel: ChatViewModel
@@ -45,7 +46,8 @@ final class AppViewModel: ObservableObject {
             phase = .onboarding(.intro)
         }
 
-        Task { [scheduleService = self.notificationScheduleService] in
+        Task { [permissionService = self.notificationPermissionService, scheduleService = self.notificationScheduleService] in
+            notificationPermissionState = await permissionService.authorizationState()
             await scheduleService.synchronize(
                 setup: notificationSetup,
                 tasks: AcademicDemoStore.calendarTasks
@@ -89,7 +91,11 @@ final class AppViewModel: ObservableObject {
         NotificationPreferenceStore.save(setup)
 
         guard !setup.enabled.isEmpty else {
-            advanceOnboarding()
+            Task { [weak self] in
+                guard let self else { return }
+                await notificationScheduleService.synchronize(setup: setup, tasks: AcademicDemoStore.calendarTasks)
+                advanceOnboarding()
+            }
             return
         }
 
@@ -97,12 +103,40 @@ final class AppViewModel: ObservableObject {
         Task { [weak self] in
             guard let self else { return }
             _ = await notificationPermissionService.requestAuthorization()
+            notificationPermissionState = await notificationPermissionService.authorizationState()
             await notificationScheduleService.synchronize(
                 setup: setup,
                 tasks: AcademicDemoStore.calendarTasks
             )
             isRequestingNotificationPermission = false
             advanceOnboarding()
+        }
+    }
+
+    func requestNotificationPermission() {
+        guard !isRequestingNotificationPermission else { return }
+        isRequestingNotificationPermission = true
+        Task { [weak self] in
+            guard let self else { return }
+            _ = await notificationPermissionService.requestAuthorization()
+            notificationPermissionState = await notificationPermissionService.authorizationState()
+            await notificationScheduleService.synchronize(
+                setup: notificationSetup,
+                tasks: AcademicDemoStore.calendarTasks
+            )
+            isRequestingNotificationPermission = false
+        }
+    }
+
+    func openNotificationSettings() {
+        notificationPermissionService.openSettings()
+    }
+
+    func sendTestNotification() {
+        Task { [weak self] in
+            guard let self else { return }
+            _ = await notificationPermissionService.sendTestNotification()
+            notificationPermissionState = await notificationPermissionService.authorizationState()
         }
     }
 
