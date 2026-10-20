@@ -119,6 +119,7 @@ struct EvaluationItem: Identifiable, Hashable {
     let weightLabel: String
     let scoresLabel: String
     let state: EvaluationState
+    let detail: String = ""
 }
 
 struct CourseDetailData: Hashable {

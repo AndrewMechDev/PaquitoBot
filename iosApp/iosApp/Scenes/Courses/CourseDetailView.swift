@@ -3,6 +3,8 @@ import SwiftUI
 struct CourseDetailView: View {
     let data: CourseDetailData
     @State private var expandedSections: Set<String> = ["Prácticas", "Laboratorios", "Foros"]
+    @State private var attendanceExpanded = false
+    @State private var selectedEvaluation: EvaluationItem?
 
     var body: some View {
         ScrollView {
@@ -11,7 +13,7 @@ struct CourseDetailView: View {
                 absenceStrip
                 evaluationSection("Prácticas", items: data.practices)
                 evaluationSection("Laboratorios", items: data.labs)
-                evaluationSection("Foros", items: data.forums)
+                evaluationSection("Pendientes", items: data.forums)
             }
             .padding(.horizontal, PaquitoSpacing.lg)
             .padding(.vertical, PaquitoSpacing.md)
@@ -20,6 +22,9 @@ struct CourseDetailView: View {
         .background(PaquitoColors.background)
         .navigationTitle(data.course.name)
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(item: $selectedEvaluation) { item in
+            EvaluationDetailSheet(item: item)
+        }
     }
 
     private var hero: some View {
@@ -47,19 +52,47 @@ struct CourseDetailView: View {
     }
 
     private var absenceStrip: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "person.crop.circle.badge.checkmark")
-                .font(.title3)
-                .foregroundStyle(PaquitoColors.stateWarning)
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Asistencia")
-                    .font(PaquitoTypography.taskTitle)
-                    .foregroundStyle(PaquitoColors.textPrimary)
-                Text("\(data.course.absences) faltas de \(data.course.absenceLimit) permitidas")
+        VStack(alignment: .leading, spacing: 12) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    attendanceExpanded.toggle()
+                }
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "person.crop.circle.badge.checkmark")
+                        .font(.title3)
+                        .foregroundStyle(absenceColor)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Asistencia")
+                            .font(PaquitoTypography.taskTitle)
+                            .foregroundStyle(PaquitoColors.textPrimary)
+                        Text("\(data.course.absences) de \(data.course.absenceLimit) faltas")
+                            .font(PaquitoTypography.bodySmall)
+                            .foregroundStyle(absenceColor)
+                    }
+                    Spacer()
+                    Image(systemName: attendanceExpanded ? "chevron.up" : "chevron.down")
+                        .foregroundStyle(PaquitoColors.textSecondary)
+                }
+            }
+            .buttonStyle(.plain)
+
+            GeometryReader { geometry in
+                Capsule()
+                    .fill(PaquitoColors.borderDefault)
+                    .overlay(alignment: .leading) {
+                        Capsule()
+                            .fill(absenceColor)
+                            .frame(width: geometry.size.width * absenceProgress)
+                    }
+            }
+            .frame(height: 8)
+
+            if attendanceExpanded {
+                Text("Detalle de asistencia académica de demostración. Las sesiones reales se mostrarán cuando el adaptador iOS consuma el registro del campus.")
                     .font(PaquitoTypography.bodySmall)
                     .foregroundStyle(PaquitoColors.textSecondary)
             }
-            Spacer()
         }
         .paquitoCard()
     }
@@ -78,6 +111,9 @@ struct CourseDetailView: View {
                         .font(PaquitoTypography.taskTitle)
                         .foregroundStyle(PaquitoColors.textPrimary)
                     Spacer()
+                    Text("\(items.count)")
+                        .font(PaquitoTypography.caption)
+                        .foregroundStyle(PaquitoColors.stateInfoStrong)
                     Image(systemName: expandedSections.contains(title) ? "chevron.up" : "chevron.down")
                         .foregroundStyle(PaquitoColors.textSecondary)
                 }
@@ -88,7 +124,12 @@ struct CourseDetailView: View {
             if expandedSections.contains(title) {
                 VStack(spacing: 0) {
                     ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                        EvaluationRow(item: item)
+                        Button {
+                            selectedEvaluation = item
+                        } label: {
+                            EvaluationRow(item: item)
+                        }
+                        .buttonStyle(.plain)
                         if index < items.count - 1 {
                             Divider().overlay(PaquitoColors.borderDefault)
                         }
@@ -97,6 +138,18 @@ struct CourseDetailView: View {
                 .paquitoCard()
             }
         }
+    }
+
+    private var absenceProgress: CGFloat {
+        guard data.course.absenceLimit > 0 else { return 0 }
+        return min(CGFloat(data.course.absences) / CGFloat(data.course.absenceLimit), 1)
+    }
+
+    private var absenceColor: Color {
+        let remaining = data.course.absenceLimit - data.course.absences
+        if remaining <= 1 { return PaquitoColors.stateDanger }
+        if remaining <= 2 { return PaquitoColors.stateWarning }
+        return PaquitoColors.stateSuccess
     }
 }
 
@@ -139,6 +192,60 @@ private struct EvaluationRow: View {
         case .graded: return PaquitoColors.stateSuccess
         case .pending: return PaquitoColors.stateWarning
         case .missing: return PaquitoColors.stateDanger
+        }
+    }
+}
+
+private struct EvaluationDetailSheet: View {
+    let item: EvaluationItem
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 18) {
+                DetailFact(label: "Estado", value: stateLabel(item.state))
+                DetailFact(label: "Peso en la nota final", value: item.weightLabel)
+                DetailFact(label: "Nota / puntaje", value: item.scoresLabel)
+                if !item.detail.isEmpty {
+                    Text(item.detail)
+                        .font(PaquitoTypography.bodyMedium)
+                        .foregroundStyle(PaquitoColors.textSecondary)
+                }
+                Spacer()
+            }
+            .padding(PaquitoSpacing.lg)
+            .background(PaquitoColors.background)
+            .navigationTitle(item.name)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cerrar") { dismiss() }
+                }
+            }
+        }
+    }
+
+    private func stateLabel(_ state: EvaluationState) -> String {
+        switch state {
+        case .graded: return "Calificado"
+        case .pending: return "Pendiente"
+        case .missing: return "No entregado"
+        }
+    }
+}
+
+private struct DetailFact: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(PaquitoTypography.caption)
+                .foregroundStyle(PaquitoColors.textSecondary)
+            Text(value)
+                .font(PaquitoTypography.bodyMedium)
+                .foregroundStyle(PaquitoColors.textPrimary)
         }
     }
 }
