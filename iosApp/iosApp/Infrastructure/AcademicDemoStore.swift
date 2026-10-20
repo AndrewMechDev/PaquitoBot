@@ -23,6 +23,11 @@ enum AcademicDemoStore {
         return makeSchedule(from: snapshot)
     }()
 
+    static let notifications: [NotificationItem] = {
+        guard let snapshot else { return DemoAcademicData.notifications }
+        return makeNotifications(from: snapshot)
+    }()
+
     static var isLoaded: Bool { snapshot != nil }
 
     static func detail(for course: CourseItem) -> CourseDetailData {
@@ -156,6 +161,30 @@ enum AcademicDemoStore {
             importantNotices: base.importantNotices,
             importantNoticeCount: base.importantNoticeCount
         )
+    }
+
+    private static func makeNotifications(from snapshot: Snapshot) -> [NotificationItem] {
+        let gradeIDs = Set(snapshot.scenario.grades.map(\.assignmentID))
+        let courseNames = Dictionary(uniqueKeysWithValues: snapshot.catalog.courses.map { ($0.id, $0.name) })
+        let pending = snapshot.catalog.assignments
+            .filter { !gradeIDs.contains($0.id) }
+            .compactMap { assignment -> (AcademicAssignment, Date)? in
+                guard let date = parseDate(assignment.dueAt) else { return nil }
+                return (assignment, date)
+            }
+            .sorted { $0.1 < $1.1 }
+
+        return pending.prefix(6).map { assignment, date in
+            let courseName = courseNames[assignment.courseID] ?? "Curso"
+            let isUrgent = date <= Date().addingTimeInterval(86_400)
+            return NotificationItem(
+                id: "academic-assignment-\(assignment.id)",
+                title: isUrgent ? "Entrega próxima" : "Nueva entrega pendiente",
+                body: "\(assignment.name) de \(courseName) vence \(dueLabel(date).lowercased()).",
+                timestamp: notificationTimestamp(for: date),
+                severity: isUrgent ? .urgent : .info
+            )
+        }
     }
 
     private static func makeSchedule(from snapshot: Snapshot) -> ScheduleData {
@@ -342,6 +371,18 @@ enum AcademicDemoStore {
         if date <= now.addingTimeInterval(86_400) { return .urgent }
         if date <= now.addingTimeInterval(259_200) { return .normal }
         return .future
+    }
+
+    private static func notificationTimestamp(for date: Date) -> String {
+        let calendar = academicCalendar
+        let today = calendar.startOfDay(for: Date())
+        let target = calendar.startOfDay(for: date)
+        if target == today { return "Hoy" }
+        if let tomorrow = calendar.date(byAdding: .day, value: 1, to: today), target == tomorrow {
+            return "Mañana"
+        }
+        let days = calendar.dateComponents([.day], from: today, to: target).day ?? 0
+        return days > 0 ? "En \(days) d" : "Pendiente"
     }
 
     private static func dateTimeLabel(_ value: String) -> String {

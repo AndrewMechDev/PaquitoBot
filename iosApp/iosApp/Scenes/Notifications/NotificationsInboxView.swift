@@ -208,8 +208,8 @@ private enum NotificationPeriod: String, CaseIterable, Identifiable {
 
     func matches(_ item: NotificationItem) -> Bool {
         let timestamp = item.timestamp.lowercased()
-        let isToday = timestamp.contains(" h") || timestamp.contains("min") || timestamp.contains("ahora")
-        let isWeek = isToday || timestamp.contains("ayer") || timestamp.contains(" d")
+        let isToday = timestamp.contains("hoy") || timestamp.contains(" h") || timestamp.contains("min") || timestamp.contains("ahora")
+        let isWeek = isToday || timestamp.contains("mañana") || timestamp.contains("ayer") || timestamp.contains(" d")
         switch self {
         case .all: return true
         case .today: return isToday

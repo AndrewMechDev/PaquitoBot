@@ -54,7 +54,7 @@ enum NotificationInboxStore {
     static func load() -> [NotificationItem] {
         guard let data = UserDefaults.standard.data(forKey: key),
               let items = try? JSONDecoder().decode([NotificationItem].self, from: data) else {
-            return DemoAcademicData.notifications
+            return AcademicDemoStore.notifications
         }
         return items
     }
