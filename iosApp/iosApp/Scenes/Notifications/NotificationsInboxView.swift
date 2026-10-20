@@ -6,6 +6,10 @@ struct NotificationsInboxView: View {
     @State private var selectedItem: NotificationItem?
     @State private var showDeleteAllConfirmation = false
     @State private var showPreferences = false
+    @State private var period: NotificationPeriod = .all
+    @State private var deletedItem: NotificationItem?
+    @State private var deletedIndex: Int?
+    @State private var showUndo = false
     let setup: NotificationSetup
     let onSaveSetup: (NotificationSetup) -> Void
     let onItemsChanged: ([NotificationItem]) -> Void
@@ -32,11 +36,23 @@ struct NotificationsInboxView: View {
             .padding(.horizontal, PaquitoSpacing.lg)
             .padding(.top, 8)
 
-            if items.isEmpty {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(NotificationPeriod.allCases) { option in
+                        NotificationPeriodChip(title: option.title, isSelected: period == option) {
+                            period = option
+                        }
+                    }
+                }
+                .padding(.horizontal, PaquitoSpacing.lg)
+                .padding(.vertical, 10)
+            }
+
+            if visibleItems.isEmpty {
                 emptyState
             } else {
                 List {
-                    ForEach(items) { item in
+                    ForEach(visibleItems) { item in
                         Button {
                             selectedItem = item
                         } label: {
@@ -64,6 +80,22 @@ struct NotificationsInboxView: View {
             }
         }
         .background(PaquitoColors.background)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if showUndo, let deletedItem {
+                HStack(spacing: 12) {
+                    Text("Notificación eliminada")
+                        .font(PaquitoTypography.bodySmall)
+                        .foregroundStyle(PaquitoColors.textPrimary)
+                    Spacer()
+                    Button("Deshacer") { undoDelete(deletedItem) }
+                        .font(PaquitoTypography.bodyMedium.weight(.semibold))
+                        .foregroundStyle(PaquitoColors.stateInfoStrong)
+                }
+                .padding(.horizontal, PaquitoSpacing.lg)
+                .padding(.vertical, 12)
+                .background(.ultraThinMaterial)
+            }
+        }
         .navigationTitle("Notificaciones")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -116,17 +148,92 @@ struct NotificationsInboxView: View {
 
     private var emptyState: some View {
         ContentUnavailableView(
-            "Sin notificaciones",
+            period == .all ? "Sin notificaciones" : "Sin avisos en este período",
             systemImage: "bell.slash",
-            description: Text("Cuando Paquito tenga algo importante que avisarte, aparecerá aquí.")
+            description: Text(period == .all ? "Cuando Paquito tenga algo importante que avisarte, aparecerá aquí." : "Prueba con otro período o vuelve a Todos.")
         )
     }
 
     private func delete(_ item: NotificationItem) {
+        guard let index = items.firstIndex(where: { $0.id == item.id }) else { return }
         withAnimation {
-            items.removeAll { $0.id == item.id }
+            deletedItem = item
+            deletedIndex = index
+            items.remove(at: index)
+            showUndo = true
             onItemsChanged(items)
         }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(4))
+            if deletedItem?.id == item.id {
+                showUndo = false
+                deletedItem = nil
+                deletedIndex = nil
+            }
+        }
+    }
+
+    private func undoDelete(_ item: NotificationItem) {
+        withAnimation {
+            let index = deletedIndex ?? items.count
+            items.insert(item, at: min(index, items.count))
+            onItemsChanged(items)
+            showUndo = false
+            deletedItem = nil
+            deletedIndex = nil
+        }
+    }
+
+    private var visibleItems: [NotificationItem] {
+        items.filter { period.matches($0) }
+    }
+}
+
+private enum NotificationPeriod: String, CaseIterable, Identifiable {
+    case all
+    case today
+    case week
+    case older
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .all: return "Todos"
+        case .today: return "Hoy"
+        case .week: return "Semana"
+        case .older: return "Anteriores"
+        }
+    }
+
+    func matches(_ item: NotificationItem) -> Bool {
+        let timestamp = item.timestamp.lowercased()
+        let isToday = timestamp.contains(" h") || timestamp.contains("min") || timestamp.contains("ahora")
+        let isWeek = isToday || timestamp.contains("ayer") || timestamp.contains(" d")
+        switch self {
+        case .all: return true
+        case .today: return isToday
+        case .week: return isWeek
+        case .older: return !isWeek
+        }
+    }
+}
+
+private struct NotificationPeriodChip: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(title, action: action)
+            .font(PaquitoTypography.caption.weight(isSelected ? .semibold : .regular))
+            .foregroundStyle(isSelected ? PaquitoColors.stateInfoStrong : PaquitoColors.textSecondary)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .background(isSelected ? PaquitoColors.brandPrimary.opacity(0.14) : PaquitoColors.surfaceGlass)
+            .clipShape(Capsule())
+            .overlay(Capsule().stroke(isSelected ? PaquitoColors.stateInfoStrong : PaquitoColors.borderDefault, lineWidth: 1))
+            .buttonStyle(.plain)
     }
 }
 
