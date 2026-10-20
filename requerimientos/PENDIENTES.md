@@ -1,38 +1,36 @@
 # Pendientes y deuda conocida
 
-> Lista viva de lo que hay que resolver antes de liberar o cuando cambie el contexto. Actualizar al cerrar cada ítem. Última revisión: 2026-10-06 (rama `feature/canvas-mock-data`).
+> Lista viva de lo que hay que resolver antes de repartir la app o cuando cambie el contexto. Actualizar al cerrar cada ítem. Última revisión: 2026-10-20 (rama `develop`).
 
-## Antes de un build release
+## Seguridad
 
-- [ ] **canvas-mock no funciona en release (a propósito).** El permiso `usesCleartextTraffic` vive solo en `androidApp/src/debug/AndroidManifest.xml`, porque canvas-mock se consume por HTTP plano (`http://<IP-LAN>:8811`). Un build release bloquea ese tráfico, así que Cursos, Horarios y Home no cargarían datos de canvas-mock. Opciones cuando llegue el momento:
-  - Desplegar canvas-mock con HTTPS (o usar la API real de Canvas) y cambiar `CANVAS_MOCK_BASE_URL`.
-  - O retirar por completo el gate y los ViewModels de canvas-mock (`Academic*ViewModel`, `CanvasMockKeyStore`, `CanvasMockApi`) cuando haya Canvas real.
-- [ ] **Registrar el package debug en Google.** El build debug usa `applicationIdSuffix = ".debug"`, es decir `pe.tecsup.paquitobot.debug`. Google Sign-In necesita un cliente OAuth tipo Android con ese package y el SHA-1 del keystore debug en Google Cloud Console. Sin eso, el login en debug puede fallar con `DEVELOPER_ERROR` o "No credentials available". Pendiente de verificar en dispositivo.
-- [ ] **Sacar la IP LAN hardcodeada** de `CanvasMockHttpClient.kt` (`CANVAS_MOCK_BASE_URL`). Debería venir de `BuildConfig` o `local.properties`, o de un campo editable en el gate de conexión.
-- [ ] **Retirar código muerto del gate de Canvas real.** `CanvasConnectScreen` y `CanvasConnectViewModel` quedaron sin uso en el flujo; se conservan solo para cuando haya integración real.
+- [ ] **Revisar el historial de git en busca de secretos.** El repo es público (`AndrewMechDev/PaquitoBot`), así que todo lo que alguna vez se commiteó es visible. Buscar en todas las ramas y commits: `BACKEND_SECRET`, client secret de Google, API keys (MiniMax, Clerk `sk_`), tokens y contraseñas. Si aparece algo real, hay que rotarlo: borrar el commit no basta. `local.properties` está fuera de git, pero el historial anterior no se ha revisado.
+  - Ya verificado: el Web client ID de Google (`google_web_client_id`) estuvo en `strings.xml` de `ui-auth-figma`, `canvas-mock-data` e `ios-mock-data`. Es un identificador público, no un secreto; no requiere acción. `develop` y `main` ya no lo tienen.
+- [ ] **La clave de MiniMax queda dentro del APK debug** y se puede extraer. La variante release la compila vacía (`MINIMAX_API_KEY = ""`), así que el chat no funciona en release. Antes de repartir el chat hace falta un backend que guarde la clave y llame a MiniMax tras validar la sesión de Clerk (ver `MINIMAX_CHAT.md`).
 
-## Funcionalidad que todavía es maqueta
+## Antes de repartir la app
 
-- [ ] **Completar validación y cobertura de notificaciones.** Programador WorkManager implementado para entregas con fecha y resumen diario, con cancelación y registro antirrepetición. Pendientes: prueba real con backend accesible, reglas/datos de laboratorios y asistencia, e historial real en la bandeja (aún demo). Ver `SERVICIOS_ACADEMICOS.md`; instalaciones/pruebas conectadas pospuestas por el usuario.
-- [ ] **Login con Google en debug muestra "cancelaste el inicio de sesión"** (2026-10-06). Hipótesis: el package debug (`pe.tecsup.paquitobot.debug`) no está registrado como cliente OAuth Android. `GoogleAuthClient` ahora loguea el error original con el tag `GoogleAuth` (`adb logcat -s GoogleAuth`) para confirmar la causa real.
+- [ ] **Firma de release.** `androidApp/build.gradle.kts` no define `signingConfig`, así que `assembleRelease` genera `androidApp-release-unsigned.apk`, que no se instala en un teléfono. Crear un keystore (guardado fuera de git) y configurarlo; para pruebas internas se podría firmar con la clave de debug.
+- [ ] **Decidir cómo se distribuye a los ~10 usuarios:** APK debug (el chat funciona, pero la clave de MiniMax queda expuesta) o release firmado (el chat no funciona sin backend).
+- [ ] **Revisar los límites del plan de Clerk** (usuarios activos e inicios de sesión). No se puede ver desde el repo.
+- [ ] **Verificar el login en la variante debug.** El sufijo `.debug` cambia el package a `pe.tecsup.paquitobot.debug`. Hipótesis sin verificar: Clerk necesita ese package registrado para el flujo de SSO. Relacionado con el cierre de sesión que se vio al probar.
+- [ ] **Borrar `androidApp/src/debug/AndroidManifest.xml`.** Solo habilita HTTP plano (`usesCleartextTraffic`) en debug para canvas-mock, que ya no existe.
 
-## Hallazgos de revisión de código sin arreglar (2026-10-06)
+## Calidad y pruebas
 
-Revisión de `develop..HEAD`. Los tres hallazgos críticos ya están corregidos; quedan estos:
+- [ ] **Avisos de lint** (0 errores, 50 avisos el 2026-10-20): 17 `NewerVersionAvailable`, 6 `UseKtx`, 5 `IconLauncherShape`, 4 `UnusedResources`, 3 `GradleDependency`, 2 `OldTargetApi`. Los dos más concretos:
+  - `EmptySuperCall` en `CalendarViewModel.kt:178`: quitar `super.onCleared()`.
+  - `DataExtractionRules` en `AndroidManifest.xml`: `allowBackup="false"` está obsoleto desde Android 12; agregar `android:dataExtractionRules`.
+- [ ] **Cerrar sesión devuelve al inicio del onboarding.** `SessionViewModel` pone `isOnboardingComplete = false` al cerrar sesión. Confirmar si es lo deseado o si debe ir directo al login de Clerk.
+- [ ] **Las pruebas instrumentadas necesitan preparación manual.** `AcademicNotificationsDeviceTest` exige una sesión de Clerk abierta, el onboarding terminado con una categoría activa y el permiso de notificaciones. Gradle desinstala la app al terminar, así que la sesión se pierde en cada corrida.
 
-- [ ] **Datos vacíos que parecen reales.** `AcademicViewModel`, `AcademicCourseDetailViewModel`, `AcademicHomeViewModel` y `AcademicScheduleViewModel` usan `getOrDefault(emptyList())`. Si una llamada falla, la UI muestra "0 faltas" o "sin notas" sin avisar.
-- [ ] **Un refresh fallido borra lo ya cargado** en Home y Horarios. `AcademicViewModel` sí conserva el estado previo; hay que unificar el comportamiento.
-- [ ] **`isToday` incorrecto en Home.** `AcademicHomeViewModel` marca como "hoy" el primer día con eventos, no la fecha real del dispositivo.
-- [ ] **"Pendientes" incluye entregas ya calificadas o vencidas** (`AcademicViewModel` y `AcademicHomeViewModel`): contadores, "próximo vencimiento" y urgencia. Filtrar por no calificadas y fecha >= hoy.
-- [ ] **Eficiencia de red.** 3 llamadas en serie por curso y los mismos datos pedidos por 3 ViewModels. Usar `async`/`awaitAll` y un repositorio compartido con caché.
-- [ ] **Copy de UI con voseo** ("Probá", "Intentá", "Tenés", "Conectá"). La app es para Perú: pasar a español neutro.
+## Funcionalidad
 
-## Seguridad y almacenamiento
+- [ ] **Completar validación y cobertura de notificaciones.** Programador WorkManager implementado para entregas con fecha y resumen diario, con cancelación y registro antirrepetición. Pendientes: reglas y datos de laboratorios y asistencia, e historial real en la bandeja. Ver `SERVICIOS_ACADEMICOS.md` y `ACADEMIC_NOTIFICATIONS.md`.
+- [ ] **Los datos académicos son de demostración.** Salen de los JSON de `androidApp/src/main/assets/academic/` (ver `ESCENARIOS_MOCK.md`). Cambiar a datos reales cuando exista la fuente.
 
-- [ ] **`SecureTokenStore` (JWT de Google) no tiene recuperación** si el archivo cifrado no se puede abrir. `allowBackup="false"` evita el caso del restore, pero no cubre corrupción ni borrado de credenciales de pantalla. `CanvasMockKeyStore` ya tiene esa recuperación; replicarla.
-- [ ] `CanvasMockKeyStore.clear()` también borra el flag `skipped`. Hoy no se usa; revisar si se llega a exponer un "desconectar".
+## Verificado el 2026-10-20 (referencia)
 
-## Tooling
-
-- [ ] **Revisión de Gentle AI abierta** (`review-7463355cc0835741`). Los revisores no pueden correr porque la organización (Tecsup) bloqueó el acceso por suscripción al CLI `claude`. Se hizo una revisión manual con `code-review` en su lugar. Cerrar con `gentle-ai review mode disable --scope clone` o resolver el acceso al CLI.
-- [ ] El build release completo (`assembleRelease`) no se ha compilado tras el bump de AGP a 9.4.1; solo `assembleDebug` y la fusión del manifest release.
+- `assembleRelease` compila en `develop` con AGP 9.4.1 (5m31s).
+- 76 pruebas unitarias en verde (38 de `androidApp`, 38 de `sharedLogic`) y lint sin errores, corridos en la rama `servicios-y-funcionalidades-academicas` antes de mergearla a `develop` (el merge no tuvo conflictos; no se repitieron sobre `develop`).
+- 11 pruebas instrumentadas en verde en un Galaxy S10+ (las 2 de sesión, con la sesión preparada a mano), también sobre esa rama.
