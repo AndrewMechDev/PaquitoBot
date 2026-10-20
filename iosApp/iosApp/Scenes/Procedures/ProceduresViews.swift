@@ -1,39 +1,178 @@
 import SwiftUI
 
 struct ProceduresView: View {
+    @State private var query = ""
+    @State private var selectedCategory: String?
+
+    private var categories: [String] {
+        Array(Set(DemoAcademicData.procedures.map(\.category))).sorted()
+    }
+
+    private var filteredProcedures: [ProcedureItem] {
+        let normalizedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return DemoAcademicData.procedures.filter { procedure in
+            let matchesCategory = selectedCategory == nil || procedure.category == selectedCategory
+            let matchesQuery = normalizedQuery.isEmpty
+                || procedure.title.lowercased().contains(normalizedQuery)
+                || procedure.code.lowercased().contains(normalizedQuery)
+                || procedure.summary.lowercased().contains(normalizedQuery)
+            return matchesCategory && matchesQuery
+        }
+    }
+
     var body: some View {
-        List {
-            Section {
-                Text("Consulta requisitos, pasos, costos y canales oficiales de atención.")
-                    .font(PaquitoTypography.body)
-                    .foregroundStyle(PaquitoColors.textSecondary)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(top: 12, leading: 0, bottom: 12, trailing: 0))
-            }
-            Section("Trámites disponibles") {
-                ForEach(DemoAcademicData.procedures) { procedure in
-                    NavigationLink(value: AppRoute.procedureDetail(procedure.id)) {
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text(procedure.title)
-                                .font(PaquitoTypography.taskTitle)
-                                .foregroundStyle(PaquitoColors.textPrimary)
-                            Text("\(procedure.code) · \(procedure.category)")
-                                .font(PaquitoTypography.caption)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Secretaría")
+                        .font(PaquitoTypography.display)
+                        .foregroundStyle(PaquitoColors.textPrimary)
+                    Text("Guía de trámites · Arequipa")
+                        .font(PaquitoTypography.bodyMedium)
+                        .foregroundStyle(PaquitoColors.textSecondary)
+                }
+
+                TextField("Buscar trámite o código", text: $query)
+                    .font(PaquitoTypography.bodyMedium)
+                    .textFieldStyle(.plain)
+                    .padding(.horizontal, 14)
+                    .frame(minHeight: 48)
+                    .background(PaquitoColors.surfaceGlass)
+                    .clipShape(RoundedRectangle(cornerRadius: PaquitoRadius.medium, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: PaquitoRadius.medium, style: .continuous)
+                            .stroke(PaquitoColors.borderDefault, lineWidth: 1)
+                    )
+                    .overlay(alignment: .trailing) {
+                        if !query.isEmpty {
+                            Button("Limpiar") { query = "" }
+                                .font(PaquitoTypography.caption.weight(.semibold))
                                 .foregroundStyle(PaquitoColors.stateInfoStrong)
-                            Text(procedure.summary)
-                                .font(PaquitoTypography.bodySmall)
-                                .foregroundStyle(PaquitoColors.textSecondary)
-                                .lineLimit(2)
+                                .padding(.trailing, 12)
                         }
-                        .padding(.vertical, 8)
+                    }
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ProcedureFilterChip(title: "Todos", isSelected: selectedCategory == nil) {
+                            selectedCategory = nil
+                        }
+                        ForEach(categories, id: \.self) { category in
+                            ProcedureFilterChip(title: category, isSelected: selectedCategory == category) {
+                                selectedCategory = category
+                            }
+                        }
+                    }
+                }
+
+                Text("\(filteredProcedures.count) trámites · información de referencia 2024")
+                    .font(PaquitoTypography.caption)
+                    .foregroundStyle(PaquitoColors.textMuted)
+
+                ProcedureSourceNote()
+
+                if filteredProcedures.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("No encontramos ese trámite")
+                            .font(PaquitoTypography.taskTitle)
+                            .foregroundStyle(PaquitoColors.textPrimary)
+                        Text("Prueba con otra palabra o consulta todas las categorías.")
+                            .font(PaquitoTypography.bodyMedium)
+                            .foregroundStyle(PaquitoColors.textSecondary)
+                        Button("Ver todos") {
+                            query = ""
+                            selectedCategory = nil
+                        }
+                        .font(PaquitoTypography.button)
+                        .foregroundStyle(PaquitoColors.stateInfoStrong)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .paquitoCard()
+                } else {
+                    LazyVStack(spacing: 12) {
+                        ForEach(filteredProcedures) { procedure in
+                            NavigationLink(value: AppRoute.procedureDetail(procedure.id)) {
+                                ProcedureSummaryCard(procedure: procedure)
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
                 }
             }
+            .padding(PaquitoSpacing.lg)
         }
-        .scrollContentBackground(.hidden)
+        .scrollIndicators(.hidden)
         .background(PaquitoColors.background)
         .navigationTitle("Procedimientos")
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+private struct ProcedureSummaryCard: View {
+    let procedure: ProcedureItem
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("\(procedure.code) · \(procedure.category)")
+                    .font(PaquitoTypography.caption.weight(.semibold))
+                    .foregroundStyle(PaquitoColors.stateInfoStrong)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(PaquitoColors.textMuted)
+            }
+            Text(procedure.title)
+                .font(PaquitoTypography.taskTitle)
+                .foregroundStyle(PaquitoColors.textPrimary)
+            Text(procedure.summary)
+                .font(PaquitoTypography.bodyMedium)
+                .foregroundStyle(PaquitoColors.textSecondary)
+                .lineLimit(3)
+            Text("\(procedure.cost) · referencial")
+                .font(PaquitoTypography.bodySmall.weight(.semibold))
+                .foregroundStyle(PaquitoColors.textPrimary)
+            Text("Ver requisitos y pasos  ›")
+                .font(PaquitoTypography.caption)
+                .foregroundStyle(PaquitoColors.stateInfoStrong)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .paquitoCard()
+    }
+}
+
+private struct ProcedureFilterChip: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(PaquitoTypography.bodySmall.weight(.semibold))
+                .foregroundStyle(isSelected ? PaquitoColors.stateInfoStrong : PaquitoColors.textSecondary)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 9)
+                .background(isSelected ? PaquitoColors.brandPrimary.opacity(0.14) : PaquitoColors.surfaceGlass)
+                .clipShape(Capsule())
+                .overlay(Capsule().stroke(isSelected ? PaquitoColors.stateInfoStrong : PaquitoColors.borderDefault, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+private struct ProcedureSourceNote: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("Antes de realizar tu trámite")
+                .font(PaquitoTypography.bodyMedium.weight(.semibold))
+                .foregroundStyle(PaquitoColors.stateInfoStrong)
+            Text("Requisitos basados en el manual de referencia 2024. Confirma fechas, tarifas y condiciones actuales con Tecsup antes de solicitarlo.")
+                .font(PaquitoTypography.bodySmall)
+                .foregroundStyle(PaquitoColors.textSecondary)
+        }
+        .paquitoCard()
     }
 }
 
