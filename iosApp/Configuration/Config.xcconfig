@@ -1,3 +1,5 @@
+#include? "Config.local.xcconfig"
+
 TEAM_ID=
 
 PRODUCT_NAME=PaquitoBot

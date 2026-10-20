@@ -4,5 +4,14 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>CLERK_PUBLISHABLE_KEY</key>
+	<string>$(CLERK_PUBLISHABLE_KEY)</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>dm_sans_regular.ttf</string>
+		<string>dm_sans_medium.ttf</string>
+		<string>dm_sans_semibold.ttf</string>
+		<string>dm_sans_bold.ttf</string>
+	</array>
 </dict>
 </plist>

@@ -1,0 +1,13 @@
+{
+  "images" : [
+    {
+      "filename" : "paquito_personaje.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    }
+  ],
+  "info" : {
+    "author" : "paquitobot",
+    "version" : 1
+  }
+}

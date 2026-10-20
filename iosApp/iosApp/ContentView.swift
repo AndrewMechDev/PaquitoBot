@@ -1,33 +1,67 @@
 import SwiftUI
-import SharedLogic
 
+@MainActor
 struct ContentView: View {
-    @State private var showContent = false
-    var body: some View {
-        VStack {
-            Button("Click me!") {
-                withAnimation {
-                    showContent = !showContent
-                }
-            }
+    @StateObject private var app: AppViewModel
 
-            if showContent {
-                VStack(spacing: 16) {
-                    Image(systemName: "swift")
-                        .font(.system(size: 200))
-                        .foregroundColor(.accentColor)
-                    Text("SwiftUI: \(Greeting().greet())")
+    init() {
+        _app = StateObject(wrappedValue: AppViewModel())
+    }
+
+    init(app: AppViewModel) {
+        _app = StateObject(wrappedValue: app)
+    }
+
+    var body: some View {
+        Group {
+            switch app.phase {
+            case .onboarding(.welcome):
+                WelcomeView(onContinue: app.advanceOnboarding)
+            case .onboarding(.notifications):
+                OnboardingNotificationsView(isRequestingPermission: app.isRequestingNotificationPermission) { preferences in
+                    app.completeNotificationSetup(preferences)
                 }
-                .transition(.move(edge: .top).combined(with: .opacity))
+            case .onboarding(.tour):
+                OnboardingTourView(onContinue: app.advanceOnboarding)
+            case .auth:
+                if app.authService is ClerkAuthService {
+                    ClerkAuthGateView(app: app)
+                } else {
+                    AuthGateView(
+                        isSigningIn: app.isSigningIn,
+                        isUnauthorized: app.isUnauthorized,
+                        errorMessage: app.authError,
+                        onSignIn: app.signIn,
+                        onSignOut: app.signOut
+                    )
+                }
+            case .main:
+                NavigationStack(path: $app.path) {
+                    MainShellView(app: app)
+                        .navigationDestination(for: AppRoute.self) { route in
+                            switch route {
+                            case .chat:
+                                ChatView(viewModel: app.chatViewModel, userName: app.userName)
+                            case .notifications:
+                                NotificationsInboxView(items: app.notifications)
+                            case .courseDetail(let id):
+                                if let course = app.course(with: id) {
+                                    CourseDetailView(data: DemoAcademicData.detail(for: course))
+                                } else {
+                                    ContentUnavailableView("Curso no encontrado", systemImage: "book.closed")
+                                }
+                            }
+                        }
+                }
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .padding()
+        .preferredColorScheme(.light)
     }
 }
 
+@MainActor
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        ContentView(app: AppViewModel(authService: DemoAuthService()))
     }
 }
