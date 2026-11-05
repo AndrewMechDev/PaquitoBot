@@ -44,10 +44,6 @@
       "score": 5.0
     },
     {
-      "assignment_id": 302,
-      "score": 6.0
-    },
-    {
       "assignment_id": 303,
       "score": 3.0
     },
@@ -66,16 +62,12 @@
       "status": "absent"
     },
     {
-      "class_session_id": 5101,
-      "status": "absent"
-    },
-    {
       "class_session_id": 2101,
       "status": "absent"
     },
     {
       "class_session_id": 3101,
-      "status": "present"
+      "status": "absent"
     },
     {
       "class_session_id": 1102,
@@ -83,19 +75,15 @@
     },
     {
       "class_session_id": 4101,
-      "status": "present"
-    },
-    {
-      "class_session_id": 5102,
       "status": "absent"
     },
     {
       "class_session_id": 3102,
-      "status": "present"
+      "status": "absent"
     },
     {
       "class_session_id": 4102,
-      "status": "present"
+      "status": "absent"
     },
     {
       "class_session_id": 2102,
@@ -106,16 +94,12 @@
       "status": "absent"
     },
     {
-      "class_session_id": 5103,
-      "status": "present"
-    },
-    {
       "class_session_id": 2103,
       "status": "absent"
     },
     {
       "class_session_id": 3103,
-      "status": "present"
+      "status": "absent"
     },
     {
       "class_session_id": 1104,
@@ -123,19 +107,15 @@
     },
     {
       "class_session_id": 4103,
-      "status": "present"
-    },
-    {
-      "class_session_id": 5104,
-      "status": "present"
+      "status": "absent"
     },
     {
       "class_session_id": 3104,
-      "status": "present"
+      "status": "absent"
     },
     {
       "class_session_id": 4104,
-      "status": "present"
+      "status": "absent"
     },
     {
       "class_session_id": 2104,
@@ -146,16 +126,12 @@
       "status": "absent"
     },
     {
-      "class_session_id": 5105,
-      "status": "present"
-    },
-    {
       "class_session_id": 2105,
       "status": "absent"
     },
     {
       "class_session_id": 3105,
-      "status": "present"
+      "status": "absent"
     },
     {
       "class_session_id": 1106,
@@ -163,15 +139,11 @@
     },
     {
       "class_session_id": 4105,
-      "status": "present"
-    },
-    {
-      "class_session_id": 5106,
-      "status": "present"
+      "status": "absent"
     },
     {
       "class_session_id": 3106,
-      "status": "present"
+      "status": "absent"
     },
     {
       "class_session_id": 4106,
@@ -186,16 +158,12 @@
       "status": "absent"
     },
     {
-      "class_session_id": 5107,
-      "status": "present"
-    },
-    {
       "class_session_id": 2107,
       "status": "present"
     },
     {
       "class_session_id": 3107,
-      "status": "present"
+      "status": "absent"
     },
     {
       "class_session_id": 1108,
@@ -203,10 +171,6 @@
     },
     {
       "class_session_id": 4107,
-      "status": "present"
-    },
-    {
-      "class_session_id": 5108,
       "status": "present"
     },
     {
