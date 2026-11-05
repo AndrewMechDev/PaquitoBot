@@ -83,6 +83,35 @@ private val allCourses = listOf(
 class AcademicLogicTest {
 
     @Test
+    fun homeAverageUsesCourseMeansAndIgnoresUnassessedCourses() {
+        val data = buildHomeData(HomeScreenData.default(), allCourses, TODAY)
+        assertEquals(18.0, data.overallRanking, 0.001)
+        assertEquals(1, data.gradedCourseCount)
+        assertEquals(1, data.passingCourseCount)
+        assertEquals(2, data.courseCount)
+        assertTrue(data.cycleRankings.isEmpty())
+    }
+
+    @Test
+    fun homeAverageChangesWithCourseGradesInsteadOfFixedRanking() {
+        val updated = allCourses.map { item ->
+            if (item.course.id == 2) item.copy(records = item.records.copy(grades = listOf(AcademicGrade(106, 8.0)))) else item
+        }
+        val data = buildHomeData(HomeScreenData.default(), updated, TODAY)
+        assertEquals(13.0, data.overallRanking, 0.001)
+        assertEquals(2, data.gradedCourseCount)
+        assertEquals(1, data.passingCourseCount)
+    }
+
+    @Test
+    fun scheduleHasDateKeysAndDoesNotShowGradedWorkAsPendingDelivery() {
+        val data = buildScheduleData(allCourses, TODAY)
+        assertTrue(data.days.all { it.dateKey != null })
+        assertTrue(data.days.flatMap { it.events }.none { it.title == "Tarea 103" })
+        assertTrue(data.days.flatMap { it.events }.any { it.title == "Tarea 102" })
+    }
+
+    @Test
     fun pendingAssignments_excludeGradedOverdueAndUndated() {
         val pending = pendingAssignments(assignments.filter { it.courseId == 1 }, grades, TODAY)
         assertEquals(listOf(102, 104), pending.map { it.assignment.id })
