@@ -487,3 +487,10 @@ puede aplazar el inicio. Tutorías siguen usando contactos ficticios. Motor puro
 en sharedLogic, catálogo de cuatro cursos y agenda de noviembre en Android/iOS;
 la interfaz del seguimiento y esta demo rápida son Android. Detalles y fuente
 institucional consultada en `ALERTAS_TEMPRANAS_DEMO.md`.
+
+
+### Vista docente · noviembre de 2026
+
+La pestaña Inicio puede presentar `TeacherDashboardScreen` para la cuenta docente configurada. Reutiliza las tarjetas de eventos y el calendario semanal de Inicio; el perfil institucional continúa como componente compartido en Perfil. Carrera y Cursos usan el mismo selector desplegable, y los filtros conservan los colores y la tipografía de `PaquitoTheme`.
+
+El calendario semanal usa la fecha del dispositivo y marca el día actual. Los datos del panel docente siguen siendo sintéticos de prueba; la confirmación de seguimiento se publica como notificación local en el dispositivo docente y no se entrega a los alumnos. La conexión con asignaciones, cursos, notas y asistencias reales queda pendiente de la fuente académica autorizada.
