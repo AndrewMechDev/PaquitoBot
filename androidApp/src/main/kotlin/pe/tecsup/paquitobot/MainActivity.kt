@@ -85,6 +85,7 @@ import pe.tecsup.paquitobot.ui.schedule.ScheduleScreen
 import pe.tecsup.paquitobot.ui.teacher.TeacherDashboardScreen
 import pe.tecsup.paquitobot.ui.teacher.TeacherDemoAttendanceSignal
 import pe.tecsup.paquitobot.ui.teacher.TeacherDemoCourse
+import pe.tecsup.paquitobot.ui.teacher.TeacherDemoData
 import pe.tecsup.paquitobot.ui.teacher.TeacherDemoStudentCourse
 import pe.tecsup.paquitobot.domain.notifications.AcademicNotice
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
@@ -453,10 +454,19 @@ private fun AppRoot(notificationRequest: Int = 0, noticeKey: String? = null) {
                 }
                 RootScreen.Chat -> {
                     val chatViewModel: ChatViewModel = viewModel(
-                        key = "chat-$academicOwner-${sessionUiState.sessionRevision}",
-                        factory = remember(academicOwner) {
+                        key = "chat-$academicOwner-${sessionUiState.sessionRevision}-${if (isTeacherDemoAccount) "teacher" else "student"}",
+                        factory = remember(academicOwner, isTeacherDemoAccount) {
                             viewModelFactory {
-                                initializer { ChatViewModel(MiniMaxChatRepository(BuildConfig.MINIMAX_API_KEY, academicRepository, academicOwner)) }
+                                initializer {
+                                    ChatViewModel(
+                                        MiniMaxChatRepository(
+                                            BuildConfig.MINIMAX_API_KEY,
+                                            academicRepository,
+                                            academicOwner,
+                                            teacherContext = if (isTeacherDemoAccount) TeacherDemoData.chatContext else null,
+                                        ),
+                                    )
+                                }
                             }
                         },
                     )
@@ -465,6 +475,7 @@ private fun AppRoot(notificationRequest: Int = 0, noticeKey: String? = null) {
                         uiState = chatUiState,
                         onSendMessage = chatViewModel::sendMessage,
                         userName = userFirstName,
+                        teacherMode = isTeacherDemoAccount,
                         onBackClick = { rootScreen = RootScreen.Tabs },
                     )
                 }

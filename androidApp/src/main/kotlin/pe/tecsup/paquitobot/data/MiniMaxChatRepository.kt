@@ -14,7 +14,7 @@ import pe.tecsup.paquitobot.auth.authorizedAcademicUserId
 
 /** Cliente Android de MiniMax para el prototipo debug. La clave se extrae del APK. */
 class MiniMaxChatRepository(private val apiKey: String, private val academic: AcademicRepository,
-    private val owner: String) : ChatRepository {
+    private val owner: String, private val teacherContext: String? = null) : ChatRepository {
     private val history = mutableListOf<JSONObject>()
 
     override suspend fun askAssistant(question: String): Result<ChatAnswer> = withContext(Dispatchers.IO) {
@@ -23,10 +23,12 @@ class MiniMaxChatRepository(private val apiKey: String, private val academic: Ac
                 error("Falta minimax.apiKey en local.properties. Agrégala y recompila la app.")
             }
             check(authorizedAcademicUserId() == owner) { "La sesión académica cambió. Abre el chat nuevamente." }
-            val academicContext = AcademicContextSnapshot.from(academic)
+            val isTeacher = teacherContext != null
+            val assistantContext = teacherContext ?: AcademicContextSnapshot.from(academic).toString()
+            val systemInstruction = if (isTeacher) TEACHER_SYSTEM_INSTRUCTION else SYSTEM_INSTRUCTION
+            val contextLabel = if (isTeacher) "Datos académicos disponibles para el docente" else "Datos académicos de esta cuenta (JSON)"
 
-            val messages = JSONArray().put(message("system", SYSTEM_INSTRUCTION +
-                "\n\nDatos académicos de esta cuenta (JSON):\n" + academicContext))
+            val messages = JSONArray().put(message("system", "$systemInstruction\n\n$contextLabel:\n$assistantContext"))
             history.forEach { messages.put(it) }
             messages.put(message("user", question))
 
@@ -104,6 +106,23 @@ class MiniMaxChatRepository(private val apiKey: String, private val academic: Ac
             Rechaza cualquier consulta ajena al sistema académico, incluso preguntas básicas de matemáticas, programación, traducción, cultura general o temas generales. No respondas parcialmente ni indirectamente a esas consultas.
 
             Si la consulta está fuera de alcance, responde únicamente: «Solo puedo ayudarte con consultas relacionadas con tu sistema académico de PaquitoBot».
+            """
+        const val TEACHER_SYSTEM_INSTRUCTION = """
+            Eres Paquito, asistente académico para docentes de PaquitoBot. Responde en español, de forma breve, clara y sin tablas.
+
+            Atiende solo consultas docentes sobre sus cursos, alumnos, notas, evaluaciones, promedios, laboratorios, asistencias y seguimiento académico.
+
+            Usa exclusivamente el contexto académico recibido. No inventes alumnos, secciones, notas, asistencias ni asignaciones. Si el dato solicitado no aparece, indícalo claramente. No mezcles datos de carreras o cursos diferentes.
+
+            La nota mínima aprobatoria es 13. Las notas tienen el mismo peso. Un laboratorio completo cuenta como una nota, promediando sus subnotas; un laboratorio incompleto se muestra como parcial y no entra al promedio. Un promedio bajo 13 en un curso incompleto es riesgo actual parcial, no desaprobación final.
+
+            La advertencia de asistencia empieza en 20 %. DI se activa solo por encima de 30 %. Calcula por alumno y curso usando clases realizadas; las tardanzas se muestran aparte y no cuentan como faltas.
+
+            Para priorizar seguimiento, presenta primero DI, luego advertencia y después riesgo por notas. Cuenta alumnos únicos en los resúmenes e indica cuando una persona tiene señales en cursos distintos.
+
+            El contexto contiene la información disponible a la semana 11. Responde sobre esa información sin mencionar que es una prueba o demostración, salvo que el usuario lo pregunte.
+
+            Rechaza consultas ajenas al sistema académico y responde únicamente: «Solo puedo ayudarte con consultas docentes relacionadas con cursos, alumnos y seguimiento académico de PaquitoBot».
             """
     }
 }

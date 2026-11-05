@@ -1,5 +1,7 @@
 package pe.tecsup.paquitobot.ui.teacher
 
+import java.util.Locale
+
 internal data class TeacherDemoGrade(
     val week: Int,
     val label: String,
@@ -228,4 +230,56 @@ internal object TeacherDemoData {
     val uniqueStudentsWithDi: Int
         get() = courses.flatMap { it.students }
             .filter { it.attendanceSignal == TeacherDemoAttendanceSignal.Di }.distinctBy { it.studentId }.size
+
+    val chatContext: String
+        get() = buildString {
+            appendLine("Período: semana 11 de 11. Nota aprobatoria: 13.")
+            appendLine("Asistencia: advertencia desde 20 %; DI solo si supera 30 %. Las tardanzas se cuentan aparte.")
+            appendLine("El promedio de cada curso se calcula con las notas finales registradas, todas con el mismo peso. Los laboratorios completos aportan una nota promedio de sus subnotas; los incompletos no entran en el promedio.")
+            appendLine("Resumen general de alumnos únicos: $uniqueStudentsWithRisk con señales, $uniqueStudentsWithGradeRisk con riesgo por notas, $uniqueStudentsWithWarning con advertencia de asistencia y $uniqueStudentsWithDi con DI.")
+
+            careers.forEach { career ->
+                val careerCourses = courses.filter { it.careerCode == career.code }
+                val careerStudents = careerCourses.flatMap { it.students }.distinctBy { it.studentId }
+                appendLine("\nCarrera ${career.code}: ${career.name}.")
+                appendLine("Resumen de alumnos únicos: ${careerStudents.count { it.hasAnyRisk }} con señales; ${careerStudents.count { it.gradeRisk }} con riesgo por notas; ${careerStudents.count { it.attendanceSignal == TeacherDemoAttendanceSignal.Warning }} con advertencia; ${careerStudents.count { it.attendanceSignal == TeacherDemoAttendanceSignal.Di }} con DI.")
+
+                careerCourses.forEach { course ->
+                    appendLine("\nCurso: ${course.name} (${course.area}).")
+                    course.students.forEach { student ->
+                        val average = student.average?.formatForChat() ?: "sin notas finales"
+                        val gradeStatus = when {
+                            student.average == null -> "sin promedio"
+                            student.gradeRisk && student.courseComplete -> "desaprobado"
+                            student.gradeRisk -> "riesgo actual por notas, parcial"
+                            student.courseComplete -> "aprobado"
+                            else -> "promedio aprobatorio actual, parcial"
+                        }
+                        val gradeDetails = student.weeklyGrades.sortedBy { it.week }.joinToString { grade ->
+                            "semana ${grade.week} ${grade.label}: ${grade.score.formatForChat()}"
+                        }.ifEmpty { "ninguna" }
+                        val completedLabs = student.completedLabGrades.joinToString { (name, score) ->
+                            "$name promedio ${score.formatForChat()}"
+                        }.ifEmpty { "ninguno" }
+                        val partialLabs = student.partialLabs.joinToString { parts ->
+                            val lab = parts.first()
+                            val subnotes = parts.sortedBy { it.part }.joinToString { "subnota ${it.part}: ${it.score.formatForChat()} (semana ${it.week})" }
+                            "${lab.label}: $subnotes; ${parts.size} de ${lab.requiredParts} subnotas"
+                        }.ifEmpty { "ninguno" }
+                        val attendanceSignal = when (student.attendanceSignal) {
+                            TeacherDemoAttendanceSignal.None -> "sin señal"
+                            TeacherDemoAttendanceSignal.Warning -> "advertencia"
+                            TeacherDemoAttendanceSignal.Di -> "DI"
+                        }
+                        appendLine("Alumno: ${student.displayName}.")
+                        appendLine("Promedio: $average con ${student.finalGrades.size} notas finales; estado: $gradeStatus; riesgo por notas: ${if (student.gradeRisk) "sí" else "no"}.")
+                        appendLine("Notas por semana: $gradeDetails.")
+                        appendLine("Laboratorios completos: $completedLabs. Laboratorios parciales, fuera del promedio: $partialLabs.")
+                        appendLine("Asistencia: ${student.absenceWeeks.size} faltas de ${student.performedClasses} clases realizadas (${(student.absenceRate * 100).formatForChat()} %); estado: $attendanceSignal; faltas en semanas ${student.absenceWeeks.sorted().joinToString().ifEmpty { "ninguna" }}; tardanzas separadas en semanas ${student.tardyWeeks.sorted().joinToString().ifEmpty { "ninguna" }}.")
+                    }
+                }
+            }
+        }
 }
+
+private fun Double.formatForChat(): String = String.format(Locale.US, "%.1f", this)

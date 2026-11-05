@@ -31,6 +31,7 @@ La vista es de consulta. El módulo no permite registrar, editar ni borrar notas
 | Tardanzas | Contarlas por separado. No sumarlas al numerador de inasistencias. |
 | Operaciones del docente | Solo lectura. |
 | Mensaje de seguimiento en pruebas | Desde la tarjeta de un alumno con señales, preparar un mensaje según riesgo de notas, advertencia o DI. Un promedio bajo 13 en un curso incompleto se comunica como zona de riesgo; solo un curso completo puede comunicarse como desaprobado. Mostrar confirmación mediante notificación local al docente; no enviar push ni mensaje a las cuentas o dispositivos de los alumnos. |
+| Asistente del docente | Mostrar preguntas sugeridas propias para maestros y responder usando el conjunto de notas y asistencias de prueba de la vista docente. Mantener las sugerencias estudiantiles en sus cuentas; no mezclar sus contextos. No mencionar que las respuestas usan datos de prueba salvo que se pregunte. |
 | Cuenta docente para este caso | `yordan.sapacayo@tecsup.edu.pe`. La cuenta autenticada debe vincularse con sus asignaciones docentes en la fuente académica real. |
 | Alumnos de referencia | `andrew.alca@tecsup.edu.pe` y `joshua.salazar@tecsup.edu.pe` son alumnos previamente registrados. Consultar sus perfiles existentes; no crear registros derivados de estos correos. |
 | Carrera de referencia de los alumnos | C-24 Diseño y Desarrollo de Software. Los cursos y secciones concretos deben obtenerse de la matrícula y asignación académica real. |

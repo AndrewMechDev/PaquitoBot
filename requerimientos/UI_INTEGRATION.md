@@ -494,3 +494,5 @@ institucional consultada en `ALERTAS_TEMPRANAS_DEMO.md`.
 La pestaña Inicio puede presentar `TeacherDashboardScreen` para la cuenta docente configurada. Reutiliza las tarjetas de eventos y el calendario semanal de Inicio; el perfil institucional continúa como componente compartido en Perfil. Carrera y Cursos usan el mismo selector desplegable, y los filtros conservan los colores y la tipografía de `PaquitoTheme`.
 
 El calendario semanal usa la fecha del dispositivo y marca el día actual. Los datos del panel docente siguen siendo sintéticos de prueba; la confirmación de seguimiento se publica como notificación local en el dispositivo docente y no se entrega a los alumnos. La conexión con asignaciones, cursos, notas y asistencias reales queda pendiente de la fuente académica autorizada.
+
+El chat presenta seis preguntas sugeridas propias de la cuenta docente; la experiencia de estudiantes conserva las suyas. Para responder, MiniMax recibe un contexto con los cursos, notas, promedios parciales, laboratorios y asistencia de `TeacherDemoData`, junto con las reglas de riesgo del módulo. El contexto no se usa en cuentas de estudiantes.
