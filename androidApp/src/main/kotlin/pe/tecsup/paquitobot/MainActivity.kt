@@ -29,6 +29,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Surface
@@ -81,6 +82,11 @@ import pe.tecsup.paquitobot.ui.onboarding.OnboardingNotificationsScreen
 import pe.tecsup.paquitobot.ui.onboarding.OnboardingTourScreen
 import pe.tecsup.paquitobot.ui.onboarding.WelcomeScreen
 import pe.tecsup.paquitobot.ui.schedule.ScheduleScreen
+import pe.tecsup.paquitobot.ui.teacher.TeacherDashboardScreen
+import pe.tecsup.paquitobot.ui.teacher.TeacherDemoAttendanceSignal
+import pe.tecsup.paquitobot.ui.teacher.TeacherDemoCourse
+import pe.tecsup.paquitobot.ui.teacher.TeacherDemoStudentCourse
+import pe.tecsup.paquitobot.domain.notifications.AcademicNotice
 import pe.tecsup.paquitobot.ui.theme.PaquitoColors
 import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 
@@ -92,6 +98,9 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
 private enum class RootScreen { Tabs, Chat, CourseDetail, Notifications, AcademicRisk, Events, EventDetail, Procedures, ProcedureDetail, Enrollment, Calendar }
 
 private enum class OnboardingStep { Welcome, Notifications, Tour }
+
+private const val DEMO_TEACHER_EMAIL = "yordan.sapacayo@tecsup.edu.pe"
+private fun Double.formatTeacherValue(): String = String.format(java.util.Locale.US, "%.1f", this)
 
 /** [CourseCardData] no es Parcelable: se guarda como lista de primitivos para sobrevivir a la rotacion. */
 private val SelectedCourseSaver = listSaver<CourseCardData?, Any>(
@@ -235,6 +244,8 @@ private fun AppRoot(notificationRequest: Int = 0, noticeKey: String? = null) {
 
         else -> {
             val academicOwner = requireNotNull(sessionUiState.userId)
+            // shortcut: el correo habilita datos de demostración hasta que el backend entregue el rol docente.
+            val isTeacherDemoAccount = sessionUiState.userEmail?.equals(DEMO_TEACHER_EMAIL, ignoreCase = true) == true
             // rememberSaveable: sobrevive a la rotacion (Android recrea la Activity)
             // - con remember simple, girar el telefono mandaba siempre a Inicio.
             var currentTab by rememberSaveable(academicOwner) { mutableStateOf(NavTab.Inicio) }
@@ -298,12 +309,13 @@ private fun AppRoot(notificationRequest: Int = 0, noticeKey: String? = null) {
                 label = "root-screen-transition",
             ) { screen ->
             when (screen) {
-                RootScreen.Tabs -> AppTabScaffold(
-                    currentTab = currentTab,
-                    onTabSelected = { currentTab = it },
-                    onPaquitoClick = { rootScreen = RootScreen.Chat },
-                    notificationCount = pendingCount,
-                ) {
+                RootScreen.Tabs -> Box(Modifier.fillMaxSize()) {
+                    AppTabScaffold(
+                        currentTab = currentTab,
+                        onTabSelected = { currentTab = it },
+                        onPaquitoClick = { rootScreen = RootScreen.Chat },
+                        notificationCount = pendingCount,
+                    ) {
                     AnimatedContent(
                         targetState = currentTab,
                         transitionSpec = {
@@ -320,27 +332,70 @@ private fun AppRoot(notificationRequest: Int = 0, noticeKey: String? = null) {
                     ) { tab ->
                     when (tab) {
                     NavTab.Inicio -> {
-                        val homeViewModel: AcademicHomeViewModel = viewModel(
-                            key = "home-$academicOwner",
-                            factory = remember(academicOwner) {
-                                factoryOf { AcademicHomeViewModel(academicRepository) }
-                            },
-                        )
-                        val homeData by homeViewModel.uiState.collectAsStateWithLifecycle()
-                        val homeError by homeViewModel.errorMessage.collectAsStateWithLifecycle()
-                        LaunchedEffect(homeData.pendingCount) { pendingCount = homeData.pendingCount }
-                        HomeTabContent(
-                            data = homeData.copy(greeting = "¡Bienvenido, $userFirstName!", scenarioId = null, unreadNotificationsCount = inboxData.items.size),
-                            onNotificationsClick = { rootScreen = RootScreen.Notifications },
-                            onEventsClick = { rootScreen = RootScreen.Events },
-                            onAcademicRiskClick = {
-                                riskFocusCourseId = null
-                                riskAttendance = false
-                                rootScreen = RootScreen.AcademicRisk
-                            },
-                            errorMessage = homeError,
-                            onRetry = homeViewModel::load,
-                        )
+                        if (isTeacherDemoAccount) {
+                            TeacherDashboardScreen(
+                                notificationCount = inboxData.items.size,
+                                onNotificationsClick = { rootScreen = RootScreen.Notifications },
+                                onEventsClick = { rootScreen = RootScreen.Events },
+                                onSendNotification = { course: TeacherDemoCourse, student: TeacherDemoStudentCourse ->
+                                    val messageDetails = buildList {
+                                        if (student.gradeRisk) {
+                                            add(
+                                                if (student.courseComplete) {
+                                                    "Has desaprobado ${course.name} con promedio ${student.average?.formatTeacherValue()}."
+                                                } else {
+                                                    "Estás en zona de riesgo en ${course.name}, con promedio actual ${student.average?.formatTeacherValue()}."
+                                                },
+                                            )
+                                        }
+                                        when (student.attendanceSignal) {
+                                            TeacherDemoAttendanceSignal.Di -> add(
+                                                "Superaste el 30 % de inasistencias en ${course.name} (${(student.absenceRate * 100).formatTeacherValue()} %).",
+                                            )
+                                            TeacherDemoAttendanceSignal.Warning -> add(
+                                                "Tienes una advertencia de asistencia en ${course.name} (${(student.absenceRate * 100).formatTeacherValue()} % de inasistencias).",
+                                            )
+                                            TeacherDemoAttendanceSignal.None -> Unit
+                                        }
+                                    }
+                                    val studentMessage =
+                                        "Hola ${student.displayName}. ${messageDetails.joinToString(" Además, ")} " +
+                                            "Acércate a conversar con tu docente para revisar tu situación."
+                                    AcademicNotificationPublisher(context).publish(
+                                        owner = AcademicNotificationPublisher.ownerKey(academicOwner),
+                                        notice = AcademicNotice(
+                                            key = "teacher-follow-up:${student.studentId}:${course.id}",
+                                            title = "Mensaje enviado correctamente",
+                                            body = "Para ${student.displayName}: $studentMessage",
+                                        ),
+                                        time = System.currentTimeMillis(),
+                                        demoPresentation = true,
+                                    )
+                                },
+                            )
+                        } else {
+                            val homeViewModel: AcademicHomeViewModel = viewModel(
+                                key = "home-$academicOwner",
+                                factory = remember(academicOwner) {
+                                    factoryOf { AcademicHomeViewModel(academicRepository) }
+                                },
+                            )
+                            val homeData by homeViewModel.uiState.collectAsStateWithLifecycle()
+                            val homeError by homeViewModel.errorMessage.collectAsStateWithLifecycle()
+                            LaunchedEffect(homeData.pendingCount) { pendingCount = homeData.pendingCount }
+                            HomeTabContent(
+                                data = homeData.copy(greeting = "¡Bienvenido, $userFirstName!", scenarioId = null, unreadNotificationsCount = inboxData.items.size),
+                                onNotificationsClick = { rootScreen = RootScreen.Notifications },
+                                onEventsClick = { rootScreen = RootScreen.Events },
+                                onAcademicRiskClick = {
+                                    riskFocusCourseId = null
+                                    riskAttendance = false
+                                    rootScreen = RootScreen.AcademicRisk
+                                },
+                                errorMessage = homeError,
+                                onRetry = homeViewModel::load,
+                            )
+                        }
                     }
                     NavTab.Perfil -> pe.tecsup.paquitobot.ui.profile.ProfileTabContent(
                         name = sessionUiState.userFullName ?: "Estudiante",
@@ -393,6 +448,7 @@ private fun AppRoot(notificationRequest: Int = 0, noticeKey: String? = null) {
                         )
                     }
                     }
+                }
                 }
                 }
                 RootScreen.Chat -> {
