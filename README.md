@@ -57,14 +57,14 @@ La [base de integración anterior al evento](https://github.com/AndrewMechDev/Pa
 
 ## Uso de inteligencia artificial y revisión
 
-La IA se utiliza tanto como apoyo al desarrollo como dentro del producto. Son usos diferentes:
+Usamos Codex como herramienta de apoyo para avanzar en el prototipado, organizar la documentación y reducir el tiempo dedicado a tareas repetitivas de código. También utilizamos Claude conectado a Figma mediante MCP para apoyar el diseño y la adaptación de las interfaces. Siguiendo las pautas del hackathon, declaramos para qué se utilizó cada herramienta y el alcance de la revisión:
 
-| Herramienta | Para qué se utiliza | Parte del proyecto | Revisión realizada y límites |
+| Herramienta | Para qué la usamos | En qué parte del proyecto | Cómo lo revisamos |
 | --- | --- | --- | --- |
-| **Codex** | Asistencia para implementar y depurar código, proponer ajustes de interfaz, preparar pruebas y redactar documentación. | Seguimiento académico, notificaciones, navegación, indicadores, horarios y README de esta iteración. | Compilación Android y pruebas automatizadas; ajustes a partir de capturas y observaciones del usuario. La revisión visual completa y la explicación del código por el equipo deben completarse antes de entregar. |
-| **MiniMax** | Generar respuestas a consultas académicas usando el contexto de la cuenta activa. | Chat de Paquito. | Comprobación de conexión con la API y contexto construido desde los mismos datos que muestran los cursos. Las respuestas siguen requiriendo contraste; no se declara una evaluación exhaustiva de exactitud o sesgos. |
+| **Codex** | Apoyo en la primera etapa de prototipado, redacción de documentación, propuestas de diseño y automatización de tareas repetitivas, además de ayuda para implementar y depurar código. El objetivo fue reducir trabajo manual y tiempo de desarrollo. | Prototipos de flujos y pantallas, README y guías técnicas, ajustes de interfaz y código de seguimiento académico, notificaciones, navegación y pruebas. | Compilación Android y pruebas automatizadas, contraste con capturas y ajustes según las observaciones del equipo. La revisión visual completa y la explicación del código por el equipo deben completarse antes de entregar. |
+| **Claude + MCP de Figma** | Apoyo al diseño y a la adaptación de las interfaces tomando como referencia los diseños de Figma. | Diseño de pantallas, componentes y estilos visuales de PaquitoBot. | La revisión final del equipo debe contrastar las interfaces con Figma y comprobar su apariencia y funcionamiento en celular; no se declara una auditoría completa de accesibilidad. |
 
-PaquitoBot consume un modelo externo mediante API; no se afirma haber entrenado un modelo propio. **El cálculo de riesgo es determinista**, con reglas explícitas: no es un modelo predictivo entrenado ni una garantía de aprobación. La autoría y las decisiones del proyecto corresponden al equipo, que debe comprender y responder por lo que presenta.
+Como funcionalidad del producto, el chat de Paquito utiliza MiniMax mediante API para responder consultas académicas; este uso es distinto del apoyo de Codex al desarrollo. No se afirma haber entrenado un modelo propio. **El cálculo de riesgo es determinista**, con reglas explícitas: no es un modelo predictivo entrenado ni una garantía de aprobación. La autoría y las decisiones del proyecto corresponden al equipo, que debe comprender y responder por lo que presenta.
 
 ### Datos y uso responsable
 
