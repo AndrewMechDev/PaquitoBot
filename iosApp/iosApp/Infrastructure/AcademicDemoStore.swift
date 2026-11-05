@@ -88,7 +88,7 @@ enum AcademicDemoStore {
                 "codigo": course.code,
                 "nombre": course.name,
                 "faltas": attendance.filter { ($0["estado"] as? String) == "falta" }.count,
-                "limite_faltas_demo": 8,
+                "limite_faltas_demo": attendanceLimit(for: Array(sessions.values)),
                 "tareas_y_notas": tasks,
                 "asistencia": attendance
             ]
@@ -202,7 +202,8 @@ enum AcademicDemoStore {
             let assignmentIDs = Set(assignments.map(\.id))
             let grades = snapshot.scenario.grades.filter { assignmentIDs.contains($0.assignmentID) }
             let average = grades.isEmpty ? nil : grades.map(\.score).reduce(0, +) / Double(grades.count)
-            let sessionIDs = Set(snapshot.catalog.classSessions.filter { $0.courseID == course.id }.map(\.id))
+            let courseSessions = snapshot.catalog.classSessions.filter { $0.courseID == course.id }
+            let sessionIDs = Set(courseSessions.map(\.id))
             let absences = snapshot.scenario.attendance.filter {
                 sessionIDs.contains($0.classSessionID) && $0.status == "absent"
             }.count
@@ -223,12 +224,16 @@ enum AcademicDemoStore {
                 projectedGrade: average.map { String(format: "%.1f", $0) } ?? "—",
                 trackHint: trackHint(for: average),
                 absences: absences,
-                absenceLimit: 8,
+                absenceLimit: attendanceLimit(for: courseSessions),
                 nextDueLabel: pendingAssignment.map {
                     "\(assignmentKindLabel($0.0)) · \(dueLabel($0.1))"
                 } ?? "Sin entregas pendientes"
             )
         }
+    }
+
+    private static func attendanceLimit(for sessions: [AcademicClassSession]) -> Int {
+        sessions.contains { $0.kind == "laboratory" } ? 8 : 4
     }
 
     private static func makeHome(from snapshot: Snapshot) -> HomeData {
