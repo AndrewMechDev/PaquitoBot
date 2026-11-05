@@ -8,6 +8,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.Instant
 import java.time.ZoneId
+import pe.tecsup.paquitobot.domain.academic.AcademicRiskAlert
+import pe.tecsup.paquitobot.domain.academic.AcademicRiskKind
+import pe.tecsup.paquitobot.domain.academic.AcademicRiskLevel
 
 class AcademicNotificationPlannerTest {
     private val now = Instant.parse("2026-10-18T13:00:00Z")
@@ -135,5 +138,35 @@ class AcademicNotificationPlannerTest {
         assertEquals(notice.displayKey, updated.displayKey)
         assertTrue(notices(listOf(grade), categories).isEmpty())
         assertTrue(notices(listOf(grade.copy(score = Double.NaN))).isEmpty())
+    }
+
+    @Test fun academicRiskIsDeliveredOnlyWhenTheStudentEnabledIt() {
+        val risk = NotificationRiskAlert(
+            AcademicRiskAlert(
+                courseId = 3,
+                courseCode = "ALG-I",
+                courseName = "Algoritmos",
+                kind = AcademicRiskKind.Grade,
+                level = AcademicRiskLevel.Critical,
+                title = "Riesgo de desaprobar ALG-I",
+                message = "Proyección actual: 11.2",
+                actionLabel = "Contactar a mi tutora",
+                currentValue = 11.2,
+                limitValue = 13.0,
+            ),
+        )
+
+        val notices = AcademicNotificationPlanner.plan(
+            assignments = emptyList(),
+            categories = setOf(NotificationCategory.AcademicRisk),
+            schedule = noSummary,
+            now = now,
+            zone = zone,
+            risks = listOf(risk, risk),
+        )
+
+        assertEquals(1, notices.size)
+        assertTrue(notices.single().key.startsWith("risk:grade:3:critical"))
+        assertTrue(AcademicNotificationPlanner.plan(emptyList(), categories, noSummary, now, zone, risks = listOf(risk)).isEmpty())
     }
 }

@@ -20,7 +20,9 @@ import pe.tecsup.paquitobot.domain.notifications.NotificationAssignment
 import pe.tecsup.paquitobot.domain.notifications.NotificationLabGrade
 import pe.tecsup.paquitobot.domain.notifications.NotificationAbsence
 import pe.tecsup.paquitobot.domain.notifications.NotificationCategory
+import pe.tecsup.paquitobot.domain.notifications.NotificationRiskAlert
 import pe.tecsup.paquitobot.domain.academic.AcademicAssignmentKind
+import pe.tecsup.paquitobot.domain.academic.AcademicRiskEngine
 import pe.tecsup.paquitobot.domain.academic.AcademicSessionKind
 import java.security.MessageDigest
 import java.time.Instant
@@ -56,6 +58,7 @@ class AcademicNotificationsWorker(context: Context, parameters: WorkerParameters
         val assignments = mutableListOf<NotificationAssignment>()
         val absences = mutableListOf<NotificationAbsence>()
         val labGrades = mutableListOf<NotificationLabGrade>()
+        val risks = mutableListOf<NotificationRiskAlert>()
         // Ante un fallo parcial no enviar un resumen incompleto ni asumir datos vacíos.
         for (course in courses) {
             val grades = repository.courseGrades(course.id).getOrThrow().associateBy { it.assignmentId }
@@ -81,9 +84,16 @@ class AcademicNotificationsWorker(context: Context, parameters: WorkerParameters
                         if (session?.kind == AcademicSessionKind.Laboratory) "Laboratorio de ${course.name}" else course.name, ended)
                 }
             }
+            if (NotificationCategory.AcademicRisk in categories) {
+                val courseSessions = repository.courseClassSessions(course.id).getOrThrow()
+                val courseAttendance = repository.courseAttendance(course.id).getOrThrow()
+                risks += AcademicRiskEngine.assess(course, grades.values.toList(), courseAttendance, courseSessions)
+                    .alerts
+                    .map(::NotificationRiskAlert)
+            }
         }
         val now = Instant.now()
-        val notices = AcademicNotificationPlanner.plan(assignments, categories, schedule, now, ZoneId.systemDefault(), absences, labGrades)
+        val notices = AcademicNotificationPlanner.plan(assignments, categories, schedule, now, ZoneId.systemDefault(), absences, labGrades, risks)
         val ledger = context.getSharedPreferences("academic_notice_delivery", Context.MODE_PRIVATE)
         // Separa cuentas de Clerk sin publicar el identificador en tags o nombres de trabajo.
         val scope = MessageDigest.getInstance("SHA-256").digest(originalUser.toByteArray())
@@ -94,11 +104,17 @@ class AcademicNotificationsWorker(context: Context, parameters: WorkerParameters
         cleanup.apply()
         AndroidAcademicNotificationScheduler.createChannel(context)
         var published = 0
-        for (notice in notices.sortedBy { if (it.key.startsWith("summary:")) 0 else 1 }) {
+        for (notice in notices.sortedBy { if (it.key.startsWith("risk:")) 0 else if (it.key.startsWith("summary:")) 1 else 2 }) {
             if (isStopped || authorizedAcademicUserId() != originalUser || preferences.enabledCategories() != categories ||
                 preferences.schedule() != schedule || !AndroidAcademicNotificationScheduler.isEligible(context)) return Result.success()
             val eventKey = scope + notice.key
-            if (ledger.contains(eventKey)) continue
+            if (ledger.contains(eventKey)) {
+                // Un riesgo persistente vuelve a recordarse al día siguiente;
+                // las entregas y notas ya comunicadas conservan su deduplicación.
+                val repeatRisk = notice.key.startsWith("risk:") &&
+                    now.toEpochMilli() - ledger.getLong(eventKey, 0) >= TimeUnit.HOURS.toMillis(24)
+                if (!repeatRisk) continue
+            }
             if (published == 10) break
             val owner = AcademicNotificationPublisher.ownerKey(originalUser)
             if (!AcademicNotificationPublisher(context).publish(owner, notice, now.toEpochMilli(), silent = published > 0)) {
