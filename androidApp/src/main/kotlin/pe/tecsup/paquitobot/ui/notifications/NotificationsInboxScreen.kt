@@ -3,7 +3,6 @@ package pe.tecsup.paquitobot.ui.notifications
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -240,8 +239,8 @@ fun NotificationsInboxScreen(
                                     onDelete = { deleteItem(item) },
                                 ) {
                                     NotificationInboxRow(item, onClick = { selectedItem = item })
+                                    HorizontalDivider(color = PaquitoColors.TextOnCardMuted.copy(alpha = 0.12f))
                                 }
-                                HorizontalDivider(color = PaquitoColors.TextOnCardMuted.copy(alpha = 0.12f))
                             }
                         }
                         NotificationCardVariant.Compact -> visibleItems.chunked(2).forEach { row ->
@@ -429,8 +428,8 @@ private fun EmptyState() {
  * antes [onDelete] se llamaba SINCRONICAMENTE apenas se completaba el
  * swipe, sacando el item de la lista real en el mismo instante - se
  * sentia "demasiado rapido"/brusco, sin transicion. Ahora el swipe solo
- * marca [removed], que dispara una salida animada (`shrinkVertically` +
- * fade) vía [AnimatedVisibility]; [onDelete] recien se llama
+ * espera a que toda la superficie termine de deslizarse. Después marca
+ * [removed] y cierra su espacio con `shrinkVertically`; [onDelete] se llama
  * [EXIT_DELAY_MS] despues, una vez que esa animacion ya termino visualmente.
  */
 @Composable
@@ -440,16 +439,12 @@ private fun SwipeableNotification(
     content: @Composable () -> Unit,
 ) {
     var removed by remember { mutableStateOf(false) }
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                removed = true
-                true
-            } else {
-                false
-            }
-        },
-    )
+    val dismissState = rememberSwipeToDismissBoxState(positionalThreshold = { width -> width * 0.4f })
+    // currentValue solo cambia cuando la tarjeta termina de salir. Colapsar
+    // antes, dentro de confirmValueChange, recortaba el texto a medio gesto.
+    LaunchedEffect(dismissState.currentValue) {
+        if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) removed = true
+    }
     LaunchedEffect(removed) {
         if (removed) {
             delay(EXIT_DELAY_MS)
@@ -458,10 +453,11 @@ private fun SwipeableNotification(
     }
     AnimatedVisibility(
         visible = !removed,
-        exit = shrinkVertically(animationSpec = tween(EXIT_DELAY_MS.toInt())) + fadeOut(tween(180)),
+        exit = shrinkVertically(animationSpec = tween(EXIT_DELAY_MS.toInt())),
         modifier = modifier,
     ) {
         SwipeToDismissBox(
+            modifier = Modifier.clip(PaquitoShapes.large),
             state = dismissState,
             enableDismissFromStartToEnd = false,
             backgroundContent = {
@@ -470,7 +466,9 @@ private fun SwipeableNotification(
                 else Box(Modifier.fillMaxSize())
             },
         ) {
-            content()
+            Column(Modifier.fillMaxWidth().background(PaquitoColors.Background)) {
+                content()
+            }
         }
     }
 }
