@@ -66,20 +66,12 @@
     {
       "assignment_id": 402,
       "score": 10.0
-    },
-    {
-      "assignment_id": 501,
-      "score": 4.0
     }
   ],
   "attendance": [
     {
       "class_session_id": 1101,
       "status": "absent"
-    },
-    {
-      "class_session_id": 5101,
-      "status": "present"
     },
     {
       "class_session_id": 2101,
@@ -95,10 +87,6 @@
     },
     {
       "class_session_id": 4101,
-      "status": "present"
-    },
-    {
-      "class_session_id": 5102,
       "status": "present"
     },
     {
@@ -118,10 +106,6 @@
       "status": "present"
     },
     {
-      "class_session_id": 5103,
-      "status": "present"
-    },
-    {
       "class_session_id": 2103,
       "status": "present"
     },
@@ -135,10 +119,6 @@
     },
     {
       "class_session_id": 4103,
-      "status": "present"
-    },
-    {
-      "class_session_id": 5104,
       "status": "present"
     },
     {
@@ -158,10 +138,6 @@
       "status": "present"
     },
     {
-      "class_session_id": 5105,
-      "status": "present"
-    },
-    {
       "class_session_id": 2105,
       "status": "present"
     },
@@ -175,10 +151,6 @@
     },
     {
       "class_session_id": 4105,
-      "status": "present"
-    },
-    {
-      "class_session_id": 5106,
       "status": "present"
     },
     {
@@ -198,10 +170,6 @@
       "status": "present"
     },
     {
-      "class_session_id": 5107,
-      "status": "present"
-    },
-    {
       "class_session_id": 2107,
       "status": "present"
     },
@@ -215,10 +183,6 @@
     },
     {
       "class_session_id": 4107,
-      "status": "present"
-    },
-    {
-      "class_session_id": 5108,
       "status": "present"
     },
     {

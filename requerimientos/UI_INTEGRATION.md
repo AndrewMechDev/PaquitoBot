@@ -462,3 +462,28 @@ La entrada vuelve a mostrar `paquito_personaje` centrado, con halo y sombra suav
 El tema nativo Theme.PaquitoBot conserva el fondo blanco. Desde API 31 el icono de la ventana de arranque se configura con un drawable transparente y su salida se retira al estar disponible el primer frame. Android mantiene su ventana nativa mientras inicia el proceso; no se promete eliminar ese tiempo ni se añade una espera artificial. El icono del launcher no se modifica.
 
 En Matrícula la flecha del encabezado usa la salida de la guía, mientras Anterior mantiene el retroceso de un paso. Con sesión autorizada, salir lleva a Inicio; el acceso público desde Welcome vuelve a la entrada pública sin eludir la autenticación. Los pasos se deslizan en dirección de avance/retroceso y la barra de progreso se anima durante 300 ms.
+
+### Seguimiento académico y presentación de avisos · noviembre de 2026
+
+Android incorpora `AcademicRiskScreen`: pestañas Notas/Asistencias, superficies
+neutras del theme, DM Sans, explicación desplegable de cada riesgo y acceso al
+detalle del curso antes de consultar tutoría. Perfil incluye Notas y asistencias
+y Mis cursos. No se crea otro sistema de tarjetas ni otra fuente tipográfica.
+
+Los avisos nativos llevan el identificador de su curso: riesgo abre seguimiento;
+entrega, laboratorio e inasistencia abren el curso, con asistencia desplegada
+cuando corresponde. La bandeja reutiliza estos destinos desde un panel inferior
+blanco con el icono del aviso y un botón principal. La campana refleja su historial.
+
+Inicio usa el promedio de las medias de los cursos con notas, cursos que alcanzan
+13 y cantidad de cursos. Se retiran el ranking fijo y las etiquetas de escenario.
+Las tarjetas de eventos y avisos ocupan el ancho disponible. Horarios permite
+navegar por semanas y excluye entregas calificadas de las pendientes.
+
+La demo se inicia explícitamente desde un único botón en preferencias: primer
+aviso tras 15 segundos de ejecución y siguientes cada 5 segundos, hasta doce
+avisos con datos de la cuenta. Incluye contador de avance y cancelación; Android
+puede aplazar el inicio. Tutorías siguen usando contactos ficticios. Motor puro
+en sharedLogic, catálogo de cuatro cursos y agenda de noviembre en Android/iOS;
+la interfaz del seguimiento y esta demo rápida son Android. Detalles y fuente
+institucional consultada en `ALERTAS_TEMPRANAS_DEMO.md`.

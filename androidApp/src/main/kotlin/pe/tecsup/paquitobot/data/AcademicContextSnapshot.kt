@@ -4,7 +4,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import org.json.JSONArray
 import org.json.JSONObject
-import pe.tecsup.paquitobot.domain.academic.ACADEMIC_ABSENCE_LIMIT
+import pe.tecsup.paquitobot.domain.academic.AcademicRiskEngine
 import pe.tecsup.paquitobot.domain.academic.AcademicRepository
 
 /** JSON académico de la cuenta activa, construido desde el mismo repositorio que las pantallas. */
@@ -15,7 +15,8 @@ object AcademicContextSnapshot {
         repository.courses().getOrThrow().forEach { course ->
             val assignments = repository.courseAssignments(course.id).getOrThrow()
             val grades = repository.courseGrades(course.id).getOrThrow().associateBy { it.assignmentId }
-            val sessions = repository.courseClassSessions(course.id).getOrThrow().associateBy { it.id }
+            val sessionRecords = repository.courseClassSessions(course.id).getOrThrow()
+            val sessions = sessionRecords.associateBy { it.id }
             val attendance = repository.courseAttendance(course.id).getOrThrow()
 
             val tasks = JSONArray()
@@ -50,7 +51,7 @@ object AcademicContextSnapshot {
                 .put("codigo", course.code)
                 .put("nombre", course.name)
                 .put("faltas", attendance.count { !it.isPresent })
-                .put("limite_faltas_demo", ACADEMIC_ABSENCE_LIMIT)
+                .put("limite_faltas_demo", AcademicRiskEngine.attendanceLimit(sessionRecords))
                 .put("tareas_y_notas", tasks)
                 .put("asistencia", attendanceJson))
         }

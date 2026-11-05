@@ -62,6 +62,7 @@ internal fun buildScheduleData(all: List<CourseWithRecords>, today: String): Sch
             )
         }
         records.assignments.forEach { assignment ->
+            if (records.grades.any { it.assignmentId == assignment.id }) return@forEach
             val dueAt = assignment.dueAt ?: return@forEach
             rawEvents += RawEvent(
                 dateKey = dateKeyOf(dueAt),
@@ -81,6 +82,7 @@ internal fun buildScheduleData(all: List<CourseWithRecords>, today: String): Sch
                 label = AcademicDateUtils.weekdayWithDay(dateKey),
                 events = events.sortedBy { it.time }.map { ScheduleEvent(it.time, it.title, it.subtitle, it.kind) },
                 isToday = dateKey == today,
+                dateKey = dateKey,
             )
         }
 

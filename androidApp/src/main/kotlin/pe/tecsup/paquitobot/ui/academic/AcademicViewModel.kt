@@ -1,6 +1,7 @@
 package pe.tecsup.paquitobot.ui.academic
 
 import pe.tecsup.paquitobot.domain.academic.AcademicRepository
+import pe.tecsup.paquitobot.domain.academic.AcademicRiskEngine
 import pe.tecsup.paquitobot.ui.courses.CourseCardData
 import pe.tecsup.paquitobot.ui.courses.CoursesScreenData
 import pe.tecsup.paquitobot.util.AcademicDateUtils
@@ -12,8 +13,8 @@ import pe.tecsup.paquitobot.util.AcademicDateUtils
  * Nota honesta sobre el mapeo: el JSON academico no modela "limite de
  * faltas" ni "promedio ponderado" como conceptos de negocio - se derivan de
  * datos reales donde se puede (nota promedio real, faltas reales contadas) y
- * se usa un limite fijo razonable ([ASSUMED_ABSENCE_LIMIT]) donde el dato no
- * existe. Si un curso no tiene notas cargadas todavia, se muestra "—" en vez
+ * se deriva el límite de faltas según si el curso tiene componente de
+ * laboratorio. Si un curso no tiene notas cargadas todavia, se muestra "—" en vez
  * de inventar un numero.
  *
  * [today] (`yyyy-MM-dd`) determina que entregas sin nota siguen vigentes.
@@ -44,14 +45,20 @@ internal fun buildCoursesData(all: List<CourseWithRecords>, today: String): Cour
 private fun buildCourseCard(item: CourseWithRecords, today: String): CourseCardData {
     val (course, records) = item
     val nextDue = pendingAssignments(records.assignments, records.grades, today).firstOrNull()
+    val risk = AcademicRiskEngine.assess(course, records.grades, records.attendance, records.sessions)
+    val headlineRisk = risk.alerts.firstOrNull()
     return CourseCardData(
         id = course.id.toString(),
         code = course.code,
         name = course.name,
         projectedGrade = averageScoreLabel(records.grades),
-        trackHint = if (records.grades.isEmpty()) "Sin notas registradas todavía" else "Promedio de tus notas registradas",
+        trackHint = headlineRisk?.title ?: if (records.grades.isEmpty()) {
+            "Sin notas registradas todavía"
+        } else {
+            "Proyección según tus notas registradas"
+        },
         absences = absenceCount(records.attendance),
-        absenceLimit = ASSUMED_ABSENCE_LIMIT,
+        absenceLimit = AcademicRiskEngine.attendanceLimit(records.sessions),
         nextDueLabel = nextDue
             ?.let { "${it.assignment.name} · ${AcademicDateUtils.shortDateLabel(it.dueDate)}" }
             ?: NO_DUE_LABEL,

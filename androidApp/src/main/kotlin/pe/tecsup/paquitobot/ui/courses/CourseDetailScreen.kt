@@ -65,8 +65,10 @@ fun CourseDetailScreen(
     onBackClick: () -> Unit,
     errorMessage: String? = null,
     onRetry: () -> Unit = {},
+    expandAttendance: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
+    androidx.activity.compose.BackHandler(onBack = onBackClick)
     var selectedItem by remember { mutableStateOf<EvaluationItem?>(null) }
 
     Column(
@@ -112,6 +114,7 @@ fun CourseDetailScreen(
                 used = data.course.absences,
                 limit = data.course.absenceLimit,
                 entries = data.attendance,
+                initiallyExpanded = expandAttendance,
             )
             EvaluationSection(title = "Practicas", items = data.practices, onItemClick = { selectedItem = it })
             EvaluationSection(title = "Laboratorios", items = data.labs, onItemClick = { selectedItem = it })
@@ -191,8 +194,8 @@ private fun SectionHeader(
 }
 
 @Composable
-private fun AttendanceSection(used: Int, limit: Int, entries: List<AttendanceEntry>) {
-    var expanded by remember { mutableStateOf(false) }
+private fun AttendanceSection(used: Int, limit: Int, entries: List<AttendanceEntry>, initiallyExpanded: Boolean = false) {
+    var expanded by remember(initiallyExpanded) { mutableStateOf(initiallyExpanded) }
     val remaining = (limit - used).coerceAtLeast(0)
     val color = when {
         remaining <= 1 -> PaquitoColors.StateDanger

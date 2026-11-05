@@ -41,6 +41,7 @@ enum class NotificationType(val title: String, val iconRes: Int, val category: N
     Laboratorios("Laboratorios Calificados", R.drawable.ic_paquito_lab_profile, NotificationCategory.Laboratories),
     Plazos("Plazos de Entrega", R.drawable.ic_paquito_calendar_fill, NotificationCategory.Deadlines),
     Asistencias("Asistencias", R.drawable.ic_paquito_frame_person, NotificationCategory.Attendance),
+    Rendimiento("Riesgo académico", R.drawable.ic_paquito_docs_default, NotificationCategory.AcademicRisk),
 }
 
 /**

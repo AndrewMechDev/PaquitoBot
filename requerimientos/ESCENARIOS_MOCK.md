@@ -1,6 +1,6 @@
 # Escenarios académicos de demostración
 
-La app incluye un catálogo compartido en `androidApp/src/main/assets/academic/catalog.json` y 15 escenarios separados en `academic/scenarios/scenario-XX.json`. Cada escenario define notas, asistencias y, cuando corresponde, fechas de entrega distintas. `scripts/generate_demo_scenarios.py` regenera los archivos de escenario.
+La app incluye un catálogo compartido de cuatro cursos en `androidApp/src/main/assets/academic/catalog.json` y 15 escenarios separados en `academic/scenarios/scenario-XX.json`. Cada escenario define notas, asistencias y, cuando corresponde, fechas de entrega distintas. `scripts/generate_demo_scenarios.py` regenera los archivos de escenario.
 
 | ID | Situación |
 | --- | --- |

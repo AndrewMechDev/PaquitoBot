@@ -3,6 +3,7 @@ package pe.tecsup.paquitobot.ui.academic
 import pe.tecsup.paquitobot.domain.academic.AcademicAssignment
 import pe.tecsup.paquitobot.domain.academic.AcademicGrade
 import pe.tecsup.paquitobot.domain.academic.AcademicRepository
+import pe.tecsup.paquitobot.domain.academic.AcademicRiskEngine
 import pe.tecsup.paquitobot.domain.academic.AcademicSessionKind
 import pe.tecsup.paquitobot.ui.courses.AttendanceEntry
 import pe.tecsup.paquitobot.ui.courses.CourseCardData
@@ -67,11 +68,25 @@ internal fun buildCourseDetail(course: CourseCardData, records: CourseRecords, t
             if (kind == AcademicSessionKind.Laboratory) "Laboratorio" else null) }
 
     val pendingCount = pendingAssignments(records.assignments, records.grades, today).size
+    val risk = AcademicRiskEngine.assess(
+        course = pe.tecsup.paquitobot.domain.academic.AcademicCourse(
+            id = course.id.toIntOrNull() ?: -1,
+            code = course.code,
+            name = course.name,
+            enrollmentCount = 0,
+        ),
+        grades = records.grades,
+        attendance = records.attendance,
+        sessions = records.sessions,
+    )
 
     return CourseDetailData(
-        course = course.copy(absences = absenceCount(records.attendance), absenceLimit = ASSUMED_ABSENCE_LIMIT),
+        course = course.copy(
+            absences = absenceCount(records.attendance),
+            absenceLimit = AcademicRiskEngine.attendanceLimit(records.sessions),
+        ),
         headline = "${records.assignments.size} entrega(s)",
-        projectionHint = if (pendingCount > 0) {
+        projectionHint = risk.alerts.firstOrNull()?.message ?: if (pendingCount > 0) {
             "Tienes $pendingCount entrega(s) pendiente(s) en este curso."
         } else {
             "No tienes entregas pendientes en este curso."

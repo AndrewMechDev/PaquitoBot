@@ -8,6 +8,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import java.time.LocalDate
+import java.time.DayOfWeek
+import java.time.temporal.TemporalAdjusters
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,6 +83,9 @@ fun ScheduleTabContent(
     onCalendarClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    var weekStart by remember { mutableStateOf(LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))) }
+    val weekEnd = weekStart.plusDays(6)
+    val visibleDays = data.days.filter { day -> day.dateKey?.let { it >= weekStart.toString() && it <= weekEnd.toString() } ?: true }
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -96,8 +107,14 @@ fun ScheduleTabContent(
         }
         ProcedureEntryCard(onClick = onCalendarClick, title = "Google Calendar",
             subtitle = "Sincroniza las entregas que elijas", iconRes = R.drawable.ic_paquito_calendar_fill)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            TextButton(onClick = { weekStart = weekStart.minusWeeks(1) }) { Text("‹", style = PaquitoTypography.HeadlineSmall) }
+            Text("${weekStart.dayOfMonth}/${weekStart.monthValue} – ${weekEnd.dayOfMonth}/${weekEnd.monthValue}", style = PaquitoTypography.TaskTitle)
+            TextButton(onClick = { weekStart = weekStart.plusWeeks(1) }) { Text("›", style = PaquitoTypography.HeadlineSmall) }
+        }
+        if (visibleDays.isEmpty()) Text("No tienes clases ni entregas programadas esta semana.", style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextHomeMuted)
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            data.days.forEach { day ->
+            visibleDays.forEach { day ->
                 DayBlock(day = day)
             }
         }
@@ -177,6 +194,7 @@ data class ScheduleDay(
     val events: List<ScheduleEvent>,
     /** Dia de hoy segun la fecha de referencia del ViewModel (se resalta con "Hoy"). */
     val isToday: Boolean = false,
+    val dateKey: String? = null,
 )
 
 data class ScheduleScreenData(

@@ -23,10 +23,12 @@ class NotificationsInboxViewModel(context: Context, owner: String) : ViewModel()
     private fun snapshot() = NotificationsInboxData(store.read().map {
         NotificationInboxItem(it.id, it.title, it.body,
             Instant.ofEpochMilli(it.time).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("dd MMM · HH:mm", Locale.forLanguageTag("es-PE"))),
-            NotificationSeverity.Info,
+            if (it.id.startsWith("risk:")) NotificationSeverity.Urgent else NotificationSeverity.Info,
             when {
                 it.id.startsWith("lab-grade:") -> R.drawable.ic_paquito_lab_profile
                 it.id.startsWith("absence:") -> R.drawable.ic_paquito_frame_person
+                it.id.startsWith("risk:attendance:") -> R.drawable.ic_paquito_frame_person
+                it.id.startsWith("risk:grade:") -> R.drawable.ic_paquito_docs_default
                 else -> R.drawable.ic_paquito_bell_outline
             }, createdAtMillis = it.time)
     })

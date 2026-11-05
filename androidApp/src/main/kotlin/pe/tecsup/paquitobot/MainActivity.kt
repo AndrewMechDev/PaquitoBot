@@ -2,6 +2,8 @@ package pe.tecsup.paquitobot
 
 import android.os.Bundle
 import android.content.Intent
+import android.net.Uri
+import pe.tecsup.paquitobot.data.academic.DemoTutorDirectory
 import pe.tecsup.paquitobot.data.notifications.AcademicNotificationPublisher
 import pe.tecsup.paquitobot.ui.calendar.CalendarScreen
 import pe.tecsup.paquitobot.ui.procedures.EnrollmentGuideRoute
@@ -36,6 +38,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import pe.tecsup.paquitobot.ui.academic.loadAllCourseRecords
+import pe.tecsup.paquitobot.ui.academic.buildCoursesData
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -55,6 +61,8 @@ import pe.tecsup.paquitobot.ui.academic.AcademicCourseDetailViewModel
 import pe.tecsup.paquitobot.ui.academic.AcademicHomeViewModel
 import pe.tecsup.paquitobot.ui.academic.AcademicScheduleViewModel
 import pe.tecsup.paquitobot.ui.academic.AcademicViewModel
+import pe.tecsup.paquitobot.ui.academic.AcademicRiskScreen
+import pe.tecsup.paquitobot.ui.academic.AcademicRiskViewModel
 import pe.tecsup.paquitobot.ui.auth.ClerkAuthGate
 import pe.tecsup.paquitobot.ui.chat.ChatScreen
 import pe.tecsup.paquitobot.ui.chat.ChatViewModel
@@ -81,7 +89,7 @@ import pe.tecsup.paquitobot.ui.theme.PaquitoTheme
  * del Navbar se usa como toggle hacia Chat; Cursos y Horarios son pestañas
  * reales. El detalle de curso usa flecha atras como el chat.
  */
-private enum class RootScreen { Tabs, Chat, CourseDetail, Notifications, Events, EventDetail, Procedures, ProcedureDetail, Enrollment, Calendar }
+private enum class RootScreen { Tabs, Chat, CourseDetail, Notifications, AcademicRisk, Events, EventDetail, Procedures, ProcedureDetail, Enrollment, Calendar }
 
 private enum class OnboardingStep { Welcome, Notifications, Tour }
 
@@ -127,10 +135,14 @@ private inline fun <reified VM : ViewModel> factoryOf(noinline create: () -> VM)
 
 class MainActivity : ComponentActivity() {
     private var notificationRequest by mutableIntStateOf(0)
+    private var noticeKey by mutableStateOf<String?>(null)
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        if (intent.action == AcademicNotificationPublisher.OPEN_INBOX) notificationRequest++
+        if (intent.action == AcademicNotificationPublisher.OPEN_INBOX) {
+            noticeKey = intent.getStringExtra(AcademicNotificationPublisher.NOTICE_KEY)
+            notificationRequest++
+        }
     }
 
     override fun onResume() {
@@ -146,7 +158,10 @@ class MainActivity : ComponentActivity() {
             splashScreen.setOnExitAnimationListener { it.remove() }
         }
 
-        if (intent?.action == AcademicNotificationPublisher.OPEN_INBOX) notificationRequest++
+        if (intent?.action == AcademicNotificationPublisher.OPEN_INBOX) {
+            noticeKey = intent.getStringExtra(AcademicNotificationPublisher.NOTICE_KEY)
+            notificationRequest++
+        }
         setContent {
             var introVisible by rememberSaveable { mutableStateOf(intent?.action != AcademicNotificationPublisher.OPEN_INBOX) }
             LaunchedEffect(notificationRequest) {
@@ -160,7 +175,7 @@ class MainActivity : ComponentActivity() {
                     androidx.compose.animation.Crossfade(targetState = introVisible,
                         animationSpec = tween(240), label = "launch-intro") { showIntro ->
                         if (showIntro) pe.tecsup.paquitobot.ui.onboarding.LaunchIntroScreen(onFinished = { introVisible = false })
-                        else AppRoot(notificationRequest)
+                        else AppRoot(notificationRequest, noticeKey)
                     }
                 }
             }
@@ -177,7 +192,7 @@ class MainActivity : ComponentActivity() {
  *   3. Con sesion -> pantallas de la app.
  */
 @Composable
-private fun AppRoot(notificationRequest: Int = 0) {
+private fun AppRoot(notificationRequest: Int = 0, noticeKey: String? = null) {
     val context = LocalContext.current.applicationContext
     val notificationPreferences = remember(context) { NotificationPreferencesStore(context) }
     val notificationScheduler = remember(context) { AndroidAcademicNotificationScheduler(context) }
@@ -224,9 +239,6 @@ private fun AppRoot(notificationRequest: Int = 0) {
             // - con remember simple, girar el telefono mandaba siempre a Inicio.
             var currentTab by rememberSaveable(academicOwner) { mutableStateOf(NavTab.Inicio) }
             var rootScreen by rememberSaveable(academicOwner) { mutableStateOf(RootScreen.Tabs) }
-            LaunchedEffect(notificationRequest) {
-                if (notificationRequest > 0) rootScreen = RootScreen.Notifications
-            }
             var pendingCount by remember(academicOwner) { mutableIntStateOf(0) }
             var selectedCourse by rememberSaveable(academicOwner, stateSaver = SelectedCourseSaver) {
                 mutableStateOf<CourseCardData?>(null)
@@ -236,7 +248,46 @@ private fun AppRoot(notificationRequest: Int = 0) {
             var selectedEventId by rememberSaveable { mutableStateOf<String?>(null) }
             val userFirstName = sessionUiState.userFirstName ?: "estudiante"
             val academicRepository = remember(academicOwner) { (context as PaquitoBotApp).academicRepositoryFor(academicOwner) }
-            val academicScenarioId = remember(academicOwner) { (context as PaquitoBotApp).academicScenarioIdFor(academicOwner) }
+            val inboxOwner = AcademicNotificationPublisher.ownerKey(academicOwner)
+            val inboxModel: pe.tecsup.paquitobot.ui.notifications.NotificationsInboxViewModel = viewModel(
+                key = "inbox-$inboxOwner", factory = remember(inboxOwner) {
+                    factoryOf { pe.tecsup.paquitobot.ui.notifications.NotificationsInboxViewModel(context, inboxOwner) }
+                })
+            val inboxData by inboxModel.data.collectAsStateWithLifecycle()
+            var riskFocusCourseId by rememberSaveable { mutableStateOf<Int?>(null) }
+            var riskAttendance by rememberSaveable { mutableStateOf(false) }
+            var detailAttendance by rememberSaveable { mutableStateOf(false) }
+            var detailReturn by rememberSaveable { mutableStateOf(RootScreen.Tabs) }
+            val routeScope = rememberCoroutineScope()
+            val openCourse: (Int, Boolean) -> Unit = { id, attendance ->
+                routeScope.launch {
+                    academicRepository.loadAllCourseRecords().getOrNull()?.let { records ->
+                        buildCoursesData(records, java.time.LocalDate.now().toString()).courses.find { it.id == id.toString() }?.let { course ->
+                            selectedCourse = course
+                            detailAttendance = attendance
+                            detailReturn = rootScreen
+                            rootScreen = RootScreen.CourseDetail
+                        }
+                    }
+                }
+            }
+            val openNotice: (String) -> Unit = { key ->
+                val parts = key.split(':')
+                if (parts.firstOrNull() == "risk") {
+                    riskFocusCourseId = parts.getOrNull(2)?.toIntOrNull()
+                    riskAttendance = parts.getOrNull(1) == "attendance"
+                    rootScreen = RootScreen.AcademicRisk
+                } else {
+                    val id = parts.getOrNull(1)?.toIntOrNull()
+                    if (id != null) openCourse(id, parts.first() == "absence")
+                    else rootScreen = RootScreen.Notifications
+                }
+            }
+            LaunchedEffect(notificationRequest) {
+                if (notificationRequest > 0) {
+                    if (noticeKey != null) openNotice(noticeKey) else rootScreen = RootScreen.Notifications
+                }
+            }
 
             AnimatedContent(
                 targetState = rootScreen,
@@ -279,9 +330,14 @@ private fun AppRoot(notificationRequest: Int = 0) {
                         val homeError by homeViewModel.errorMessage.collectAsStateWithLifecycle()
                         LaunchedEffect(homeData.pendingCount) { pendingCount = homeData.pendingCount }
                         HomeTabContent(
-                            data = homeData.copy(greeting = "¡Bienvenido, $userFirstName!", scenarioId = academicScenarioId),
+                            data = homeData.copy(greeting = "¡Bienvenido, $userFirstName!", scenarioId = null, unreadNotificationsCount = inboxData.items.size),
                             onNotificationsClick = { rootScreen = RootScreen.Notifications },
                             onEventsClick = { rootScreen = RootScreen.Events },
+                            onAcademicRiskClick = {
+                                riskFocusCourseId = null
+                                riskAttendance = false
+                                rootScreen = RootScreen.AcademicRisk
+                            },
                             errorMessage = homeError,
                             onRetry = homeViewModel::load,
                         )
@@ -294,6 +350,8 @@ private fun AppRoot(notificationRequest: Int = 0) {
                         onProceduresClick = { rootScreen = RootScreen.Procedures },
                         onEnrollmentClick = { rootScreen = RootScreen.Enrollment },
                         onSignOutClick = sessionViewModel::signOut,
+                        onAcademicClick = { riskFocusCourseId = null; riskAttendance = false; rootScreen = RootScreen.AcademicRisk },
+                        onCoursesClick = { currentTab = NavTab.Cursos },
                     )
                     NavTab.Cursos -> {
                         val coursesViewModel: AcademicViewModel = viewModel(
@@ -309,6 +367,8 @@ private fun AppRoot(notificationRequest: Int = 0) {
                             data = coursesData,
                             onCourseClick = { course ->
                                 selectedCourse = course
+                                detailAttendance = false
+                                detailReturn = RootScreen.Tabs
                                 rootScreen = RootScreen.CourseDetail
                             },
                             errorMessage = coursesError,
@@ -373,18 +433,13 @@ private fun AppRoot(notificationRequest: Int = 0) {
                             data = detailData,
                             errorMessage = detailError,
                             onRetry = detailViewModel::load,
-                            onBackClick = { rootScreen = RootScreen.Tabs },
+                            onBackClick = { rootScreen = detailReturn },
+                            expandAttendance = detailAttendance,
                         )
                     }
                 }
                 RootScreen.Notifications -> {
                     var preferencesOpen by rememberSaveable { mutableStateOf(false) }
-                    val owner = pe.tecsup.paquitobot.auth.authorizedAcademicUserId()?.let(AcademicNotificationPublisher::ownerKey).orEmpty()
-                    val inboxModel: pe.tecsup.paquitobot.ui.notifications.NotificationsInboxViewModel = viewModel(
-                        key = "inbox-$owner", factory = remember(owner) {
-                            factoryOf { pe.tecsup.paquitobot.ui.notifications.NotificationsInboxViewModel(context, owner) }
-                        })
-                    val inboxData by inboxModel.data.collectAsStateWithLifecycle()
                     NotificationsInboxScreen(
                         data = inboxData,
                         onDeleteItem = inboxModel::delete,
@@ -392,6 +447,7 @@ private fun AppRoot(notificationRequest: Int = 0) {
                         onDeleteAll = inboxModel::deleteAll,
                         onBackClick = { rootScreen = RootScreen.Tabs },
                         onPreferencesClick = { preferencesOpen = true },
+                        onRiskAction = openNotice,
                     )
                     if (preferencesOpen) {
                         // La edición ocupa toda la pantalla y mantiene la bandeja compuesta
@@ -419,6 +475,35 @@ private fun AppRoot(notificationRequest: Int = 0) {
                             }
                         }
                     }
+                }
+                RootScreen.AcademicRisk -> {
+                    val riskViewModel: AcademicRiskViewModel = viewModel(
+                        key = "academic-risk-$academicOwner",
+                        factory = remember(academicOwner) {
+                            factoryOf { AcademicRiskViewModel(academicRepository) }
+                        },
+                    )
+                    AcademicRiskScreen(
+                        viewModel = riskViewModel,
+                        onBackClick = {
+                            rootScreen = RootScreen.Tabs
+                        },
+                        onContactTutor = { alert ->
+                            val tutor = DemoTutorDirectory.forCourse(alert.courseId)
+                            val subject = Uri.encode("PaquitoBot · ${alert.courseCode}: necesito orientación")
+                            val body = Uri.encode(
+                                "Hola, ${tutor.name}. Soy estudiante de ${alert.courseName}. " +
+                                    "PaquitoBot me mostró este aviso: ${alert.title}. ¿Podemos revisarlo?",
+                            )
+                            val contactIntent = Intent(Intent.ACTION_SENDTO).apply {
+                                data = Uri.parse("mailto:${tutor.email}?subject=$subject&body=$body")
+                            }
+                            runCatching { context.startActivity(Intent.createChooser(contactIntent, "Contactar a mi tutora")) }
+                        },
+                        focusCourseId = riskFocusCourseId,
+                        initialKind = if (riskAttendance) pe.tecsup.paquitobot.domain.academic.AcademicRiskKind.Attendance else pe.tecsup.paquitobot.domain.academic.AcademicRiskKind.Grade,
+                        onOpenCourse = { alert -> openCourse(alert.courseId, alert.kind == pe.tecsup.paquitobot.domain.academic.AcademicRiskKind.Attendance) },
+                    )
                 }
                 RootScreen.Calendar -> CalendarScreen(onBackClick = { rootScreen = RootScreen.Tabs })
                 RootScreen.Enrollment -> EnrollmentGuideRoute(onBackClick = {

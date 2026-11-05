@@ -2,6 +2,8 @@ package pe.tecsup.paquitobot.ui.academic
 
 import pe.tecsup.paquitobot.R
 import pe.tecsup.paquitobot.domain.academic.AcademicRepository
+import pe.tecsup.paquitobot.domain.academic.AcademicRiskEngine
+import pe.tecsup.paquitobot.domain.academic.AcademicRiskKind
 import pe.tecsup.paquitobot.ui.home.HomeScreenData
 import pe.tecsup.paquitobot.ui.home.HomeFocusItem
 import pe.tecsup.paquitobot.ui.home.TaskEntry
@@ -15,10 +17,9 @@ import pe.tecsup.paquitobot.util.AcademicDateUtils
  * son todas las entregas pendientes sin nota desde [today], incluidas las
  * de semanas posteriores. El calendario permite filtrar la lista por dia.
  *
- * Las cards de ranking (`overallRanking`/`careerCode`/`currentCycle`/
- * `cycleRankings`) son DATO DEMO fijo que se hereda de
- * [HomeScreenData.default]: el JSON academico local no tiene ningun concepto
- * de ranking, ciclo academico ni codigo de carrera.
+ * El promedio se obtiene promediando las medias de los cursos con notas.
+ * Se muestra como promedio, no como puesto entre alumnos. Los cursos sin
+ * calificaciones no aportan ceros al cálculo ni se consideran desaprobados.
  *
  * Nota sobre la urgencia: el proyecto evita deliberadamente una libreria de
  * fechas (ver `AcademicDateUtils`), asi que en vez de fingir precision con
@@ -52,6 +53,9 @@ private fun initialHome(): HomeScreenData = HomeScreenData.default().copy(
 
 internal fun buildHomeData(base: HomeScreenData, all: List<CourseWithRecords>, today: String): HomeScreenData {
     val week = weekOf(today)
+    val courseAverages = all.mapNotNull { (_, records) ->
+        records.grades.takeIf { it.isNotEmpty() }?.map { it.score }?.average()
+    }
 
     // Dias con al menos una falta (sesion de clase con asistencia en `false`).
     val absenceDates = all.flatMap { (_, records) ->
@@ -94,33 +98,26 @@ internal fun buildHomeData(base: HomeScreenData, all: List<CourseWithRecords>, t
         )
     }
 
-    val attendanceNotices = all.mapNotNull { (course, records) ->
-        val absences = absenceCount(records.attendance)
-        if (absences < 3) null else {
-            HomeFocusItem("Asistencia a vigilar", "$absences faltas registradas · ${course.code}")
-        }
-    }
-    val lowestGradeNotice = all
-        .flatMap { (course, records) ->
-            val assignmentById = records.assignments.associateBy { it.id }
-            records.grades
-                .filter { it.score <= 12.0 }
-                .mapNotNull { grade ->
-                    val assignment = assignmentById[grade.assignmentId] ?: return@mapNotNull null
-                    Triple(grade.score, course.code, assignment.name)
-                }
-        }
-        .minByOrNull { it.first }
-        ?.let { (score, courseCode, assignmentName) ->
-            HomeFocusItem("Nota por mejorar", "$assignmentName · $courseCode · ${score.toInt()}/20")
+    val riskNotices = all.flatMap { (course, records) ->
+        AcademicRiskEngine.assess(course, records.grades, records.attendance, records.sessions).alerts
+    }.sortedByDescending { it.level.ordinal }
+        .map { risk ->
+            HomeFocusItem(
+                title = if (risk.kind == AcademicRiskKind.Grade) "Riesgo de nota" else "Asistencia a vigilar",
+                detail = risk.title,
+            )
         }
     val allImportantNotices = buildList {
-        addAll(attendanceNotices)
-        if (lowestGradeNotice != null) add(lowestGradeNotice)
+        addAll(riskNotices)
     }
     val importantNotices = allImportantNotices.take(2)
 
     return base.copy(
+        overallRanking = courseAverages.takeIf { it.isNotEmpty() }?.average() ?: 0.0,
+        cycleRankings = emptyList(),
+        gradedCourseCount = courseAverages.size,
+        passingCourseCount = courseAverages.count { it >= 13.0 },
+        courseCount = all.size,
         dateLabel = AcademicDateUtils.fullDateLabel(today),
         weekTitle = if (week.isEmpty()) {
             "Semana actual"

@@ -13,7 +13,7 @@ SCENARIOS = ACADEMIC / "scenarios"
 BASE_SCORES = {
     101: 16, 102: 11, 104: 18, 105: 14, 106: 12, 108: 20,
     201: 15, 202: 17, 204: 17, 205: 16, 301: 12, 302: 13,
-    303: 10, 401: 18, 402: 15, 501: 9,
+    303: 10, 401: 18, 402: 15,
 }
 
 # An absence count is per course. Laboratory absences select laboratory sessions first.
@@ -22,17 +22,17 @@ DEFINITIONS = [
     {"id": "02", "label": "Alto rendimiento", "grade_shift": 3},
     {"id": "03", "label": "Notas bajas", "grade_shift": -6, "absences": {1: 2, 2: 1}},
     {"id": "04", "label": "Faltas en laboratorios de Física", "lab_absences": {2: 4}},
-    {"id": "05", "label": "Faltas en laboratorios de varios cursos", "lab_absences": {1: 3, 3: 2, 5: 2}},
+    {"id": "05", "label": "Faltas en laboratorios de varios cursos", "lab_absences": {1: 3, 2: 2, 3: 2}},
     {"id": "06", "label": "Asistencia en riesgo en Algoritmos", "absences": {3: 6}},
     {"id": "07", "label": "Asistencia al límite en Física", "absences": {2: 8}},
     {"id": "08", "label": "Límite de faltas excedido en Cálculo", "absences": {1: 9}},
     {"id": "09", "label": "Entregas vencidas", "absences": {4: 2}, "due_overrides": {103: "2026-10-16T23:59:00-05:00", 203: "2026-10-17T23:59:00-05:00"}},
-    {"id": "10", "label": "Varias entregas próximas", "due_overrides": {107: "2026-10-20T23:59:00-05:00", 109: "2026-10-21T23:59:00-05:00", 502: "2026-10-22T23:59:00-05:00"}},
+    {"id": "10", "label": "Varias entregas próximas", "due_overrides": {107: "2026-10-20T23:59:00-05:00", 109: "2026-10-21T23:59:00-05:00", 402: "2026-10-22T23:59:00-05:00"}},
     {"id": "11", "label": "Recuperación académica", "recovery": True, "absences": {1: 2, 3: 2}},
-    {"id": "12", "label": "Rendimiento desigual entre cursos", "mixed": True, "absences": {2: 4, 4: 1}},
+    {"id": "12", "label": "Límite de faltas en curso teórico", "mixed": True, "absences": {2: 4, 4: 4}},
     {"id": "13", "label": "Laboratorios pendientes", "ungraded": [104, 105, 106, 204, 205, 302, 402, 501], "due_overrides": {104: "2026-10-20T23:59:00-05:00", 204: "2026-10-22T23:59:00-05:00", 302: "2026-10-25T23:59:00-05:00"}},
     {"id": "14", "label": "Inicio de ciclo", "keep_grades": [101, 104, 201, 301, 401]},
-    {"id": "15", "label": "Riesgo académico integral", "grade_shift": -7, "absences": {1: 7, 2: 5, 5: 2}, "ungraded": [104, 204, 501], "due_overrides": {104: "2026-10-15T23:59:00-05:00", 204: "2026-10-17T23:59:00-05:00"}},
+    {"id": "15", "label": "Riesgo académico integral", "grade_shift": -7, "absences": {1: 7, 2: 5, 3: 7, 4: 5}, "ungraded": [104, 204, 302], "due_overrides": {104: "2026-10-15T23:59:00-05:00", 204: "2026-10-17T23:59:00-05:00"}},
 ]
 
 
@@ -48,7 +48,6 @@ def add_historical_sessions(catalog: dict) -> None:
         2: ("2026-09-08", 3, ("10:00:00", "12:00:00")),
         3: ("2026-09-08", 2, ("14:00:00", "16:00:00")),
         4: ("2026-09-09", 2, ("14:00:00", "16:00:00")),
-        5: ("2026-09-07", 2, ("16:00:00", "18:00:00")),
     }
     known = {session["id"] for session in catalog["class_sessions"]}
     for course_id, (start, second_offset, hours) in schedules.items():
@@ -67,7 +66,7 @@ def add_historical_sessions(catalog: dict) -> None:
                     "course_id": course_id,
                     "start_at": f"{day}T{first_hour}-05:00",
                     "end_at": f"{day}T{last_hour}-05:00",
-                    "kind": "laboratory" if course_id == 5 or within_week else "class",
+                    "kind": "laboratory" if course_id in (1, 2, 3) and within_week else "class",
                 })
                 known.add(session_id)
     catalog["class_sessions"].sort(key=lambda session: (session["start_at"], session["course_id"]))
@@ -82,7 +81,40 @@ def main() -> None:
         for session in catalog["class_sessions"]:
             number = session["id"] % 100
             session["kind"] = "laboratory" if session["course_id"] == 5 or number % 2 == 0 else "class"
+    # Demo de hackathon: cuatro cursos permiten apreciar cada alerta sin
+    # convertir las pantallas en una lista demasiado larga.
+    catalog["courses"] = [course for course in catalog["courses"] if course["id"] != 5]
+    catalog["assignments"] = [assignment for assignment in catalog["assignments"] if assignment["course_id"] != 5]
+    catalog["class_sessions"] = [session for session in catalog["class_sessions"] if session["course_id"] != 5]
+    # Estadística representa el curso únicamente teórico de la demostración:
+    # allí se aplica el límite de cuatro faltas; los demás mezclan teoría y lab.
+    for session in catalog["class_sessions"]:
+        if session["course_id"] == 4:
+            session["kind"] = "class"
     add_historical_sessions(catalog)
+    # Agenda de noviembre para la presentación: mismos cursos y entregas que
+    # consume el repositorio, Calendar y el trabajador de notificaciones.
+    upcoming_dates = {103: "2026-11-05", 107: "2026-11-06", 109: "2026-11-09",
+                      203: "2026-11-07", 304: "2026-11-08", 305: "2026-11-12", 403: "2026-11-10"}
+    for assignment in catalog["assignments"]:
+        if assignment["id"] in upcoming_dates:
+            assignment["due_at"] = upcoming_dates[assignment["id"]] + "T23:59:00-05:00"
+    slots = {1: (0, 2, 8), 2: (1, 4, 10), 3: (1, 3, 14), 4: (2, 4, 14)}
+    known_ids = {session["id"] for session in catalog["class_sessions"]}
+    for course_id, (first_day, second_day, hour) in slots.items():
+        for week in range(4):
+            for index, offset in enumerate((first_day, second_day)):
+                session_id = course_id * 1000 + 500 + week * 2 + index
+                if session_id in known_ids:
+                    continue
+                day = date(2026, 11, 2) + timedelta(days=week * 7 + offset)
+                catalog["class_sessions"].append({
+                    "id": session_id, "course_id": course_id,
+                    "start_at": f"{day}T{hour:02d}:00:00-05:00",
+                    "end_at": f"{day}T{hour + 2:02d}:00:00-05:00",
+                    "kind": "laboratory" if index == 1 and course_id != 4 else "class",
+                })
+    catalog["class_sessions"].sort(key=lambda session: (session["start_at"], session["course_id"]))
     write_json(CATALOG, catalog)
 
     sessions_by_course = {course["id"]: sorted(

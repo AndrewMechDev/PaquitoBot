@@ -23,6 +23,8 @@ fun ProfileTabContent(
     onProceduresClick: () -> Unit,
     onEnrollmentClick: () -> Unit,
     onSignOutClick: () -> Unit,
+    onAcademicClick: () -> Unit = {},
+    onCoursesClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var confirmSignOut by rememberSaveable { mutableStateOf(false) }
@@ -40,6 +42,8 @@ fun ProfileTabContent(
             Text("Cuenta institucional", style = PaquitoTypography.Caption, color = PaquitoColors.StateInfoStrong)
         }
         Text("Servicios al estudiante", style = PaquitoTypography.HeadlineSmall, color = PaquitoColors.TextHomeStrong)
+        ProcedureEntryCard(onClick = onAcademicClick, title = "Notas y asistencias", subtitle = "Entiende tus alertas y revisa cómo vas")
+        ProcedureEntryCard(onClick = onCoursesClick, title = "Mis cursos", subtitle = "Evaluaciones, faltas y próximas entregas")
         ProcedureEntryCard(onClick = onProceduresClick)
         ProcedureEntryCard(onClick = onEnrollmentClick, title = "Guía de matrícula", subtitle = "Requisitos y pasos para tu matrícula")
         Text("Los cursos, notas, horarios y tareas son datos de demostración. No corresponden a tu cuenta institucional.",

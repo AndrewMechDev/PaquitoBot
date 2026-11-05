@@ -7,11 +7,14 @@ import java.time.ZoneId
 import java.time.format.DateTimeParseException
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import pe.tecsup.paquitobot.domain.academic.AcademicRiskAlert
+import pe.tecsup.paquitobot.domain.academic.AcademicRiskKind
 
 data class NotificationAssignment(val courseId: Int, val id: Int, val title: String, val due: Instant,
     val category: NotificationCategory = NotificationCategory.Deadlines)
 data class NotificationLabGrade(val courseId: Int, val assignmentId: Int, val title: String, val score: Double)
 data class NotificationAbsence(val courseId: Int, val sessionId: Int, val courseName: String, val endedAt: Instant)
+data class NotificationRiskAlert(val alert: AcademicRiskAlert)
 data class AcademicNotice(val key: String, val title: String, val body: String) {
     // La versión distingue envíos; el identificador visual reemplaza el aviso de la misma tarea.
     val displayKey: String get() = key.substringBeforeLast(':')
@@ -35,6 +38,7 @@ object AcademicNotificationPlanner {
         zone: ZoneId,
         absences: List<NotificationAbsence> = emptyList(),
         labGrades: List<NotificationLabGrade> = emptyList(),
+        risks: List<NotificationRiskAlert> = emptyList(),
     ): List<AcademicNotice> {
         val upcoming = assignments.distinctBy { it.courseId to it.id }.filter { it.due.isAfter(now) && it.category in categories }
         // Solo faltas registradas de clases finalizadas en las últimas 24 horas.
@@ -59,7 +63,18 @@ object AcademicNotificationPlanner {
                 AcademicNotice("lab-grade:${it.courseId}:${it.assignmentId}:${it.score}", "Laboratorio calificado",
                     "${it.title}: tienes una calificación disponible. Revísala en tus cursos.")
             } else emptyList()
-        val notices = reminders + attendanceNotices + gradeNotices
+        val riskNotices = if (NotificationCategory.AcademicRisk in categories) risks
+            .map { it.alert }
+            .filter { it.kind == AcademicRiskKind.Grade || it.kind == AcademicRiskKind.Attendance }
+            .distinctBy { it.kind to it.courseId }
+            .map { alert ->
+                AcademicNotice(
+                    key = "risk:${alert.kind.name.lowercase()}:${alert.courseId}:${alert.level.name.lowercase()}",
+                    title = alert.title,
+                    body = "${alert.message} Abre PaquitoBot para revisar tu plan de acción.",
+                )
+            } else emptyList()
+        val notices = reminders + attendanceNotices + gradeNotices + riskNotices
         if (!schedule.dailySummaryEnabled) return notices
         val today = now.atZone(zone).toLocalDate()
         val summaryTime = today.atTime(schedule.summaryHour, schedule.summaryMinute).atZone(zone).toInstant()

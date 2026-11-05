@@ -4,9 +4,10 @@ package pe.tecsup.paquitobot.domain.notifications
 enum class NotificationCategory(val storageKey: String) {
     Laboratories("laboratories"),
     Deadlines("deadlines"),
-    Attendance("attendance");
+    Attendance("attendance"),
+    AcademicRisk("academic_risk");
 
     companion object {
-        val defaults: Set<NotificationCategory> = setOf(Laboratories, Deadlines)
+        val defaults: Set<NotificationCategory> = setOf(Laboratories, Deadlines, AcademicRisk)
     }
 }

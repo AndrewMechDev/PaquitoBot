@@ -27,6 +27,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.layout.navigationBarsPadding
+import pe.tecsup.paquitobot.ui.components.PaquitoPrimaryButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -108,6 +113,7 @@ fun NotificationsInboxScreen(
     onDeleteItem: (NotificationInboxItem) -> Unit = {},
     onRestoreItem: (NotificationInboxItem) -> Unit = {},
     onDeleteAll: () -> Unit = {},
+    onRiskAction: (String) -> Unit = {},
 ) {
     BackHandler(onBack = onBackClick)
     val items = remember(data) { mutableStateListOf(*data.items.toTypedArray()) }
@@ -214,7 +220,7 @@ fun NotificationsInboxScreen(
                     }
                 }
             }
-            Text("${visibleItems.size} avisos · datos de demostración", style = PaquitoTypography.BodySmall, color = PaquitoColors.TextSecondary)
+            Text("${visibleItems.size} avisos", style = PaquitoTypography.BodySmall, color = PaquitoColors.TextSecondary)
             if (visibleItems.isEmpty()) {
                 EmptyState()
             } else {
@@ -276,7 +282,14 @@ fun NotificationsInboxScreen(
     }
 
     selectedItem?.let { item ->
-        NotificationDetailDialog(item = item, onDismiss = { selectedItem = null })
+        NotificationDetailDialog(
+            item = item,
+            onDismiss = { selectedItem = null },
+            onRiskAction = {
+                selectedItem = null
+                onRiskAction(item.id)
+            },
+        )
     }
 
     if (confirmDeleteAll) {
@@ -569,28 +582,44 @@ private fun NotificationIcon(@DrawableRes iconRes: Int) {
  * titulo, cuerpo sin recortar y hora, cada uno en su propia seccion.
  */
 @Composable
-private fun NotificationDetailDialog(item: NotificationInboxItem, onDismiss: () -> Unit) {
-    AlertDialog(
+@OptIn(ExperimentalMaterial3Api::class)
+private fun NotificationDetailDialog(
+    item: NotificationInboxItem,
+    onDismiss: () -> Unit,
+    onRiskAction: () -> Unit,
+) {
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Cerrar", style = PaquitoTypography.BodyMedium) } },
-        title = { Text(item.title, style = PaquitoTypography.HeadlineSmall) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = PaquitoColors.Background,
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+    ) {
+            Column(Modifier.fillMaxWidth().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp).padding(bottom = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(18.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(Modifier.size(48.dp).background(PaquitoColors.OverlayInfoSubtle, CircleShape), contentAlignment = Alignment.Center) {
+                        Image(painterResource(item.iconRes), contentDescription = null, modifier = Modifier.size(23.dp))
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Text("PAQUITOBOT", style = PaquitoTypography.LabelSmall, color = PaquitoColors.StateInfoStrong)
+                        Text(item.timestamp, style = PaquitoTypography.Caption, color = PaquitoColors.TextHomeMuted)
+                    }
+                }
+                Text(item.title, style = PaquitoTypography.HeadlineSmall, color = PaquitoColors.TextHomeStrong)
+                HorizontalDivider(color = PaquitoColors.TextHomeMuted.copy(alpha = 0.12f))
                 Text(
                     text = formatChatMarkdown(item.body),
-                    style = PaquitoTypography.BodyLarge,
-                    color = PaquitoColors.TextOnCardStrong,
-                    fontSize = PaquitoTypography.BodyLarge.fontSize,
-                    lineHeight = PaquitoTypography.BodyLarge.lineHeight,
-                )
-                Text(
-                    text = item.timestamp,
-                    style = PaquitoTypography.BodySmall,
+                    style = PaquitoTypography.BodyMedium,
                     color = PaquitoColors.TextHomeMuted,
                 )
+                if (item.id.substringBefore(':') in setOf("risk", "lab-grade", "absence", "reminder")) {
+                    PaquitoPrimaryButton(text = if (item.id.startsWith("risk:")) "Revisar mi seguimiento" else "Ver mi curso", onClick = onRiskAction)
+                }
+                TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                    Text("Volver a mis avisos", style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextHomeMuted)
+                }
             }
-        },
-    )
+    }
 }
 
 /** Urgencia visual de una notificacion (afecta solo el color del timestamp). */

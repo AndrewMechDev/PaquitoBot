@@ -1,7 +1,5 @@
 package pe.tecsup.paquitobot.domain.academic
 
-const val ACADEMIC_ABSENCE_LIMIT = 8
-
 /** Modelos de dominio para datos academicos (cursos, notas, asistencia, asignaciones). */
 data class AcademicProfile(
     val id: Int,
