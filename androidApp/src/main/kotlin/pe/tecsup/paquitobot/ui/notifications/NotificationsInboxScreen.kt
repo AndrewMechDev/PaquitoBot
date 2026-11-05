@@ -110,6 +110,7 @@ fun NotificationsInboxScreen(
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     onPreferencesClick: () -> Unit = {},
+    preferencesContent: @Composable () -> Unit = {},
     onDeleteItem: (NotificationInboxItem) -> Unit = {},
     onRestoreItem: (NotificationInboxItem) -> Unit = {},
     onDeleteAll: () -> Unit = {},
@@ -209,6 +210,7 @@ fun NotificationsInboxScreen(
                     color = PaquitoColors.StateInfoStrong,
                 )
             }
+            preferencesContent()
             Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
                 .background(PaquitoColors.SurfaceGlassSoft).padding(4.dp)) {
                 listOf("Todos", "Hoy", "Semana", "Anteriores").forEach { label ->
