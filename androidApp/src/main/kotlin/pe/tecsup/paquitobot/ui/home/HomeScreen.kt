@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -87,6 +85,7 @@ fun HomeScreen(
     onPaquitoClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
     onEventsClick: () -> Unit = {},
+    onAcademicRiskClick: () -> Unit = {},
     errorMessage: String? = null,
     onRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -102,6 +101,7 @@ fun HomeScreen(
             data = data,
             onNotificationsClick = onNotificationsClick,
             onEventsClick = onEventsClick,
+            onAcademicRiskClick = onAcademicRiskClick,
             errorMessage = errorMessage,
             onRetry = onRetry,
         )
@@ -114,6 +114,7 @@ fun HomeTabContent(
     data: HomeScreenData,
     onNotificationsClick: () -> Unit,
     onEventsClick: () -> Unit,
+    onAcademicRiskClick: () -> Unit = {},
     errorMessage: String?,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
@@ -123,7 +124,6 @@ fun HomeTabContent(
     val tasksForSelectedDay = selectedDay?.let { day ->
         data.tasks.filter { it.dateKey == day.dateKey }
     } ?: data.tasks
-    var selectedCycleIndex by remember(data) { mutableStateOf(data.cycleRankings.lastIndex) }
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -135,29 +135,20 @@ fun HomeTabContent(
         HomeMessage(
             greeting = data.greeting,
             dateLabel = data.dateLabel,
-            scenarioId = data.scenarioId,
             unreadNotificationsCount = data.unreadNotificationsCount,
             onNotificationsClick = onNotificationsClick,
         )
-        Text("Datos académicos de demostración", style = PaquitoTypography.Caption, color = PaquitoColors.StateInfoStrong)
         PainSnapshotRow(
             overallRanking = data.overallRanking,
-            careerCode = data.careerCode,
-            currentCycle = data.currentCycle,
-            cycleRankings = data.cycleRankings,
-            selectedCycleIndex = selectedCycleIndex,
-            onCycleClick = {
-                if (data.cycleRankings.isNotEmpty()) {
-                    selectedCycleIndex = (selectedCycleIndex - 1).let {
-                        if (it < 0) data.cycleRankings.lastIndex else it
-                    }
-                }
-            },
+            gradedCourseCount = data.gradedCourseCount,
+            passingCourseCount = data.passingCourseCount,
+            courseCount = data.courseCount,
         )
         HomeHighlights(
             importantNotices = data.importantNotices,
             importantNoticeCount = data.importantNoticeCount,
             onEventsClick = onEventsClick,
+            onAcademicRiskClick = onAcademicRiskClick,
         )
         HomeWeekSection(
             title = data.weekTitle,
@@ -180,13 +171,14 @@ private fun HomeHighlights(
     importantNotices: List<HomeFocusItem>,
     importantNoticeCount: Int,
     onEventsClick: () -> Unit,
+    onAcademicRiskClick: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         HomeHighlightCard(
-            title = "Próximos eventos",
+            title = "Eventos del campus",
             count = EventMockData.events.size,
             items = EventMockData.events.take(2).map { event ->
                 HomeFocusItem(event.title, "${event.dateLabel} · ${event.venue}")
@@ -195,7 +187,14 @@ private fun HomeHighlights(
             actionLabel = "Ver todos",
             onClick = onEventsClick,
         )
-        HomeHighlightCard("Avisos importantes", importantNoticeCount, importantNotices, PaquitoColors.StateDanger)
+        HomeHighlightCard(
+            title = "Avisos importantes",
+            count = importantNoticeCount,
+            items = importantNotices,
+            accent = PaquitoColors.StateDanger,
+            actionLabel = if (importantNoticeCount > 0) "Ver plan" else null,
+            onClick = if (importantNoticeCount > 0) onAcademicRiskClick else null,
+        )
     }
 }
 
@@ -210,8 +209,7 @@ private fun HomeHighlightCard(
 ) {
     Column(
         modifier = Modifier
-            .width(252.dp)
-            .heightIn(min = 172.dp)
+            .fillMaxWidth()
             .paquitoSurface()
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .padding(16.dp),
@@ -263,51 +261,39 @@ private fun HomeHighlightCard(
 }
 
 /**
- * Iteracion 2026-08-19 (repensado, pedido explicito del usuario): las 3
- * cards ya NO muestran promedio/faltas/entregas (esos viven en Cursos y
- * Horarios) sino informacion academica de "ranking": ranking general
- * acumulado (todos los ciclos antes del actual), ranking del ciclo anterior
- * al que cursas (seleccionable entre los ciclos ya finalizados, 1° a 6°), y
- * codigo de carrera + ciclo actual.
- *
- * ⚠️ DATO DEMO, no viene del JSON academico local: ese archivo no tiene
- * NINGUN concepto de "ranking", "ciclo" ni "codigo de carrera" (tampoco lo
- * tenia el backend anterior). Se mantienen datos fijos de demo, documentados
- * como tal, mismo criterio que `ASSUMED_ABSENCE_LIMIT` en los ViewModels
- * academicos.
+ * Indicadores derivados de las notas de Cursos: promedio de los promedios
+ * por curso, cursos que alcanzan 13 y cantidad total de cursos.
+ * No se inventa un puesto de ranking sin datos de otros estudiantes.
  */
 @Composable
 private fun PainSnapshotRow(
     overallRanking: Double,
-    careerCode: String,
-    currentCycle: Int,
-    cycleRankings: List<CycleRanking>,
-    selectedCycleIndex: Int,
-    onCycleClick: () -> Unit,
+    gradedCourseCount: Int,
+    passingCourseCount: Int,
+    courseCount: Int,
 ) {
-    val selectedCycle = cycleRankings.getOrNull(selectedCycleIndex)
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         SnapshotChip(
-            label = "Ranking",
-            value = "%.1f".format(overallRanking),
+            label = "Promedio",
+            value = if (gradedCourseCount == 0) "—" else "%.1f".format(overallRanking),
             hint = "de 20",
             onClick = null,
             modifier = Modifier.weight(1f),
         )
         SnapshotChip(
-            label = "Ranking ciclo",
-            value = selectedCycle?.let { "%.1f".format(it.ranking) } ?: "—",
-            hint = selectedCycle?.let { "${it.cycle}° ciclo · toca para cambiar" } ?: "sin ciclos previos",
-            onClick = if (cycleRankings.isNotEmpty()) onCycleClick else null,
+            label = "En la meta",
+            value = "$passingCourseCount / $gradedCourseCount",
+            hint = "cursos con 13 o más",
+            onClick = null,
             modifier = Modifier.weight(1f),
         )
         SnapshotChip(
-            label = "Carrera",
-            value = careerCode,
-            hint = "${currentCycle}° ciclo actual",
+            label = "Mis cursos",
+            value = courseCount.toString(),
+            hint = "este ciclo",
             onClick = null,
             modifier = Modifier.weight(1f),
         )
@@ -374,7 +360,6 @@ private fun SnapshotChip(
 private fun HomeMessage(
     greeting: String,
     dateLabel: String,
-    scenarioId: String?,
     unreadNotificationsCount: Int,
     onNotificationsClick: () -> Unit,
 ) {
@@ -383,17 +368,6 @@ private fun HomeMessage(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (scenarioId != null) {
-                Column(
-                    modifier = Modifier
-                        .paquitoSurface(PaquitoShapes.medium)
-                        .padding(horizontal = 12.dp, vertical = 7.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                ) {
-                    Text("CASO DE PRUEBA", style = PaquitoTypography.LabelSmall, color = PaquitoColors.TextOnCardMuted)
-                    Text("Escenario $scenarioId", style = PaquitoTypography.TaskTitle, color = PaquitoColors.StateInfoStrong)
-                }
-            }
             Spacer(Modifier.weight(1f))
             NotificationBellButton(
                 unreadCount = unreadNotificationsCount,
@@ -724,6 +698,9 @@ data class HomeScreenData(
     // implicaria que son el mismo concepto y no lo son.
     val unreadNotificationsCount: Int = 0,
     val scenarioId: String? = null,
+    val gradedCourseCount: Int = 0,
+    val passingCourseCount: Int = 0,
+    val courseCount: Int = 0,
 ) {
     companion object {
         fun default(): HomeScreenData = HomeScreenData(
