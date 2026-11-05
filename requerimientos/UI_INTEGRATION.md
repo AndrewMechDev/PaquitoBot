@@ -487,3 +487,11 @@ puede aplazar el inicio. Tutorías siguen usando contactos ficticios. Motor puro
 en sharedLogic, catálogo de cuatro cursos y agenda de noviembre en Android/iOS;
 la interfaz del seguimiento y esta demo rápida son Android. Detalles y fuente
 institucional consultada en `ALERTAS_TEMPRANAS_DEMO.md`.
+
+Desde la bandeja, Preferencias de notificaciones despliega únicamente el botón
+de demo dentro de la misma pantalla. No vuelve al onboarding de tres pasos.
+El botón alterna Iniciar/Detener; los permisos se solicitan si hacen falta.
+El onboarding inicial conserva sus preferencias de categorías y horario.
+Al borrar con swipe se mueve una superficie opaca completa (icono, textos y
+separador), y el espacio se colapsa al alcanzar el destino de salida. Se conserva
+Deshacer y la clave estable de cada aviso.
