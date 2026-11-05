@@ -21,10 +21,11 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkInfo
 import androidx.work.workDataOf
-import java.util.concurrent.TimeUnit
+import androidx.work.OutOfQuotaPolicy
 import pe.tecsup.paquitobot.auth.authorizedAcademicUserId
 import pe.tecsup.paquitobot.data.notifications.AcademicNotificationPublisher
 import pe.tecsup.paquitobot.data.notifications.NotificationTestWorker
+import pe.tecsup.paquitobot.ui.components.PaquitoPrimaryButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -118,24 +119,39 @@ fun NotificationPermissionSection(modifier: Modifier = Modifier, onPermissionCha
             )
         }
         if (authorizedAcademicUserId() != null) {
-            OutlinedButton(enabled = allowed && testStatus?.state?.isFinished != false, onClick = {
+            PaquitoPrimaryButton(text = "Iniciar demo de todos los avisos", enabled = allowed && testStatus?.state?.isFinished != false, onClick = {
                 val owner = authorizedAcademicUserId()?.let(AcademicNotificationPublisher::ownerKey)
                 if (owner != null) {
                     try {
                         val request = OneTimeWorkRequestBuilder<NotificationTestWorker>()
-                            .setInitialDelay(30, TimeUnit.SECONDS).addTag("owner:$owner").addTag("requested:${System.currentTimeMillis()}")
-                            .setInputData(workDataOf("owner" to owner)).build()
+                            .apply {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                    setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                                }
+                            }
+                            .addTag("owner:$owner").addTag("requested:${System.currentTimeMillis()}")
+                            .setInputData(workDataOf("owner" to owner, "demo" to "academic_risk")).build()
                         workManager.enqueueUniqueWork(NotificationTestWorker.WORK_NAME, ExistingWorkPolicy.REPLACE, request)
                         testError = false
                     } catch (_: IllegalStateException) { testError = true }
                 }
-            }) { Text("Enviar aviso de prueba en 30 segundos", style = PaquitoTypography.BodyMedium) }
+            })
+            if (testStatus?.state?.isFinished == false) {
+                OutlinedButton(onClick = { workManager.cancelUniqueWork(NotificationTestWorker.WORK_NAME) }) {
+                    Text("Detener demo", style = PaquitoTypography.BodyMedium)
+                }
+            }
             Text(when {
                 testError -> "No se pudo programar la prueba. Vuelve a intentarlo."
-                testStatus?.state == WorkInfo.State.SUCCEEDED -> "Aviso enviado. Abre la barra de notificaciones del celular para verlo."
+                testStatus?.outputData?.getString("status") == "no_risks" -> "No hay riesgos de nota ni asistencia en tus cursos actuales."
+                testStatus?.state == WorkInfo.State.SUCCEEDED -> "Demo completada: ${testStatus?.outputData?.getInt("sent", 0)} avisos enviados. Revisa la barra de notificaciones."
+                testStatus?.state == WorkInfo.State.FAILED && testStatus?.outputData?.getString("status") == "session_changed" -> "La demo se detuvo porque cambió tu sesión. Vuelve a iniciar sesión e inicia la demo otra vez."
+                testStatus?.state == WorkInfo.State.FAILED && testStatus?.outputData?.getString("status") == "session_unavailable" -> "No se pudo preparar tu sesión para la demo. Abre la app e inténtalo otra vez."
                 testStatus?.state == WorkInfo.State.FAILED -> "No se envió el aviso. Revisa el permiso y tu sesión e inténtalo de nuevo."
-                testStatus?.state?.isFinished == false -> "Prueba programada. Pulsa Inicio del celular para dejar la app en segundo plano. Android puede tardar más de 30 segundos."
-                else -> "Prueba el diseño y la recepción del aviso sin esperar al vencimiento de una tarea."
+                testStatus?.state == WorkInfo.State.CANCELLED -> "Demo detenida. Puedes iniciarla otra vez."
+                testStatus?.state == WorkInfo.State.RUNNING -> "Enviados ${testStatus?.progress?.getInt("sent", 0)} de ${testStatus?.progress?.getInt("total", 0)}. Primer aviso en 15 segundos; los siguientes cada 5 segundos. Puedes dejar la app en segundo plano."
+                testStatus?.state?.isFinished == false -> "Demo en cola. Android está preparando el inicio de la secuencia."
+                else -> "Demo: empieza a los 15 segundos y muestra un aviso cada 5 segundos: notas, faltas, entregas, laboratorios y resumen. Hasta 12 avisos de tus cursos."
             }, style = PaquitoTypography.BodySmall, color = PaquitoColors.TextSecondary)
         }
         if (settingsUnavailable) {
