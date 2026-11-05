@@ -335,6 +335,8 @@ private fun AppRoot(notificationRequest: Int = 0, noticeKey: String? = null) {
                     NavTab.Inicio -> {
                         if (isTeacherDemoAccount) {
                             TeacherDashboardScreen(
+                                teacherName = sessionUiState.userFirstName
+                                    ?: sessionUiState.userFullName?.takeUnless { it == "Estudiante" },
                                 notificationCount = inboxData.items.size,
                                 onNotificationsClick = { rootScreen = RootScreen.Notifications },
                                 onEventsClick = { rootScreen = RootScreen.Events },

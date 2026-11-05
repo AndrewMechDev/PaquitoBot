@@ -60,6 +60,7 @@ private val TeacherSubtitleStyle = PaquitoTypography.BodyMedium.copy(fontWeight 
 
 @Composable
 internal fun TeacherDashboardScreen(
+    teacherName: String?,
     notificationCount: Int,
     onNotificationsClick: () -> Unit,
     onEventsClick: () -> Unit,
@@ -97,7 +98,12 @@ internal fun TeacherDashboardScreen(
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
             NotificationBellButton(unreadCount = notificationCount, onClick = onNotificationsClick)
         }
-        Text("Vista docente", style = PaquitoTypography.DisplayLarge, color = PaquitoColors.TextHomeStrong)
+        Text(
+            text = teacherName?.trim()?.takeIf { it.isNotEmpty() }?.let { "¡Bienvenido, docente $it!" }
+                ?: "¡Bienvenido, docente!",
+            style = PaquitoTypography.DisplayLarge,
+            color = PaquitoColors.TextHomeStrong,
+        )
         HomeWeekSection(
             title = weekTitle,
             days = currentWeek,
@@ -376,6 +382,7 @@ private fun Double.formatOneDecimal(): String = String.format(Locale.US, "%.1f",
 private fun TeacherDashboardPreview() {
     PaquitoTheme {
         TeacherDashboardScreen(
+            teacherName = "Yordan",
             notificationCount = 1,
             onNotificationsClick = {},
             onEventsClick = {},
