@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -199,13 +200,14 @@ private fun HomeHighlights(
 }
 
 @Composable
-private fun HomeHighlightCard(
+internal fun HomeHighlightCard(
     title: String,
     count: Int,
     items: List<HomeFocusItem>,
     accent: Color,
     actionLabel: String? = null,
     onClick: (() -> Unit)? = null,
+    detailStyle: TextStyle = PaquitoTypography.Caption,
 ) {
     Column(
         modifier = Modifier
@@ -249,7 +251,7 @@ private fun HomeHighlightCard(
                     )
                     Text(
                         text = item.detail,
-                        style = PaquitoTypography.Caption,
+                        style = detailStyle,
                         color = PaquitoColors.TextOnCardMuted,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -396,19 +398,22 @@ private fun HomeMessage(
  * ----------------------------------------------------------- */
 
 @Composable
-private fun HomeWeekSection(
+internal fun HomeWeekSection(
     title: String,
     days: List<WeekDayData>,
     selectedDayNumber: String?,
-    onDaySelected: (String) -> Unit,
+    onDaySelected: ((String) -> Unit)?,
+    titleStyle: TextStyle = TextStyle(
+        fontSize = 20.sp,
+        lineHeight = 24.sp,
+        fontWeight = FontWeight.SemiBold,
+        fontFamily = PaquitoFont.DMSans,
+    ),
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
             text = title,
-            fontSize = 20.sp,
-            lineHeight = 24.sp,
-            fontWeight = FontWeight.SemiBold,
-            fontFamily = PaquitoFont.DMSans,
+            style = titleStyle,
             color = PaquitoColors.TextHomeStrong,
         )
 
@@ -424,7 +429,7 @@ private fun HomeWeekSection(
                 WeekDayCell(
                     day = day,
                     selected = day.dayNumber == selectedDayNumber,
-                    onClick = { onDaySelected(day.dayNumber) },
+                    onClick = onDaySelected?.let { onSelect -> { onSelect(day.dayNumber) } },
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -444,7 +449,7 @@ private fun shortDayLabel(dayOfWeek: String): String = dayOfWeek.take(2)
 private fun WeekDayCell(
     day: WeekDayData,
     selected: Boolean,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(16.dp)
@@ -453,7 +458,7 @@ private fun WeekDayCell(
             .defaultMinSize(minHeight = 72.dp)
             .clip(shape)
             .background(if (selected) PaquitoColors.StateInfoStrong else PaquitoColors.Background)
-            .clickable(onClick = onClick)
+            .then(onClick?.let { Modifier.clickable(onClick = it) } ?: Modifier)
             .padding(horizontal = 2.dp, vertical = 9.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,

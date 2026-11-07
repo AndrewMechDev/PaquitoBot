@@ -75,6 +75,7 @@ fun ChatScreen(
     uiState: ChatUiState,
     onSendMessage: (String) -> Unit,
     userName: String = "estudiante",
+    teacherMode: Boolean = false,
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -147,7 +148,7 @@ fun ChatScreen(
                     .padding(vertical = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                ChatSuggestionPrompts.forEach { suggestion ->
+                (if (teacherMode) TeacherChatSuggestionPrompts else StudentChatSuggestionPrompts).forEach { suggestion ->
                     SuggestionChip(
                         text = suggestion,
                         onClick = { onSendMessage(suggestion) },
@@ -170,11 +171,20 @@ fun ChatScreen(
 /**
  * Los chips envían preguntas al mismo repositorio MiniMax que el campo de texto.
  */
-private val ChatSuggestionPrompts = listOf(
+private val StudentChatSuggestionPrompts = listOf(
     "Que cursos tengo este ciclo?",
     "Que vence este ciclo?",
     "Mis laboratorios",
     "Como voy?",
+)
+
+private val TeacherChatSuggestionPrompts = listOf(
+    "Que alumnos tienen riesgo por notas?",
+    "Quienes tienen advertencia o DI por asistencia?",
+    "A quienes deberia priorizar para seguimiento?",
+    "Como va un alumno en un curso?",
+    "Que laboratorios siguen incompletos?",
+    "Que alumnos tienen mas de una señal de riesgo?",
 )
 
 private fun defaultMessages(): List<ChatMessage> = listOf(

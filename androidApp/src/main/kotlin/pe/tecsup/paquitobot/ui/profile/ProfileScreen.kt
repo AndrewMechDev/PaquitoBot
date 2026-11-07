@@ -1,15 +1,13 @@
 package pe.tecsup.paquitobot.ui.profile
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import pe.tecsup.paquitobot.ui.components.ProfileIdentityCard
 import pe.tecsup.paquitobot.ui.procedures.ProcedureEntryCard
 import pe.tecsup.paquitobot.ui.theme.*
 
@@ -30,17 +28,7 @@ fun ProfileTabContent(
     var confirmSignOut by rememberSaveable { mutableStateOf(false) }
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(20.dp)) {
         Text("Mi perfil", style = PaquitoTypography.DisplayLarge, color = PaquitoColors.TextHomeStrong)
-        Column(Modifier.fillMaxWidth().paquitoSurface().padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Box(Modifier.size(76.dp).background(PaquitoColors.OverlayInfoSubtle, CircleShape), contentAlignment = Alignment.Center) {
-                Text(name.trim().split(Regex("\\s+")).take(2).mapNotNull { it.firstOrNull() }.joinToString(" ").uppercase(),
-                    style = PaquitoTypography.HeadlineSmall, color = PaquitoColors.StateInfoStrong)
-            }
-            Text(name, style = PaquitoTypography.HeadlineSmall, color = PaquitoColors.TextHomeStrong)
-            Text(email, style = PaquitoTypography.BodyMedium, color = PaquitoColors.TextOnCardMuted)
-            Text("Cuenta institucional", style = PaquitoTypography.Caption, color = PaquitoColors.StateInfoStrong)
-        }
+        ProfileIdentityCard(name, email)
         Text("Servicios al estudiante", style = PaquitoTypography.HeadlineSmall, color = PaquitoColors.TextHomeStrong)
         ProcedureEntryCard(onClick = onAcademicClick, title = "Notas y asistencias", subtitle = "Entiende tus alertas y revisa cómo vas")
         ProcedureEntryCard(onClick = onCoursesClick, title = "Mis cursos", subtitle = "Evaluaciones, faltas y próximas entregas")
