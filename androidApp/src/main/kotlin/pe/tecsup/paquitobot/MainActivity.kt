@@ -11,8 +11,6 @@ import pe.tecsup.paquitobot.ui.procedures.ProcedureGuideScreen
 import pe.tecsup.paquitobot.ui.procedures.ProcedureDetailScreen
 import pe.tecsup.paquitobot.ui.procedures.ProcedureViewModel
 import pe.tecsup.paquitobot.ui.procedures.ProcedureUiState
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import pe.tecsup.paquitobot.data.local.NotificationPreferencesStore
 import pe.tecsup.paquitobot.data.notifications.AndroidAcademicNotificationScheduler
 import pe.tecsup.paquitobot.ui.components.NotificationType
@@ -515,35 +513,12 @@ private fun AppRoot(notificationRequest: Int = 0, noticeKey: String? = null) {
                         onRestoreItem = inboxModel::restore,
                         onDeleteAll = inboxModel::deleteAll,
                         onBackClick = { rootScreen = RootScreen.Tabs },
-                        onPreferencesClick = { preferencesOpen = true },
+                        onPreferencesClick = { preferencesOpen = !preferencesOpen },
+                        preferencesContent = {
+                            if (preferencesOpen) NotificationPermissionSection(compactDemo = true, onPermissionChanged = notificationScheduler::reconcile)
+                        },
                         onRiskAction = openNotice,
                     )
-                    if (preferencesOpen) {
-                        // La edición ocupa toda la pantalla y mantiene la bandeja compuesta
-                        // para conservar sus elementos y selección de vista al regresar.
-                        Dialog(
-                            onDismissRequest = { preferencesOpen = false },
-                            properties = DialogProperties(
-                                usePlatformDefaultWidth = false,
-                                decorFitsSystemWindows = false,
-                            ),
-                        ) {
-                            PaquitoTheme {
-                                OnboardingNotificationsScreen(
-                                    initialEnabled = NotificationType.entries.filterTo(mutableSetOf()) {
-                                        it.category in sessionUiState.enabledNotifications
-                                    },
-                                    initialSchedule = sessionUiState.notificationSchedule,
-                                    permissionContent = { NotificationPermissionSection(onPermissionChanged = notificationScheduler::reconcile) },
-                                    onContinue = { enabled, schedule ->
-                                        sessionViewModel.saveNotificationPreferences(enabled.map { it.category }.toSet(), schedule)
-                                        preferencesOpen = false
-                                    },
-                                    onCancel = { preferencesOpen = false },
-                                )
-                            }
-                        }
-                    }
                 }
                 RootScreen.AcademicRisk -> {
                     val riskViewModel: AcademicRiskViewModel = viewModel(

@@ -488,7 +488,6 @@ en sharedLogic, catálogo de cuatro cursos y agenda de noviembre en Android/iOS;
 la interfaz del seguimiento y esta demo rápida son Android. Detalles y fuente
 institucional consultada en `ALERTAS_TEMPRANAS_DEMO.md`.
 
-
 ### Vista docente · noviembre de 2026
 
 La pestaña Inicio puede presentar `TeacherDashboardScreen` para la cuenta docente configurada. Reutiliza las tarjetas de eventos y el calendario semanal de Inicio; el perfil institucional continúa como componente compartido en Perfil. Carrera y Cursos usan el mismo selector desplegable, y los filtros conservan los colores y la tipografía de `PaquitoTheme`.
@@ -496,3 +495,11 @@ La pestaña Inicio puede presentar `TeacherDashboardScreen` para la cuenta docen
 El calendario semanal usa la fecha del dispositivo y marca el día actual. Los datos del panel docente siguen siendo sintéticos de prueba; la confirmación de seguimiento se publica como notificación local en el dispositivo docente y no se entrega a los alumnos. La conexión con asignaciones, cursos, notas y asistencias reales queda pendiente de la fuente académica autorizada.
 
 El chat presenta seis preguntas sugeridas propias de la cuenta docente; la experiencia de estudiantes conserva las suyas. Para responder, MiniMax recibe un contexto con los cursos, notas, promedios parciales, laboratorios y asistencia de `TeacherDemoData`, junto con las reglas de riesgo del módulo. El contexto no se usa en cuentas de estudiantes.
+
+Desde la bandeja, Preferencias de notificaciones despliega únicamente el botón
+de demo dentro de la misma pantalla. No vuelve al onboarding de tres pasos.
+El botón alterna Iniciar/Detener; los permisos se solicitan si hacen falta.
+El onboarding inicial conserva sus preferencias de categorías y horario.
+Al borrar con swipe se mueve una superficie opaca completa (icono, textos y
+separador), y el espacio se colapsa al alcanzar el destino de salida. Se conserva
+Deshacer y la clave estable de cada aviso.
